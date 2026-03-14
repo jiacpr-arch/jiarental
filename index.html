@@ -9,10 +9,35 @@
 :root{--primary:#2563eb;--primary-dark:#1d4ed8;--secondary:#0891b2;--success:#059669;--warning:#d97706;--danger:#dc2626;--bg:#f0f4f8;--card:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--radius:12px;--shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06)}
 body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
 .app{display:flex;min-height:100vh}
-.sidebar{width:260px;background:linear-gradient(180deg,#1e3a5f 0%,#0f2744 100%);color:#fff;padding:0;position:fixed;height:100vh;overflow-y:auto;z-index:100}
+.sidebar{width:260px;background:linear-gradient(180deg,#1e3a5f 0%,#0f2744 100%);color:#fff;padding:0;position:fixed;height:100vh;overflow-y:auto;z-index:100;transition:transform .3s ease}
 .sidebar-header{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
 .sidebar-header h1{font-size:16px;font-weight:700;letter-spacing:.5px}
 .sidebar-header p{font-size:11px;opacity:.7;margin-top:4px}
+.hamburger{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.sidebar-close{display:none;position:absolute;top:16px;right:16px;background:none;border:none;color:rgba(255,255,255,.7);font-size:24px;cursor:pointer}
+.sidebar-close:hover{color:#fff}
+.mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+.mobile-overlay.show{display:block}
+@media(max-width:768px){
+.sidebar{transform:translateX(-100%)}
+.sidebar.open{transform:translateX(0)}
+.sidebar-close{display:block}
+.hamburger{display:block}
+.main{margin-left:0!important;padding:16px!important;padding-top:56px!important}
+.page-header{flex-direction:column;align-items:flex-start;gap:10px}
+.page-header h2{font-size:20px}
+.kpi-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+.kpi-value{font-size:24px}
+.search-bar{flex-direction:column}
+.search-input,.filter-select{width:100%!important;min-width:0!important}
+.form-row{grid-template-columns:1fr}
+.charts-grid{grid-template-columns:1fr}
+.modal{width:95%;max-width:none;margin:8px}
+.qr-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+table{font-size:11px}
+th,td{padding:6px 8px}
+.btn{padding:6px 12px;font-size:12px}
+}
 .nav-section{padding:16px 0}
 .nav-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.4);padding:0 20px;margin-bottom:8px}
 .nav-item{display:flex;align-items:center;gap:12px;padding:10px 20px;cursor:pointer;transition:all .2s;font-size:14px;color:rgba(255,255,255,.75);border-left:3px solid transparent}
@@ -221,7 +246,10 @@ tr:hover{background:#f8fafc}
 </div>
 
 <div class="app">
-<nav class="sidebar">
+<button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()">&#9776;</button>
+<div class="mobile-overlay" id="mobile-overlay" onclick="closeSidebar()"></div>
+<nav class="sidebar" id="sidebar">
+<button class="sidebar-close" onclick="closeSidebar()">&times;</button>
 <div class="sidebar-header">
 <h1>JIARAKSA</h1>
 <p>ระบบจัดการเช่า-ยืม</p>
@@ -840,6 +868,8 @@ const badgeClass = s => s==='ว่าง'||s==='คืนแล้ว'?'badge-g
 
 function showToast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';setTimeout(()=>t.classList.remove('show'),3000);}
 function closeModal(id){document.getElementById(id).classList.remove('show');}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('mobile-overlay').classList.toggle('show');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('mobile-overlay').classList.remove('show');}
 
 // ========== NAVIGATION ==========
 const pageList=['dashboard','products','rentals','customers','calendar','alerts','commission','qrcode','addproduct'];
@@ -854,6 +884,7 @@ function showPage(page){
   document.getElementById('page-'+page).classList.add('active');
   const idx=pageList.indexOf(page);
   if(idx>=0)document.querySelectorAll('.nav-item')[idx].classList.add('active');
+  closeSidebar();
   if(page==='dashboard')renderDashboard();
   if(page==='products')renderProducts();
   if(page==='rentals')renderRentals();
