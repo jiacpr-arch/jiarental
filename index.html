@@ -9,35 +9,10 @@
 :root{--primary:#2563eb;--primary-dark:#1d4ed8;--secondary:#0891b2;--success:#059669;--warning:#d97706;--danger:#dc2626;--bg:#f0f4f8;--card:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--radius:12px;--shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06)}
 body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
 .app{display:flex;min-height:100vh}
-.sidebar{width:260px;background:linear-gradient(180deg,#1e3a5f 0%,#0f2744 100%);color:#fff;padding:0;position:fixed;height:100vh;overflow-y:auto;z-index:100;transition:transform .3s ease}
+.sidebar{width:260px;background:linear-gradient(180deg,#1e3a5f 0%,#0f2744 100%);color:#fff;padding:0;position:fixed;height:100vh;overflow-y:auto;z-index:100}
 .sidebar-header{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
 .sidebar-header h1{font-size:16px;font-weight:700;letter-spacing:.5px}
 .sidebar-header p{font-size:11px;opacity:.7;margin-top:4px}
-.hamburger{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3)}
-.sidebar-close{display:none;position:absolute;top:16px;right:16px;background:none;border:none;color:rgba(255,255,255,.7);font-size:24px;cursor:pointer}
-.sidebar-close:hover{color:#fff}
-.mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
-.mobile-overlay.show{display:block}
-@media(max-width:768px){
-.sidebar{transform:translateX(-100%)}
-.sidebar.open{transform:translateX(0)}
-.sidebar-close{display:block}
-.hamburger{display:block}
-.main{margin-left:0!important;padding:16px!important;padding-top:56px!important}
-.page-header{flex-direction:column;align-items:flex-start;gap:10px}
-.page-header h2{font-size:20px}
-.kpi-grid{grid-template-columns:repeat(2,1fr);gap:10px}
-.kpi-value{font-size:24px}
-.search-bar{flex-direction:column}
-.search-input,.filter-select{width:100%!important;min-width:0!important}
-.form-row{grid-template-columns:1fr}
-.charts-grid{grid-template-columns:1fr}
-.modal{width:95%;max-width:none;margin:8px}
-.qr-grid{grid-template-columns:repeat(2,1fr);gap:10px}
-table{font-size:11px}
-th,td{padding:6px 8px}
-.btn{padding:6px 12px;font-size:12px}
-}
 .nav-section{padding:16px 0}
 .nav-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.4);padding:0 20px;margin-bottom:8px}
 .nav-item{display:flex;align-items:center;gap:12px;padding:10px 20px;cursor:pointer;transition:all .2s;font-size:14px;color:rgba(255,255,255,.75);border-left:3px solid transparent}
@@ -134,52 +109,6 @@ tr:hover{background:#f8fafc}
 .pagination button{padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font-size:13px}
 .pagination button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
 .pagination button:disabled{opacity:.4;cursor:not-allowed}
-.role-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#1e3a5f 0%,#0f2744 100%);z-index:9999;display:flex;justify-content:center;align-items:center}
-.role-overlay.hidden{display:none}
-.role-card{background:#fff;border-radius:20px;padding:40px;width:90%;max-width:460px;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,.4)}
-.role-card h1{font-size:22px;font-weight:800;color:#1e3a5f;margin-bottom:4px}
-.role-card p{font-size:13px;color:#64748b;margin-bottom:28px}
-.role-btn-group{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
-.role-btn{display:flex;align-items:center;gap:14px;padding:16px 20px;border:2px solid #e2e8f0;border-radius:14px;cursor:pointer;transition:all .25s;text-align:left;background:#fff}
-.role-btn:hover{border-color:#2563eb;background:#eff6ff}
-.role-btn.selected{border-color:#2563eb;background:#dbeafe;box-shadow:0 0 0 3px rgba(37,99,235,.2)}
-.role-btn .role-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-.role-btn .role-icon.sales{background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e}
-.role-btn .role-icon.ops{background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#1e40af}
-.role-btn .role-title{font-size:16px;font-weight:700;color:#1e293b}
-.role-btn .role-desc{font-size:12px;color:#64748b;margin-top:2px}
-.role-name-select{width:100%;padding:12px 14px;border:2px solid #e2e8f0;border-radius:10px;font-size:15px;outline:none;transition:border .2s;margin-bottom:16px;font-family:inherit;background:#fff}
-.role-name-select:focus{border-color:#2563eb}
-.role-enter-btn{width:100%;padding:14px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .2s;font-family:inherit}
-.role-enter-btn:hover{opacity:.9}
-.role-enter-btn:disabled{opacity:.4;cursor:not-allowed}
-.role-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s}
-.role-badge.sales-badge{background:#fef3c7;color:#92400e}
-.role-badge.ops-badge{background:#dbeafe;color:#1e40af}
-.role-badge:hover{opacity:.8}
-.hidden-by-role{display:none!important}
-.col-hidden-by-role{display:none!important}
-.qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
-.qr-card{background:var(--card);border:2px solid var(--border);border-radius:12px;padding:16px;text-align:center;transition:all .2s;cursor:pointer;position:relative}
-.qr-card:hover{border-color:var(--primary);box-shadow:0 4px 12px rgba(37,99,235,.15)}
-.qr-card.booked{border-color:#f59e0b;background:#fffbeb}
-.qr-card.rented{border-color:#3b82f6;background:#eff6ff}
-.qr-card.repair{border-color:#dc2626;background:#fef2f2}
-.qr-card canvas{margin:0 auto 8px}
-.qr-card .qr-name{font-size:13px;font-weight:700;margin-top:6px}
-.qr-card .qr-cat{font-size:11px;color:var(--muted)}
-.qr-card .qr-id{font-size:10px;color:var(--muted);margin-top:2px}
-.qr-card .qr-status{position:absolute;top:8px;right:8px}
-.qr-scan-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:3000;justify-content:center;align-items:center}
-.qr-scan-overlay.show{display:flex}
-.qr-scan-card{background:#fff;border-radius:20px;padding:32px;width:90%;max-width:480px;text-align:center}
-.qr-scan-input{width:100%;padding:16px;border:2px solid var(--border);border-radius:12px;font-size:18px;text-align:center;outline:none;font-family:inherit;margin:16px 0;letter-spacing:1px}
-.qr-scan-input:focus{border-color:var(--primary)}
-.qr-scan-result{margin-top:16px;text-align:left}
-.qr-match{background:#d1fae5;border:2px solid #059669;border-radius:12px;padding:16px;margin-top:12px}
-.qr-mismatch{background:#fee2e2;border:2px solid #dc2626;border-radius:12px;padding:16px;margin-top:12px}
-.print-area{display:none}
-@media print{body *{display:none!important}.print-area{display:block!important;position:fixed;inset:0;background:#fff;z-index:99999}.print-area *{display:block!important}}
 .toast{position:fixed;bottom:24px;right:24px;padding:14px 20px;border-radius:10px;color:#fff;font-size:14px;font-weight:600;z-index:2000;transform:translateY(100px);opacity:0;transition:all .4s}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.success{background:var(--success)}
@@ -224,36 +153,11 @@ tr:hover{background:#f8fafc}
 </style>
 </head>
 <body>
-<div class="role-overlay" id="role-overlay">
-<div class="role-card">
-<h1>JIARAKSA</h1>
-<p>ระบบเช่า-ยืมอุปกรณ์ฝึกสอน CPR/AED — เลือกบทบาทของคุณ</p>
-<div class="role-btn-group">
-<div class="role-btn" id="role-btn-sales" onclick="selectRole('sales')">
-<div class="role-icon sales">📋</div>
-<div><div class="role-title">เซลล์</div><div class="role-desc">รับจอง สร้างรายการเช่า ดูราคา/มัดจำ</div></div>
-</div>
-<div class="role-btn" id="role-btn-ops" onclick="selectRole('ops')">
-<div class="role-icon ops">📦</div>
-<div><div class="role-title">คนทำหน้างาน</div><div class="role-desc">จัดส่งอุปกรณ์ รับคืน ตรวจสภาพ</div></div>
-</div>
-</div>
-<select class="role-name-select" id="role-name-select" onchange="checkRoleReady()">
-<option value="">-- เลือกชื่อของคุณ --</option>
-</select>
-<button class="role-enter-btn" id="role-enter-btn" disabled onclick="enterSystem()">เข้าสู่ระบบ</button>
-</div>
-</div>
-
 <div class="app">
-<button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()">&#9776;</button>
-<div class="mobile-overlay" id="mobile-overlay" onclick="closeSidebar()"></div>
-<nav class="sidebar" id="sidebar">
-<button class="sidebar-close" onclick="closeSidebar()">&times;</button>
+<nav class="sidebar">
 <div class="sidebar-header">
 <h1>JIARAKSA</h1>
 <p>ระบบจัดการเช่า-ยืม</p>
-<div style="margin-top:10px" id="sidebar-role-badge"></div>
 </div>
 <div class="nav-section">
 <div class="nav-label">เมนูหลัก</div>
@@ -283,21 +187,6 @@ Dashboard
 <div class="nav-item" onclick="showPage('alerts')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
 แจ้งเตือน
-</div>
-<div class="nav-item" onclick="showPage('commission')">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-สรุปเงินรายเดือน
-</div>
-</div>
-<div class="nav-section">
-<div class="nav-label">จัดการ</div>
-<div class="nav-item" onclick="showPage('qrcode')">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/><line x1="21" y1="14" x2="21" y2="21"/><line x1="14" y1="21" x2="21" y2="21"/></svg>
-QR Code สินค้า
-</div>
-<div class="nav-item" onclick="showPage('addproduct')">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-เพิ่มสินค้า
 </div>
 </div>
 </nav>
@@ -469,138 +358,6 @@ QR Code สินค้า
 </div>
 </div>
 
-<!-- QR CODE PAGE -->
-<div id="page-qrcode" class="page">
-<div class="page-header">
-<div><h2>QR Code สินค้า</h2><div class="subtitle" id="qr-count"></div></div>
-<div style="display:flex;gap:8px">
-<button class="btn btn-primary" onclick="openScanModal()">📷 สแกน QR</button>
-<button class="btn btn-outline" onclick="printAllQR()">🖨️ พิมพ์ QR ทั้งหมด</button>
-</div>
-</div>
-<div class="search-bar" style="margin-bottom:16px">
-<input class="search-input" id="qr-search" placeholder="ค้นหาสินค้า..." oninput="renderQRPage()">
-<select class="filter-select" id="qr-cat-filter" onchange="renderQRPage()"><option value="">ทุก Category</option></select>
-<select class="filter-select" id="qr-status-filter" onchange="renderQRPage()"><option value="">ทุกสถานะ</option><option value="ว่าง">ว่าง</option><option value="ถูกเช่า">ถูกเช่า</option><option value="จอง">จอง</option><option value="ซ่อม">ซ่อม</option></select>
-</div>
-<div class="qr-grid" id="qr-grid"></div>
-</div>
-
-<!-- QR SCAN OVERLAY -->
-<div class="qr-scan-overlay" id="qr-scan-overlay">
-<div class="qr-scan-card">
-<h3 style="font-size:20px;font-weight:700;margin-bottom:4px">สแกน / พิมพ์รหัสสินค้า</h3>
-<p style="font-size:13px;color:var(--muted)">ใช้เครื่องอ่าน QR หรือพิมพ์รหัสสินค้าเพื่อตรวจสอบ</p>
-<input class="qr-scan-input" id="qr-scan-input" placeholder="รหัสสินค้า..." autofocus oninput="checkScannedQR()">
-<div id="qr-scan-result"></div>
-<div style="margin-top:20px;display:flex;gap:10px;justify-content:center">
-<button class="btn btn-outline" onclick="closeScanModal()">ปิด</button>
-<button class="btn btn-outline" onclick="clearScan()">สแกนใหม่</button>
-</div>
-</div>
-</div>
-
-<!-- QR PRODUCT DETAIL MODAL -->
-<div class="modal-overlay" id="qr-detail-modal">
-<div class="modal">
-<div class="modal-header"><h3>รายละเอียดสินค้า</h3><button class="modal-close" onclick="closeModal('qr-detail-modal')">&times;</button></div>
-<div class="modal-body" id="qr-detail-body"></div>
-<div class="modal-footer" id="qr-detail-footer"></div>
-</div>
-</div>
-
-<!-- COMMISSION PAGE -->
-<div id="page-commission" class="page">
-<div class="page-header">
-<div><h2>สรุปเงินรายเดือน</h2><div class="subtitle">คอมมิชชั่นหน้างาน (5% ค่าเช่าต่อเที่ยวส่ง/รับ)</div></div>
-<div style="display:flex;gap:8px;align-items:center">
-<button class="btn btn-outline" onclick="commNav(-1)">◀ เดือนก่อน</button>
-<span id="comm-month-label" style="font-weight:700;font-size:16px;min-width:160px;text-align:center"></span>
-<button class="btn btn-outline" onclick="commNav(1)">เดือนถัดไป ▶</button>
-<button class="btn btn-outline" onclick="commNav(0)">เดือนนี้</button>
-</div>
-</div>
-<div id="comm-filter-area" style="margin-bottom:16px">
-<select class="filter-select" id="comm-person-filter" onchange="renderCommission()" style="min-width:200px">
-<option value="">ทุกคน</option>
-</select>
-</div>
-<div class="kpi-grid" id="comm-kpi"></div>
-<div class="card">
-<div class="card-header"><h3>รายละเอียดคอมมิชชั่น</h3></div>
-<div class="card-body">
-<div style="overflow-x:auto">
-<table>
-<thead id="comm-thead"><tr><th>เลขที่</th><th>วันที่</th><th>ประเภท</th><th>สินค้า</th><th>ผู้เช่า</th><th>ผู้ดำเนินการ</th><th class="text-right">ค่าเช่ารวม</th><th class="text-right">คอมฯ 5%</th></tr></thead>
-<tbody id="comm-table"></tbody>
-</table>
-</div>
-</div>
-</div>
-<div class="card">
-<div class="card-header"><h3>สรุปรายบุคคล</h3></div>
-<div class="card-body" id="comm-summary"></div>
-</div>
-</div>
-
-<!-- ADD PRODUCT PAGE -->
-<div id="page-addproduct" class="page">
-<div class="page-header">
-<div><h2>เพิ่มสินค้าใหม่</h2><div class="subtitle">เพิ่มอุปกรณ์เข้าสู่ระบบ</div></div>
-</div>
-<div class="card">
-<div class="card-header"><h3>กรอกข้อมูลสินค้า</h3></div>
-<div class="card-body">
-<div class="form-row">
-<div class="form-group"><label>รหัสสินค้า <span style="color:var(--danger)">*</span></label><input id="ap-id" placeholder="เช่น PT2000(ชื่อ)"></div>
-<div class="form-group"><label>Category <span style="color:var(--danger)">*</span></label>
-<select id="ap-cat" onchange="toggleNewCat()">
-<option value="">-- เลือก Category --</option>
-</select>
-</div>
-</div>
-<div class="form-group" id="ap-newcat-group" style="display:none"><label>Category ใหม่</label><input id="ap-newcat" placeholder="พิมพ์ชื่อ category ใหม่"></div>
-<div class="form-row">
-<div class="form-group"><label>ชื่อสินค้า <span style="color:var(--danger)">*</span></label><input id="ap-name" placeholder="เช่น Prestan2000 (ชื่อเล่น)"></div>
-<div class="form-group"><label>หน่วย</label>
-<select id="ap-unit">
-<option value="ตัว">ตัว</option>
-<option value="เครื่อง">เครื่อง</option>
-<option value="ชิ้น">ชิ้น</option>
-<option value="กล่อง">กล่อง</option>
-<option value="เรือน">เรือน</option>
-</select>
-</div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>ราคาเช่า/วัน (บาท) <span style="color:var(--danger)">*</span></label><input type="number" id="ap-price" min="0" placeholder="500"></div>
-<div class="form-group"><label>สถานะเริ่มต้น</label>
-<select id="ap-status">
-<option value="ว่าง">ว่าง</option>
-<option value="ซ่อม">ซ่อม</option>
-</select>
-</div>
-</div>
-<div class="form-group"><label>รายละเอียด</label><input id="ap-desc" placeholder="คำอธิบายสินค้า"></div>
-<div style="display:flex;gap:10px;margin-top:16px">
-<button class="btn btn-primary" onclick="saveNewProduct()">+ เพิ่มสินค้า</button>
-<button class="btn btn-outline" onclick="clearProductForm()">ล้างฟอร์ม</button>
-</div>
-</div>
-</div>
-<div class="card">
-<div class="card-header"><h3>สินค้าที่เพิ่มล่าสุด</h3><span id="ap-recent-count" style="font-size:13px;color:var(--muted)"></span></div>
-<div class="card-body">
-<div style="overflow-x:auto">
-<table>
-<thead><tr><th>รหัส</th><th>Category</th><th>ชื่อสินค้า</th><th>รายละเอียด</th><th>หน่วย</th><th class="text-right">ราคา/วัน</th><th class="text-center">สถานะ</th><th class="text-center">จัดการ</th></tr></thead>
-<tbody id="ap-recent-table"></tbody>
-</table>
-</div>
-</div>
-</div>
-</div>
-
 </main>
 </div>
 
@@ -610,11 +367,10 @@ QR Code สินค้า
 <div class="modal-header"><h3 id="rental-modal-title">สร้างรายการจอง</h3><button class="modal-close" onclick="closeModal('rental-modal')">&times;</button></div>
 <div class="modal-body">
 <div class="form-group"><label>ผู้เช่า</label><select id="rm-customer"><option value="">-- เลือกลูกค้า --</option></select></div>
-<div class="form-group"><label>เซลล์</label><select id="rm-sales"><option value="">-- เลือกเซลล์ --</option></select></div>
-<div class="form-group"><label>สินค้า (เลือกได้หลายรายการ)</label>
-<input class="search-input" id="rm-product-search" placeholder="พิมพ์เพื่อค้นหาสินค้า..." oninput="filterProductCheckboxes()" style="margin-bottom:6px;padding:8px 12px;font-size:13px">
-<div class="multi-select-wrap" id="rm-product-list"></div>
-<div class="selected-items" id="rm-selected-products"></div>
+<div class="form-group"><label>เซลล์</label><select id="rm-sales"><option value="">-- เลือกเซลล์ --</option><option value="พี่มิ้ง">พี่มิ้ง</option><option value="พี่ป่าน">พี่ป่าน</option><option value="พี่แก้มใส">พี่แก้มใส</option><option value="พี่แนน">พี่แนน</option></select></div>
+<div class="form-group"><label>สินค้า (เลือกชนิด + จำนวน ระบบเลือกตัวว่างให้อัตโนมัติ)</label>
+<div id="rm-cat-picker" style="border:1.5px solid var(--border);border-radius:8px;max-height:340px;overflow-y:auto;padding:8px"></div>
+<div class="selected-items" id="rm-selected-products" style="margin-top:8px"></div>
 </div>
 <div class="form-row">
 <div class="form-group"><label>วันเช่า</label><input type="date" id="rm-start"></div>
@@ -660,7 +416,7 @@ QR Code สินค้า
 <div class="modal-body">
 <div id="return-info"></div>
 <div class="form-group" style="margin-top:16px"><label>วันที่คืนจริง</label><input type="date" id="ret-date"></div>
-<div class="form-group"><label>ผู้รับสินค้า</label><select id="ret-receiver" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกผู้รับสินค้า --</option></select></div>
+<div class="form-group"><label>ผู้รับสินค้า</label><select id="ret-receiver" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกผู้รับสินค้า --</option><option>ป่าน</option><option>เจ๋ง</option><option>ตี๋</option><option>ปั้น</option><option>หมวย</option></select></div>
 <div class="form-group"><label>ราคาส่งกลับ (บาท)</label><input type="number" id="ret-shipping" min="0" placeholder="0" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none"></div>
 <div class="form-group"><label>ผู้จ่ายเงิน</label><select id="ret-payer" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกผู้จ่าย --</option><option>ลูกค้าออกเอง</option><option>หักจากเงินประกัน</option><option>ลูกค้านำมาส่ง</option></select></div>
 </div>
@@ -677,7 +433,7 @@ QR Code สินค้า
 <div class="modal-header" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><h3 style="color:#fff">ยืนยันการจอง → เริ่มเช่า</h3><button class="modal-close" onclick="closeModal('confirm-booking-modal')" style="color:#fff">&times;</button></div>
 <div class="modal-body">
 <div id="cb-info"></div>
-<div class="form-group" style="margin-top:16px"><label>ผู้ส่งสินค้า <span style="color:var(--danger)">*</span></label><select id="cb-sender" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกผู้ส่งสินค้า --</option></select></div>
+<div class="form-group" style="margin-top:16px"><label>ผู้ส่งสินค้า <span style="color:var(--danger)">*</span></label><select id="cb-sender" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกผู้ส่งสินค้า --</option><option>ป่าน</option><option>เจ๋ง</option><option>ตี๋</option><option>ปั้น</option><option>หมวย</option></select></div>
 <div class="form-group"><label>ค่าส่งสินค้า (บาท)</label><input type="number" id="cb-shipping-cost" min="0" placeholder="0" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none"></div>
 <div class="form-group"><label>ผู้จ่ายเงิน</label><select id="cb-payer" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกผู้จ่าย --</option><option>ลูกค้าออกเอง</option><option>หักจากเงินประกัน</option></select></div>
 <div class="form-group"><label>จัดส่งโดย</label><select id="cb-delivery-by" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกวิธีจัดส่ง --</option><option>ลาล่ามูฟ</option><option>เคอรี่</option><option>ลูกค้ามารับเอง</option></select></div>
@@ -692,208 +448,80 @@ QR Code สินค้า
 <div class="toast" id="toast"></div>
 
 <script>
-// ========== ROLE SYSTEM ==========
-let currentRole = ''; // 'sales' or 'ops'
-let currentUser = '';
-let salesNames = [];
-let opsNames = [];
+// ========== DATA ==========
+const PRODUCTS_RAW = [{"id":"PT2000(หลุยส์)","cat":"Prestan2000","name":"Prestan2000 (หลุยส์)","desc":"หุ่น CPR มี Feedback พร้อมวัด การช่วยหายใจ","unit":"ตัว","price":500},{"id":"PT2000(กุชชี่)","cat":"Prestan2000","name":"Prestan2000 (กุชชี่)","desc":"หุ่น CPR มี Feedback พร้อมวัด การช่วยหายใจ","unit":"ตัว","price":500},{"id":"PT2000(ชาเนล)","cat":"Prestan2000","name":"Prestan2000 (ชาเนล)","desc":"หุ่น CPR มี Feedback พร้อมวัด การช่วยหายใจ","unit":"ตัว","price":500},{"id":"PT2000(ติออ)","cat":"Prestan2000","name":"Prestan2000 (ติออ)","desc":"หุ่น CPR มี Feedback พร้อมวัด การช่วยหายใจ","unit":"ตัว","price":500},{"id":"PT100(อู๋)","cat":"Prestan100","name":"Prestan100 (อู๋)","desc":"หุ่นสาธิต การกดหน้าอก ปั๊มหัวใจ มีไฟที่ไหล่","unit":"ตัว","price":500},{"id":"PT100(เอก)","cat":"Prestan100","name":"Prestan100 (เอก)","desc":"หุ่นสาธิต การกดหน้าอก ปั๊มหัวใจ มีไฟที่ไหล่","unit":"ตัว","price":500},{"id":"PT100(อั้น)","cat":"Prestan100","name":"Prestan100 (อั้น)","desc":"หุ่นสาธิต การกดหน้าอก ปั๊มหัวใจ มีไฟที่ไหล่","unit":"ตัว","price":500},{"id":"PT100(อัม)","cat":"Prestan100","name":"Prestan100 (อัม)","desc":"หุ่นสาธิต การกดหน้าอก ปั๊มหัวใจ มีไฟที่ไหล่","unit":"ตัว","price":500},{"id":"PT100(ซอมปี้)","cat":"Prestan100","name":"Prestan100 (ซอมปี้)","desc":"หุ่นสาธิต การกดหน้าอก ปั๊มหัวใจ มีไฟที่ไหล่","unit":"ตัว","price":500},{"id":"MP(พีช)","cat":"CPR Man Plus","name":"CPR Man Plus (พีช)","desc":"เป็นหุ่นสาธิต ปั๊มหัวใจ ช่วยหายใจ พร้อมประเมินผลด้วย มอนิเตอร์","unit":"ตัว","price":500},{"id":"MP(เพรช)","cat":"CPR Man Plus","name":"CPR Man Plus (เพรช)","desc":"เป็นหุ่นสาธิต ปั๊มหัวใจ ช่วยหายใจ พร้อมประเมินผลด้วย มอนิเตอร์","unit":"ตัว","price":500},{"id":"MP(แพท)","cat":"CPR Man Plus","name":"CPR Man Plus (แพท)","desc":"เป็นหุ่นสาธิต ปั๊มหัวใจ ช่วยหายใจ พร้อมประเมินผลด้วย มอนิเตอร์","unit":"ตัว","price":500},{"id":"MP(พราว)","cat":"CPR Man Plus","name":"CPR Man Plus (พราว)","desc":"เป็นหุ่นสาธิต ปั๊มหัวใจ ช่วยหายใจ พร้อมประเมินผลด้วย มอนิเตอร์","unit":"ตัว","price":500},{"id":"MP(แพรว)","cat":"CPR Man Plus","name":"CPR Man Plus (แพรว)","desc":"เป็นหุ่นสาธิต ปั๊มหัวใจ ช่วยหายใจ พร้อมประเมินผลด้วย มอนิเตอร์","unit":"ตัว","price":500},{"id":"MP(พัน)","cat":"CPR Man Plus","name":"CPR Man Plus (พัน)","desc":"เป็นหุ่นสาธิต ปั๊มหัวใจ ช่วยหายใจ พร้อมประเมินผลด้วย มอนิเตอร์","unit":"ตัว","price":500},{"id":"MP(พุต)","cat":"CPR Man Plus","name":"CPR Man Plus (พุต)","desc":"เป็นหุ่นสาธิต ปั๊มหัวใจ ช่วยหายใจ พร้อมประเมินผลด้วย มอนิเตอร์","unit":"ตัว","price":500},{"id":"MP(พี)","cat":"CPR Man Plus","name":"CPR Man Plus (พี)","desc":"เป็นหุ่นสาธิต ปั๊มหัวใจ ช่วยหายใจ พร้อมประเมินผลด้วย มอนิเตอร์","unit":"ตัว","price":500},{"id":"MP(พอ)","cat":"CPR Man Plus","name":"CPR Man Plus (พอ)","desc":"เป็นหุ่นสาธิต ปั๊มหัวใจ ช่วยหายใจ พร้อมประเมินผลด้วย มอนิเตอร์","unit":"ตัว","price":500},{"id":"MP(พิม)","cat":"CPR Man Plus","name":"CPR Man Plus (พิม)","desc":"เป็นหุ่นสาธิต ปั๊มหัวใจ ช่วยหายใจ พร้อมประเมินผลด้วย มอนิเตอร์","unit":"ตัว","price":500},{"id":"MP(พงศ์)","cat":"CPR Man Plus","name":"CPR Man Plus (พงศ์)","desc":"เป็นหุ่นสาธิต ปั๊มหัวใจ ช่วยหายใจ พร้อมประเมินผลด้วย มอนิเตอร์","unit":"ตัว","price":500},{"id":"MP(พัต)","cat":"CPR Man Plus","name":"CPR Man Plus (พัต)","desc":"เป็นหุ่นสาธิต ปั๊มหัวใจ ช่วยหายใจ พร้อมประเมินผลด้วย มอนิเตอร์","unit":"ตัว","price":500},{"id":"MP(พร)","cat":"CPR Man Plus","name":"CPR Man Plus (พร)","desc":"เป็นหุ่นสาธิต ปั๊มหัวใจ ช่วยหายใจ พร้อมประเมินผลด้วย มอนิเตอร์","unit":"ตัว","price":500},{"id":"MP(พล)","cat":"CPR Man Plus","name":"CPR Man Plus (พล)","desc":"เป็นหุ่นสาธิต ปั๊มหัวใจ ช่วยหายใจ พร้อมประเมินผลด้วย มอนิเตอร์","unit":"ตัว","price":500},{"id":"MP(พจน์)","cat":"CPR Man Plus","name":"CPR Man Plus (พจน์)","desc":"เป็นหุ่นสาธิต ปั๊มหัวใจ ช่วยหายใจ พร้อมประเมินผลด้วย มอนิเตอร์","unit":"ตัว","price":500},{"id":"M(พี่แหลม)","cat":"CPR Man","name":"CPR Man (พี่แหลม)","desc":"หุ่นสาธิตเพื่อใช้ในการกดหน้าอก","unit":"ตัว","price":200},{"id":"M(พี่เสก)","cat":"CPR Man","name":"CPR Man (พี่เสก)","desc":"หุ่นสาธิตเพื่อใช้ในการกดหน้าอก","unit":"ตัว","price":200},{"id":"M(พี่ปู)","cat":"CPR Man","name":"CPR Man (พี่ปู)","desc":"หุ่นสาธิตเพื่อใช้ในการกดหน้าอก","unit":"ตัว","price":200},{"id":"M(พี่ก้อง)","cat":"CPR Man","name":"CPR Man (พี่ก้อง)","desc":"หุ่นสาธิตเพื่อใช้ในการกดหน้าอก","unit":"ตัว","price":200},{"id":"M(พี่เบิ้ล)","cat":"CPR Man","name":"CPR Man (พี่เบิ้ล)","desc":"หุ่นสาธิตเพื่อใช้ในการกดหน้าอก","unit":"ตัว","price":200},{"id":"M(พี่จ๋าย)","cat":"CPR Man","name":"CPR Man (พี่จ๋าย)","desc":"หุ่นสาธิตเพื่อใช้ในการกดหน้าอก","unit":"ตัว","price":200},{"id":"M(พี่โจ๊ก)","cat":"CPR Man","name":"CPR Man (พี่โจ๊ก)","desc":"หุ่นสาธิตเพื่อใช้ในการกดหน้าอก","unit":"ตัว","price":200},{"id":"M(พี่ป๊อป)","cat":"CPR Man","name":"CPR Man (พี่ป๊อป)","desc":"หุ่นสาธิตเพื่อใช้ในการกดหน้าอก","unit":"ตัว","price":200},{"id":"M(พี่โอ๊ด)","cat":"CPR Man","name":"CPR Man (พี่โอ๊ด)","desc":"หุ่นสาธิตเพื่อใช้ในการกดหน้าอก","unit":"ตัว","price":200},{"id":"M(พี่โต)","cat":"CPR Man","name":"CPR Man (พี่โต)","desc":"หุ่นสาธิตเพื่อใช้ในการกดหน้าอก","unit":"ตัว","price":200},{"id":"MH(สายยันต์)","cat":"CPR Man","name":"CPR Man (Half a head) (สายยันต์)","desc":"หุ่นสาธิตเพื่อใช้ในการกดหน้าอก","unit":"ตัว","price":200},{"id":"MH(บีน)","cat":"CPR Man","name":"CPR Man (Half a head) (บีน)","desc":"หุ่นสาธิตเพื่อใช้ในการกดหน้าอก","unit":"ตัว","price":200},{"id":"BABP(หนูเล็กมาก)","cat":"BabyPlus","name":"Baby Plus (หนูเล็ก)","desc":"หุ่นเด็กสุนน่ารัก พร้อม FeedBack","unit":"ตัว","price":500},{"id":"BABP(หนูแดงมาก)","cat":"BabyPlus","name":"Baby Plus (หนูแดง)","desc":"หุ่นเด็กสุนน่ารัก พร้อม FeedBack","unit":"ตัว","price":500},{"id":"BAB(หนูดำ)","cat":"Baby","name":"Baby (หนูดำ)","desc":"เป็นอุปกรณ์เพื่อใช้ในการกดหน้าอก ปั๊มหัวใจ","unit":"ตัว","price":200},{"id":"BAB(หนูดี)","cat":"Baby","name":"Baby (หนูดี)","desc":"เป็นอุปกรณ์เพื่อใช้ในการกดหน้าอก ปั๊มหัวใจ","unit":"ตัว","price":200},{"id":"BAB(หนูใหญ่)","cat":"Baby","name":"Baby (หนูใหญ่)","desc":"เป็นอุปกรณ์เพื่อใช้ในการกดหน้าอก ปั๊มหัวใจ","unit":"ตัว","price":200},{"id":"BAB(หนูหื่น)","cat":"Baby","name":"Baby (หนูหื่น)","desc":"เป็นอุปกรณ์เพื่อใช้ในการกดหน้าอก ปั๊มหัวใจ","unit":"ตัว","price":200},{"id":"Choking(เท่ง)","cat":"Choking ผู้ใหญ่","name":"Act Fast Anti Choking Adult (เท่ง)","desc":"ชุดสาธิต สำหรับการฝึก ช่วยผู้ป่วยสำลัก","unit":"ชิ้น","price":200},{"id":"Choking(โหน่ง)","cat":"Choking ผู้ใหญ่","name":"Act Fast Anti Choking Adult (โหน่ง)","desc":"ชุดสาธิต สำหรับการฝึก ช่วยผู้ป่วยสำลัก","unit":"ชิ้น","price":200},{"id":"Choking(หนู)","cat":"Choking ผู้ใหญ่","name":"Act Fast Anti Choking Adult (หนู)","desc":"ชุดสาธิต สำหรับการฝึก ช่วยผู้ป่วยสำลัก","unit":"ชิ้น","price":200},{"id":"Choking(หม่ำ)","cat":"Choking ผู้ใหญ่","name":"Act Fast Anti Choking Adult (หม่ำ)","desc":"ชุดสาธิต สำหรับการฝึก ช่วยผู้ป่วยสำลัก สำหรับผู้ใหญ่","unit":"ชิ้น","price":200},{"id":"Choking(ตั๊ก บริบูรณ์)","cat":"Choking ผู้ใหญ่","name":"Act Fast Anti Choking Adult (ตั๊ก บริบูรณ์)","desc":"ชุดสาธิต สำหรับการฝึก ช่วยผู้ป่วยสำลัก สำหรับผู้ใหญ่","unit":"ชิ้น","price":200},{"id":"Choking(น้าค่อม)","cat":"Choking ผู้ใหญ่","name":"Act Fast Anti Choking Adult (น้าค่อม)","desc":"ชุดสาธิต สำหรับการฝึก ช่วยผู้ป่วยสำลัก สำหรับผู้ใหญ่","unit":"ชิ้น","price":200},{"id":"Choking(นุ้ย เชิญยิ้ม)","cat":"Choking ผู้ใหญ่","name":"Act Fast Anti Choking Adult (นุ้ย เชิญยิ้ม)","desc":"ชุดสาธิต สำหรับการฝึก ช่วยผู้ป่วยสำลัก สำหรับผู้ใหญ่","unit":"ชิ้น","price":200},{"id":"Choking(โก๊ะตี๋)","cat":"Choking ผู้ใหญ่","name":"Act Fast Anti Choking Adult (โก๊ะตี๋)","desc":"ชุดสาธิต สำหรับการฝึก ช่วยผู้ป่วยสำลัก สำหรับผู้ใหญ่","unit":"ชิ้น","price":200},{"id":"Choking(แจ๊ส)","cat":"Choking เด็ก","name":"Act Fast Choking Child (แจ๊ส)","desc":"ชุดสาธิต สำหรับการฝึก ช่วยผู้ป่วยสำลัก สำหรับเด็ก","unit":"ชิ้น","price":200},{"id":"HS350(ลำใย)","cat":"AED Hastsine","name":"AED Hastsine 350P (ลำใย)","desc":"เครื่องกระตุกหัวใจด้วยไฟฟ้า ชนิดอัตโนมัติ","unit":"เครื่อง","price":999},{"id":"HS350(มะม่วง)","cat":"AED Hastsine","name":"AED Hastsine 350P (มะม่วง)","desc":"เครื่องกระตุกหัวใจด้วยไฟฟ้า ชนิดอัตโนมัติ","unit":"เครื่อง","price":999},{"id":"HS350(ส้มโอ)","cat":"AED Hastsine","name":"AED Hastsine 350P (ส้มโอ)","desc":"เครื่องกระตุกหัวใจด้วยไฟฟ้า ชนิดอัตโนมัติ","unit":"เครื่อง","price":999},{"id":"HS350(มะพร้าว)","cat":"AED Hastsine","name":"AED Hastsine 350P (มะพร้าว)","desc":"เครื่องกระตุกหัวใจด้วยไฟฟ้า ชนิดอัตโนมัติ","unit":"เครื่อง","price":999},{"id":"HS350(สาลี่)","cat":"AED Hastsine","name":"AED Hastsine 350P (สาลี่)","desc":"เครื่องกระตุกหัวใจด้วยไฟฟ้า ชนิดอัตโนมัติ","unit":"เครื่อง","price":999},{"id":"HS350(มะกรูด)","cat":"AED Hastsine","name":"AED Hastsine 350P (มะกรูด)","desc":"เครื่องกระตุกหัวใจด้วยไฟฟ้า ชนิดอัตโนมัติ","unit":"เครื่อง","price":999},{"id":"YUW(จีนี่)","cat":"AED Yuwell","name":"AED Yuwell GPS-DTAC (จีนี่)","desc":"เครื่องฟื้นคืนคลื่นหัวใจด้วยไฟฟ้าแบบอัตโนมัติ มีระบบ GPS ติดตาม","unit":"เครื่อง","price":999},{"id":"YUW(จีวอน)","cat":"AED Yuwell","name":"AED Yuwell GPS-DTAC IOT (จีวอน)","desc":"เครื่องฟื้นคืนคลื่นหัวใจด้วยไฟฟ้าแบบอัตโนมัติ มีระบบ GPS ติดตาม","unit":"เครื่อง","price":999},{"id":"YUW(จีจี่)","cat":"AED Yuwell","name":"AED Yuwell GPS-AIS (จีจี่)","desc":"เครื่องฟื้นคืนคลื่นหัวใจด้วยไฟฟ้าแบบอัตโนมัติ มีระบบ GPS ติดตาม","unit":"เครื่อง","price":999},{"id":"YUW(จีน่า)","cat":"AED Yuwell","name":"AED Yuwell GPS-TRUE (จีน่า)","desc":"เครื่องฟื้นคืนคลื่นหัวใจด้วยไฟฟ้าแบบอัตโนมัติ มีระบบ GPS ติดตาม","unit":"เครื่อง","price":999},{"id":"YUW(จีโน่)","cat":"AED Yuwell","name":"AED Yuwell GPS (จีโน่)","desc":"เครื่องฟื้นคืนคลื่นหัวใจด้วยไฟฟ้าแบบอัตโนมัติ มีระบบ GPS ติดตาม","unit":"เครื่อง","price":999},{"id":"YUW(จีโอ)","cat":"AED Yuwell","name":"AED Yuwell GPS (จีโอ)","desc":"เครื่องฟื้นคืนคลื่นหัวใจด้วยไฟฟ้าแบบอัตโนมัติ มีระบบ GPS ติดตาม","unit":"เครื่อง","price":999},{"id":"YUW(ป๊อปคอร์น)","cat":"AED Yuwell","name":"AED Yuwell (ป๊อปคอร์น)","desc":"เครื่องกระตุกหัวใจไฟฟ้าอัตโนมัติ","unit":"เครื่อง","price":999},{"id":"Y8(ยูเครน)","cat":"AED Yuwell","name":"AED Yuwell Y8 (ยูเครน)","desc":"เครื่องกระตุกหัวใจไฟฟ้าอัตโนมัติ","unit":"เครื่อง","price":999},{"id":"Y8(ยูเออี)","cat":"AED Yuwell","name":"AED Yuwell Y8 (ยูเออี)","desc":"เครื่องกระตุกหัวใจไฟฟ้าอัตโนมัติ","unit":"เครื่อง","price":999},{"id":"YUW(น้อยหน่า)","cat":"AED Yuwell","name":"AED Yuwell Trainer (น้อยหน่า)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":999},{"id":"YUW(ยูโกะ)","cat":"AED Yuwell","name":"AED Yuwell Trainer (ยูโกะ)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":999},{"id":"YUW(แตงโม)","cat":"AED Yuwell","name":"AED Yuwell Trainer (แตงโม)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":999},{"id":"YUW(หมูหวาน)","cat":"AED Yuwell","name":"AED Yuwell Trainer (หมูหวาน)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":999},{"id":"YUW(กุนเซียง)","cat":"AED Yuwell","name":"AED Yuwell Trainer (กุนเชียง)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":999},{"id":"YUW(ยูริ)","cat":"AED Yuwell","name":"AED Yuwell Trainer (ยูริ)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":999},{"id":"YUW(ยูกิ)","cat":"AED Yuwell","name":"AED Yuwell Trainer (ยูกิ)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":999},{"id":"YUW(ยูมิ)","cat":"AED Yuwell","name":"AED Yuwell Trainer (ยูมิ)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":999},{"id":"YUW(ยูกะ)","cat":"AED Yuwell","name":"AED Yuwell Trainer (ยูกะ)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":999},{"id":"YUW(ยูตะ)","cat":"AED Yuwell","name":"AED Yuwell Trainer (ยูตะ)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":999},{"id":"PHP(ปลาโลมา)","cat":"AED Philips","name":"AED Philips (ปลาโลมา)","desc":"เครื่องกระตุกหัวใจไฟฟ้า","unit":"เครื่อง","price":999},{"id":"MDR(เรจู)","cat":"AED Mindray","name":"AED Mindray (เรจู)","desc":"เครื่องฟื้นคืนคลื่นหัวใจด้วยไฟฟ้าแบบอัตโนมัติ มีระบบ GPS ติดตาม","unit":"เครื่อง","price":999},{"id":"MDR(เรเน่)","cat":"AED Mindray","name":"AED Mindray (เรเน่)","desc":"เครื่องฟื้นคืนคลื่นหัวใจด้วยไฟฟ้าแบบอัตโนมัติ มีระบบ GPS ติดตาม","unit":"เครื่อง","price":999},{"id":"MDR(เรโช)","cat":"AED Mindray","name":"AED Mindray (เรโช)","desc":"เครื่องฟื้นคืนคลื่นหัวใจด้วยไฟฟ้าแบบอัตโนมัติ มีระบบ GPS ติดตาม","unit":"เครื่อง","price":999},{"id":"MDR(เรโน่)","cat":"AED Mindray","name":"AED Mindray (เรโน)","desc":"เครื่องฟื้นคืนคลื่นหัวใจด้วยไฟฟ้าแบบอัตโนมัติ มีระบบ GPS ติดตาม","unit":"เครื่อง","price":999},{"id":"MDR(เรลี)","cat":"AED Mindray","name":"AED Mindray (เรลี)","desc":"เครื่องฟื้นคืนคลื่นหัวใจด้วยไฟฟ้าแบบอัตโนมัติ มีระบบ GPS ติดตาม","unit":"เครื่อง","price":999},{"id":"MDR(เรอา)","cat":"AED Mindray","name":"AED Mindray (เรอา)","desc":"เครื่องฟื้นคืนคลื่นหัวใจด้วยไฟฟ้าแบบอัตโนมัติ มีระบบ GPS ติดตาม","unit":"เครื่อง","price":999},{"id":"MDR(เรตะ)","cat":"AED Mindray","name":"AED Mindray (Trainer) (เรตะ)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":999},{"id":"HGD(ม้าน้ำ)","cat":"AED Life","name":"AED Life (ม้าน้ำ)","desc":"เครื่องกระตุกไฟฟ้าหัวใจชนิดอัตโนมัติ","unit":"เครื่อง","price":999},{"id":"HGD02","cat":"AED Life","name":"AED Life (Trainer) (สัปปะรด)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":999},{"id":"TRN(ชานม)","cat":"AED Trainer","name":"AED Trainer Plus (ชานม)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":500},{"id":"TRN(ชาไทย)","cat":"AED Trainer","name":"AED Trainer Plus (ชาไทย)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":500},{"id":"TRN(ชาเขียว)","cat":"AED Trainer","name":"AED Trainer Plus (ชาเขียว)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":500},{"id":"TRN(โกโก้)","cat":"AED Trainer","name":"AED Trainer Plus (โกโก้)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":200},{"id":"TRN(กุหลาบ)","cat":"AED Trainer","name":"AED Trainer White (กุหลาบ)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":200},{"id":"TRN(มะลิิ)","cat":"AED Trainer","name":"AED Trainer White (มะลิ)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":200},{"id":"TRN(เพื่องฟ้า)","cat":"AED Trainer","name":"AED Trainer White (เฟื่องฟ้า)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":200},{"id":"TRN(กล้วยไม้)","cat":"AED Trainer","name":"AED Trainer White (กล้วยไม้)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":200},{"id":"TRN(พุตซ้อน)","cat":"AED Trainer","name":"AED Trainer White (พุดซ้อน)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":200},{"id":"TRN(ดาวเรือง)","cat":"AED Trainer","name":"AED Trainer White (ดาวเรือง)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":200},{"id":"ITN(พุดตาน)","cat":"AED iTrainer","name":"iTrainer (พุดตาน)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":200},{"id":"ITN(พิกุล)","cat":"AED iTrainer","name":"iTrainer (พิกุล)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":200},{"id":"ITN(จำปา)","cat":"AED iTrainer","name":"iTrainer (จำปา)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":200},{"id":"MNT(จิ๊ดรีด)","cat":"Mini Trainer","name":"Mini Trainer (จิ๊ดรีด)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":200},{"id":"ZOL(ขนุน)","cat":"AED Zoll","name":"AED Zoll (ขนุน)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":999},{"id":"ZOL(มะพร้าว)","cat":"AED Zoll","name":"AED Zoll (มะพร้าว)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":999},{"id":"XFT(Grape)","cat":"AED X Trainer","name":"AED X Trainer (Grape)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":999},{"id":"XFT(Green)","cat":"AED X Trainer","name":"AED X Trainer (Green)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":999},{"id":"XFT(kiwi)","cat":"AED X Trainer","name":"AED X Trainer (kiwi)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":999},{"id":"XFT(kawa)","cat":"AED X Trainer","name":"AED X Trainer (kawa)","desc":"AED trainer สำหรับสอน","unit":"เครื่อง","price":999},{"id":"SimCPR(A)","cat":"SimCPR","name":"SimCPR (A)","desc":"SimCPR เป็นเครื่องมือสำหรับการฝึกสอนและฝึกทักษะการทำCPR","unit":"เรือน","price":100},{"id":"SimCPR(B)","cat":"SimCPR","name":"SimCPR (B)","desc":"SimCPR เป็นเครื่องมือสำหรับการฝึกสอนและฝึกทักษะการทำCPR","unit":"เรือน","price":100},{"id":"SimCPR(C)","cat":"SimCPR","name":"SimCPR (C)","desc":"SimCPR เป็นเครื่องมือสำหรับการฝึกสอนและฝึกทักษะการทำCPR","unit":"เรือน","price":100},{"id":"SimCPR(D)","cat":"SimCPR","name":"SimCPR (D)","desc":"SimCPR เป็นเครื่องมือสำหรับการฝึกสอนและฝึกทักษะการทำCPR","unit":"เรือน","price":100},{"id":"SimCPR(E)","cat":"SimCPR","name":"SimCPR (E)","desc":"SimCPR เป็นเครื่องมือสำหรับการฝึกสอนและฝึกทักษะการทำCPR","unit":"เรือน","price":100},{"id":"SimCPR(F)","cat":"SimCPR","name":"SimCPR (F)","desc":"SimCPR เป็นเครื่องมือสำหรับการฝึกสอนและฝึกทักษะการทำCPR","unit":"เรือน","price":100},{"id":"SimCPR P(AA)","cat":"SimCPR","name":"SimCPR Pro(AA)","desc":"SimCPR Pro ฝึกปั๊มหัวใจ ใช้ได้ทั้ง iOS และ Android","unit":"เรือน","price":200},{"id":"SimCPR P(BB)","cat":"SimCPR","name":"SimCPR Pro(BB)","desc":"SimCPR Pro ฝึกปั๊มหัวใจ ใช้ได้ทั้ง iOS และ Android","unit":"เรือน","price":200},{"id":"BAW(มินนี่)","cat":"Ariway Box","name":"Ariway Box (มินนี่)","desc":"อุปกรณ์สำหรับสอน Ariway","unit":"กล่อง","price":5000},{"id":"LDAW(ซิลเลอร์)","cat":"Laerdal Airway","name":"Laerdal Airway Management Trainer (ซิลเลอร์)","desc":"หุ่นฝึกใส่ท่อช่วยหายใจผู้ใหญ่","unit":"กล่อง","price":2000},{"id":"LDAW(โกลเด้นท์)","cat":"Laerdal Airway","name":"Laerdal Airway Management Trainer (โกลเด้นท์)","desc":"หุ่นฝึกใส่ท่อช่วยหายใจผู้ใหญ่","unit":"กล่อง","price":2000},{"id":"AMAW(จูเนียร์)","cat":"Ambu Airway","name":"Ambu Airway Management Trainer (จูเนียร์)","desc":"หุ่นฝึกใส่ท่อช่วยหายใจผู้ใหญ่","unit":"กล่อง","price":2000}];
 
-function selectRole(role){
-  currentRole = role;
-  document.getElementById('role-btn-sales').classList.toggle('selected', role==='sales');
-  document.getElementById('role-btn-ops').classList.toggle('selected', role==='ops');
-  const sel = document.getElementById('role-name-select');
-  const names = role==='sales' ? salesNames : opsNames;
-  sel.innerHTML = '<option value="">-- เลือกชื่อของคุณ --</option>' + names.map(n=>`<option value="${n}">${n}</option>`).join('');
-  sel.value = '';
-  checkRoleReady();
-}
-function checkRoleReady(){
-  const name = document.getElementById('role-name-select').value;
-  document.getElementById('role-enter-btn').disabled = !currentRole || !name;
-}
-function enterSystem(){
-  currentUser = document.getElementById('role-name-select').value;
-  if(!currentRole || !currentUser) return;
-  document.getElementById('role-overlay').classList.add('hidden');
-  document.getElementById('sidebar-role-badge').innerHTML = currentRole==='sales'
-    ? `<span class="role-badge sales-badge" onclick="switchRole()" title="คลิกเพื่อเปลี่ยนบทบาท">📋 เซลล์: ${currentUser}</span>`
-    : `<span class="role-badge ops-badge" onclick="switchRole()" title="คลิกเพื่อเปลี่ยนบทบาท">📦 หน้างาน: ${currentUser}</span>`;
-  applyRoleVisibility();
-  loadDataAndRender();
-}
-function switchRole(){
-  currentRole = '';
-  currentUser = '';
-  document.getElementById('role-overlay').classList.remove('hidden');
-  document.getElementById('role-btn-sales').classList.remove('selected');
-  document.getElementById('role-btn-ops').classList.remove('selected');
-  document.getElementById('role-name-select').innerHTML = '<option value="">-- เลือกชื่อของคุณ --</option>';
-  document.getElementById('role-enter-btn').disabled = true;
+const statusList = ['ว่าง','ถูกเช่า','จอง','ซ่อม'];
+const statusWeights = [.6,.25,.1,.05];
+function weightedRandom(items, weights) {
+  let r = Math.random(), s = 0;
+  for (let i = 0; i < items.length; i++) { s += weights[i]; if (r < s) return items[i]; }
+  return items[items.length-1];
 }
 
-function applyRoleVisibility(){
-  // Nav items visibility
-  // pageList = dashboard(0), products(1), rentals(2), customers(3), calendar(4), alerts(5), commission(6), qrcode(7), addproduct(8)
-  const navItems = document.querySelectorAll('.nav-item');
-  if(currentRole==='sales'){
-    // Sales: ไม่เห็น แจ้งเตือน(5), สรุปเงิน(6), QR(7) — เห็นเพิ่มสินค้า(8)
-    navItems.forEach((n,i)=>{
-      if(i===5||i===6||i===7) n.classList.add('hidden-by-role');
-      else n.classList.remove('hidden-by-role');
-    });
-  } else {
-    // Ops: ไม่เห็น ลูกค้า(3)
-    navItems.forEach((n,i)=>{
-      if(i===3) n.classList.add('hidden-by-role');
-      else n.classList.remove('hidden-by-role');
-    });
-  }
-}
+// Initialize products with status
+let products = PRODUCTS_RAW.map((p,i) => ({...p, status: weightedRandom(statusList, statusWeights), idx: i}));
 
-// ========== DATA (Google Sheets Backend) ==========
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbz-BdCSLYps-EY9cmrY2eBN6xZlTdEBDqeZSMZXKGbarfRhyNQUyeact_IOeqktJL2qTw/exec';
-let products = [];
-let customers = [];
-let rentals = [];
-let rentalCounter = 0;
-let isLoading = true;
+// Sample customers
+let customers = [
+  {id:'C-0001',name:'บริษัท ABC จำกัด',phone:'0891234567',address:'123 ถ.พระราม4 กรุงเทพฯ',rentCount:8,total:45000},
+  {id:'C-0002',name:'โรงพยาบาลรามา',phone:'0812345678',address:'270 ถ.พระราม6 กรุงเทพฯ',rentCount:12,total:120000},
+  {id:'C-0003',name:'มหาวิทยาลัยมหิดล',phone:'0823456789',address:'999 ถ.พุทธมณฑล นครปฐม',rentCount:6,total:35000},
+  {id:'C-0004',name:'สภากาชาดไทย',phone:'0834567890',address:'1871 ถ.อังรีดูนังต์ กรุงเทพฯ',rentCount:15,total:150000},
+  {id:'C-0005',name:'รพ.ศิริราช',phone:'0845678901',address:'2 ถ.วังหลัง กรุงเทพฯ',rentCount:10,total:89000},
+  {id:'C-0006',name:'อบต.บางกระสอ',phone:'0856789012',address:'อบต.บางกระสอ นนทบุรี',rentCount:3,total:15000},
+  {id:'C-0007',name:'บริษัท เฮลท์แคร์ จำกัด',phone:'0867890123',address:'456 ถ.สุขุมวิท กรุงเทพฯ',rentCount:7,total:52000},
+  {id:'C-0008',name:'มูลนิธิกู้ชีพ',phone:'0878901234',address:'789 ถ.เจริญกรุง กรุงเทพฯ',rentCount:9,total:67000}
+];
+
+// Sales people & Sample rentals
 const salesPeople = ['พี่มิ้ง','พี่ป่าน','พี่แก้มใส','พี่แนน'];
-
-// API helper
-async function gsAPI(params) {
-  const url = new URL(GAS_URL);
-  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, typeof v === 'object' ? JSON.stringify(v) : v));
-  try {
-    const res = await fetch(url.toString());
-    return await res.json();
-  } catch(e) {
-    console.error('API Error:', e);
-    showToast('เชื่อมต่อ Google Sheets ไม่ได้ — ลองใหม่อีกครั้ง', 'error');
-    return null;
+let rentals = [];
+let rentalCounter = 30;
+const sampleNames = customers.map(c=>c.name);
+function genRentals(){
+  const base = new Date(2025,0,1);
+  for(let i=0;i<25;i++){
+    const d = new Date(base.getTime()+i*12*86400000);
+    const days = [1,2,3,5,7,10,14][Math.floor(Math.random()*7)];
+    const due = new Date(d.getTime()+days*86400000);
+    const numProds = Math.floor(Math.random()*3)+1;
+    const selProds = [];
+    for(let j=0;j<numProds;j++){const rp=products[Math.floor(Math.random()*products.length)];if(!selProds.find(x=>x.id===rp.id))selProds.push(rp);}
+    const totalPricePerDay = selProds.reduce((s,p)=>s+p.price,0);
+    const deliverDate = new Date(d.getTime()-Math.floor(Math.random()*2)*86400000);
+    let status, retDate=null;
+    if(i<18){status='คืนแล้ว';retDate=new Date(due.getTime()+Math.floor(Math.random()*3-1)*86400000);}
+    else if(i<22){status='กำลังเช่า';}
+    else{status='เกินกำหนด';}
+    const sales=salesPeople[Math.floor(Math.random()*salesPeople.length)];
+    rentals.push({id:`RN-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}-${String(i+1).padStart(4,'0')}`,start:d,due,deliverDate,returnDate:retDate,productIds:selProds.map(p=>p.id),productNames:selProds.map(p=>p.name),totalPricePerDay,price:totalPricePerDay,days,total:totalPricePerDay*days,customer:sampleNames[Math.floor(Math.random()*sampleNames.length)],sales,status});
   }
 }
-
-// Load all data from Sheets
-async function loadFromSheets() {
-  isLoading = true;
-  showToast('กำลังโหลดข้อมูลจาก Google Sheets...', 'info');
-  const data = await gsAPI({action: 'getAll'});
-  if (!data || data.error) {
-    showToast('โหลดข้อมูลไม่สำเร็จ: ' + (data?.error || 'ไม่ทราบสาเหตุ'), 'error');
-    isLoading = false;
-    return;
-  }
-  products = (data.products || []).map((p, i) => ({...p, price: parseFloat(p.price)||0, idx: i}));
-  customers = (data.customers || []).map(c => ({...c, rentCount: parseInt(c.rentCount)||0, total: parseFloat(c.total)||0}));
-  rentals = (data.rentals || []).map(r => ({
-    ...r,
-    start: r.start ? new Date(r.start) : null,
-    due: r.due ? new Date(r.due) : null,
-    deliverDate: r.deliverDate ? new Date(r.deliverDate) : null,
-    returnDate: r.returnDate ? new Date(r.returnDate) : null,
-    confirmedDate: r.confirmedDate ? new Date(r.confirmedDate) : null,
-    totalPricePerDay: parseFloat(r.totalPricePerDay)||0,
-    days: parseInt(r.days)||0,
-    total: parseFloat(r.total)||0,
-    deposit: parseFloat(r.deposit)||0,
-    deliveryShippingCost: parseFloat(r.deliveryShippingCost)||0,
-    shippingCost: parseFloat(r.shippingCost)||0,
-    senderCommission: parseFloat(r.senderCommission)||0,
-    receiverCommission: parseFloat(r.receiverCommission)||0,
-    productIds: typeof r.productIds === 'string' ? r.productIds.split(',').map(s=>s.trim()).filter(Boolean) : (r.productIds||[]),
-    productNames: typeof r.productNames === 'string' ? r.productNames.split(',').map(s=>s.trim()).filter(Boolean) : (r.productNames||[])
-  }));
-  rentalCounter = data.counter?.value || 0;
-  // Load staff names from Sheets
-  const staff = data.staff || [];
-  salesNames = staff.filter(s => s.role === 'sales').map(s => s.name);
-  opsNames = staff.filter(s => s.role === 'ops').map(s => s.name);
-  if (!salesNames.length) salesNames = ['พี่มิ้ง','พี่ป่าน','พี่แก้มใส','พี่แนน'];
-  if (!opsNames.length) opsNames = ['ป่าน','เจ๋ง','ตี๋','ปั้น','หมวย'];
-  isLoading = false;
-  showToast('โหลดข้อมูลสำเร็จ! (สินค้า ' + products.length + ' | ลูกค้า ' + customers.length + ' | เช่า ' + rentals.length + ')', 'success');
-}
-
-// Save helpers (fire-and-forget with toast on error)
-async function gsSaveRental(rentalData) {
-  const d = {...rentalData};
-  d.start = d.start ? d.start.toISOString() : '';
-  d.due = d.due ? d.due.toISOString() : '';
-  d.deliverDate = d.deliverDate ? d.deliverDate.toISOString() : '';
-  d.returnDate = d.returnDate ? d.returnDate.toISOString() : '';
-  d.confirmedDate = d.confirmedDate ? d.confirmedDate.toISOString() : '';
-  d.productIds = Array.isArray(d.productIds) ? d.productIds.join(',') : d.productIds;
-  d.productNames = Array.isArray(d.productNames) ? d.productNames.join(',') : d.productNames;
-  const res = await gsAPI({action: 'saveRental', data: d});
-  if (!res || res.error) showToast('บันทึกลง Sheets ไม่สำเร็จ', 'error');
-}
-async function gsUpdateRental(rentalData) {
-  const d = {...rentalData};
-  d.start = d.start instanceof Date ? d.start.toISOString() : (d.start||'');
-  d.due = d.due instanceof Date ? d.due.toISOString() : (d.due||'');
-  d.deliverDate = d.deliverDate instanceof Date ? d.deliverDate.toISOString() : (d.deliverDate||'');
-  d.returnDate = d.returnDate instanceof Date ? d.returnDate.toISOString() : (d.returnDate||'');
-  d.confirmedDate = d.confirmedDate instanceof Date ? d.confirmedDate.toISOString() : (d.confirmedDate||'');
-  d.productIds = Array.isArray(d.productIds) ? d.productIds.join(',') : (d.productIds||'');
-  d.productNames = Array.isArray(d.productNames) ? d.productNames.join(',') : (d.productNames||'');
-  const res = await gsAPI({action: 'updateRental', data: d});
-  if (!res || res.error) showToast('อัพเดตลง Sheets ไม่สำเร็จ', 'error');
-}
-async function gsUpdateProductStatus(id, status) {
-  const res = await gsAPI({action: 'updateProductStatus', id, status});
-  if (!res || res.error) showToast('อัพเดตสถานะสินค้าไม่สำเร็จ', 'error');
-}
-async function gsAddProduct(data) {
-  const res = await gsAPI({action: 'addProduct', data});
-  if (!res || res.error) showToast('เพิ่มสินค้าลง Sheets ไม่สำเร็จ', 'error');
-}
-async function gsAddCustomer(data) {
-  const res = await gsAPI({action: 'addCustomer', data});
-  if (!res || res.error) showToast('เพิ่มลูกค้าลง Sheets ไม่สำเร็จ', 'error');
-}
-async function gsIncCounter() {
-  const res = await gsAPI({action: 'incCounter'});
-  if (res && res.value) rentalCounter = res.value;
-  return rentalCounter;
-}
+genRentals();
 
 // ========== UTILITY ==========
-const fmt = n => (parseFloat(n)||0).toLocaleString('th-TH');
-const fmtDate = d => {
-  if (!d || !(d instanceof Date) || isNaN(d)) return '—';
-  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-};
+const fmt = n => n.toLocaleString('th-TH');
+const fmtDate = d => d?`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`:'—';
 const badgeClass = s => s==='ว่าง'||s==='คืนแล้ว'?'badge-green':s==='ถูกเช่า'||s==='กำลังเช่า'?'badge-blue':s==='เกินกำหนด'?'badge-red':s==='จอง'?'badge-orange':s==='ยกเลิก'?'badge-gray':'badge-gray';
 
 function showToast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';setTimeout(()=>t.classList.remove('show'),3000);}
 function closeModal(id){document.getElementById(id).classList.remove('show');}
-function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('mobile-overlay').classList.toggle('show');}
-function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('mobile-overlay').classList.remove('show');}
 
 // ========== NAVIGATION ==========
-const pageList=['dashboard','products','rentals','customers','calendar','alerts','commission','qrcode','addproduct'];
+const pageList=['dashboard','products','rentals','customers','calendar','alerts'];
 function showPage(page){
-  // Block access based on role
-  if(currentRole==='sales'&&page==='alerts'){page='dashboard';}
-  if(currentRole==='sales'&&page==='commission'){page='dashboard';}
-  if(currentRole==='sales'&&page==='qrcode'){page='dashboard';}
-  if(currentRole==='ops'&&page==='customers'){page='dashboard';}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   const idx=pageList.indexOf(page);
   if(idx>=0)document.querySelectorAll('.nav-item')[idx].classList.add('active');
-  closeSidebar();
   if(page==='dashboard')renderDashboard();
   if(page==='products')renderProducts();
   if(page==='rentals')renderRentals();
   if(page==='customers')renderCustomers();
   if(page==='calendar')renderCalendar();
   if(page==='alerts')renderAlerts();
-  if(page==='commission')renderCommission();
-  if(page==='qrcode')renderQRPage();
-  if(page==='addproduct')initAddProductPage();
 }
 
 // ========== DASHBOARD ==========
@@ -902,34 +530,18 @@ function renderDashboard(){
   const rented=products.filter(p=>p.status==='ถูกเช่า').length;
   const booked=products.filter(p=>p.status==='จอง').length;
   const repair=products.filter(p=>p.status==='ซ่อม').length;
+  const totalRev=rentals.reduce((s,r)=>s+r.total,0);
   const overdue=rentals.filter(r=>r.status==='เกินกำหนด').length;
 
   document.getElementById('current-date').textContent=new Date().toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
-  if(currentRole==='sales'){
-    // Sales: เห็นเฉพาะยอดของตัวเอง + ภาพรวมสินค้า
-    const myRentals=rentals.filter(r=>r.sales===currentUser);
-    const myRev=myRentals.reduce((s,r)=>s+r.total,0);
-    const myActive=myRentals.filter(r=>r.status==='กำลังเช่า'||r.status==='จอง').length;
-    document.getElementById('kpi-area').innerHTML=`
-      <div class="kpi-card blue"><div class="kpi-label">สินค้าทั้งหมด</div><div class="kpi-value">${products.length}</div><div style="font-size:12px;color:var(--muted)">${[...new Set(products.map(p=>p.cat))].length} Categories</div></div>
-      <div class="kpi-card green"><div class="kpi-label">ว่าง (พร้อมเช่า)</div><div class="kpi-value">${avail}</div><div style="font-size:12px;color:var(--muted)">${(avail/products.length*100).toFixed(1)}%</div></div>
-      <div class="kpi-card orange"><div class="kpi-label">รายการของฉัน (Active)</div><div class="kpi-value">${myActive}</div><div style="font-size:12px;color:var(--muted)">จาก ${myRentals.length} ทั้งหมด</div></div>
-      <div class="kpi-card cyan"><div class="kpi-label">ยอดขายของฉัน</div><div class="kpi-value" style="font-size:26px">฿${fmt(myRev)}</div><div style="font-size:12px;color:var(--muted)">${currentUser}</div></div>
-    `;
-  } else {
-    // Ops: เห็นภาพรวมทั้งหมด ไม่เห็นรายได้
-    const totalRev=rentals.reduce((s,r)=>s+r.total,0);
-    const waitSend=rentals.filter(r=>r.status==='จอง').length;
-    const active=rentals.filter(r=>r.status==='กำลังเช่า').length;
-    document.getElementById('kpi-area').innerHTML=`
-      <div class="kpi-card blue"><div class="kpi-label">สินค้าทั้งหมด</div><div class="kpi-value">${products.length}</div><div style="font-size:12px;color:var(--muted)">${[...new Set(products.map(p=>p.cat))].length} Categories</div></div>
-      <div class="kpi-card green"><div class="kpi-label">ว่าง (พร้อมเช่า)</div><div class="kpi-value">${avail}</div><div style="font-size:12px;color:var(--muted)">${(avail/products.length*100).toFixed(1)}%</div></div>
-      <div class="kpi-card orange"><div class="kpi-label">รอจัดส่ง (จอง)</div><div class="kpi-value">${waitSend}</div><div style="font-size:12px;color:var(--muted)">รายการ</div></div>
-      <div class="kpi-card red"><div class="kpi-label">เกินกำหนดคืน</div><div class="kpi-value">${overdue}</div><div style="font-size:12px;color:var(--muted)">รายการ</div></div>
-      <div class="kpi-card cyan"><div class="kpi-label">กำลังเช่าอยู่</div><div class="kpi-value">${active}</div><div style="font-size:12px;color:var(--muted)">รายการ</div></div>
-    `;
-  }
+  document.getElementById('kpi-area').innerHTML=`
+    <div class="kpi-card blue"><div class="kpi-label">สินค้าทั้งหมด</div><div class="kpi-value">${products.length}</div><div style="font-size:12px;color:var(--muted)">${[...new Set(products.map(p=>p.cat))].length} Categories</div></div>
+    <div class="kpi-card green"><div class="kpi-label">ว่าง (พร้อมเช่า)</div><div class="kpi-value">${avail}</div><div style="font-size:12px;color:var(--muted)">${(avail/products.length*100).toFixed(1)}%</div></div>
+    <div class="kpi-card orange"><div class="kpi-label">ถูกเช่า / จอง</div><div class="kpi-value">${rented+booked}</div><div style="font-size:12px;color:var(--muted)">เช่า ${rented} | จอง ${booked}</div></div>
+    <div class="kpi-card red"><div class="kpi-label">เกินกำหนดคืน</div><div class="kpi-value">${overdue}</div><div style="font-size:12px;color:var(--muted)">รายการ</div></div>
+    <div class="kpi-card cyan"><div class="kpi-label">รายได้รวม</div><div class="kpi-value" style="font-size:26px">฿${fmt(totalRev)}</div><div style="font-size:12px;color:var(--muted)">${rentals.length} รายการเช่า</div></div>
+  `;
 
   // Category chart
   const cats={};products.forEach(p=>{cats[p.cat]=(cats[p.cat]||0)+1;});
@@ -938,58 +550,32 @@ function renderDashboard(){
     <div class="chart-bar"><div class="chart-bar-label">${c}</div><div class="chart-bar-fill" style="width:${n/maxCat*100}%"></div><div class="chart-bar-value">${n}</div></div>
   `).join('');
 
-  // Revenue by category — sales เห็น, ops ซ่อน
-  const revCard=document.getElementById('rev-chart').closest('.card');
-  if(currentRole==='ops'){
-    revCard.classList.add('hidden-by-role');
-  } else {
-    revCard.classList.remove('hidden-by-role');
-    const srcRentals=currentRole==='sales'?rentals.filter(r=>r.sales===currentUser):rentals;
-    const revByCat={};srcRentals.forEach(r=>{const ids=r.productIds||[r.productId];ids.forEach(id=>{const p=products.find(x=>x.id===id);if(p)revByCat[p.cat]=(revByCat[p.cat]||0)+r.total/ids.length;});});
-    const maxRev=Math.max(...Object.values(revByCat),1);
-    document.getElementById('rev-chart').innerHTML=Object.entries(revByCat).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([c,n])=>`
-      <div class="chart-bar"><div class="chart-bar-label">${c}</div><div class="chart-bar-fill" style="width:${n/maxRev*100}%;background:linear-gradient(90deg,#059669,#0891b2)"></div><div class="chart-bar-value">฿${fmt(n)}</div></div>
-    `).join('');
-  }
+  // Revenue by category
+  const revByCat={};rentals.forEach(r=>{const ids=r.productIds||[r.productId];ids.forEach(id=>{const p=products.find(x=>x.id===id);if(p)revByCat[p.cat]=(revByCat[p.cat]||0)+r.total/ids.length;});});
+  const maxRev=Math.max(...Object.values(revByCat),1);
+  document.getElementById('rev-chart').innerHTML=Object.entries(revByCat).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([c,n])=>`
+    <div class="chart-bar"><div class="chart-bar-label">${c}</div><div class="chart-bar-fill" style="width:${n/maxRev*100}%;background:linear-gradient(90deg,#059669,#0891b2)"></div><div class="chart-bar-value">฿${fmt(n)}</div></div>
+  `).join('');
 
-  // Top customers — sales เห็นเฉพาะของตัวเอง, ops ซ่อน
-  const topCustCard=document.getElementById('top-customers').closest('.card');
-  if(currentRole==='ops'){
-    topCustCard.classList.add('hidden-by-role');
-  } else {
-    topCustCard.classList.remove('hidden-by-role');
-    const srcR=currentRole==='sales'?rentals.filter(r=>r.sales===currentUser):rentals;
-    const custTotals={};srcR.forEach(r=>{custTotals[r.customer]=(custTotals[r.customer]||0)+r.total;});
-    document.getElementById('top-customers').innerHTML=Object.entries(custTotals).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([c,t],i)=>`
-      <div class="stat-row"><div class="stat-label">${i+1}. ${c}</div><div class="stat-value price">฿${fmt(t)}</div></div>
-    `).join('');
-  }
+  // Top customers
+  const custTotals={};rentals.forEach(r=>{custTotals[r.customer]=(custTotals[r.customer]||0)+r.total;});
+  document.getElementById('top-customers').innerHTML=Object.entries(custTotals).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([c,t],i)=>`
+    <div class="stat-row"><div class="stat-label">${i+1}. ${c}</div><div class="stat-value price">฿${fmt(t)}</div></div>
+  `).join('');
 
   // Rent stats
   const returned=rentals.filter(r=>r.status==='คืนแล้ว').length;
-  const active2=rentals.filter(r=>r.status==='กำลังเช่า').length;
+  const active=rentals.filter(r=>r.status==='กำลังเช่า').length;
   const bookedRentals=rentals.filter(r=>r.status==='จอง').length;
-  const totalRev2=rentals.reduce((s,r)=>s+r.total,0);
-  if(currentRole==='ops'){
-    document.getElementById('rent-stats').innerHTML=`
-      <div class="stat-row"><div class="stat-label">รายการทั้งหมด</div><div class="stat-value">${rentals.length}</div></div>
-      <div class="stat-row"><div class="stat-label">คืนแล้ว</div><div class="stat-value" style="color:var(--success)">${returned}</div></div>
-      <div class="stat-row"><div class="stat-label">กำลังเช่า</div><div class="stat-value" style="color:var(--primary)">${active2}</div></div>
-      <div class="stat-row"><div class="stat-label">รอจัดส่ง (จอง)</div><div class="stat-value" style="color:#f59e0b">${bookedRentals}</div></div>
-      <div class="stat-row"><div class="stat-label">เกินกำหนด</div><div class="stat-value" style="color:var(--danger)">${overdue}</div></div>
-      <div class="stat-row"><div class="stat-label">ซ่อมบำรุง</div><div class="stat-value" style="color:var(--muted)">${repair} ชิ้น</div></div>
-    `;
-  } else {
-    document.getElementById('rent-stats').innerHTML=`
-      <div class="stat-row"><div class="stat-label">รายการทั้งหมด</div><div class="stat-value">${rentals.length}</div></div>
-      <div class="stat-row"><div class="stat-label">คืนแล้ว</div><div class="stat-value" style="color:var(--success)">${returned}</div></div>
-      <div class="stat-row"><div class="stat-label">กำลังเช่า</div><div class="stat-value" style="color:var(--primary)">${active2}</div></div>
-      <div class="stat-row"><div class="stat-label">จอง</div><div class="stat-value" style="color:#f59e0b">${bookedRentals}</div></div>
-      <div class="stat-row"><div class="stat-label">เกินกำหนด</div><div class="stat-value" style="color:var(--danger)">${overdue}</div></div>
-      <div class="stat-row"><div class="stat-label">ค่าเฉลี่ย/รายการ</div><div class="stat-value price">฿${fmt(Math.round(totalRev2/Math.max(rentals.length,1)))}</div></div>
-      <div class="stat-row"><div class="stat-label">ซ่อมบำรุง</div><div class="stat-value" style="color:var(--muted)">${repair} ชิ้น</div></div>
-    `;
-  }
+  document.getElementById('rent-stats').innerHTML=`
+    <div class="stat-row"><div class="stat-label">รายการทั้งหมด</div><div class="stat-value">${rentals.length}</div></div>
+    <div class="stat-row"><div class="stat-label">คืนแล้ว</div><div class="stat-value" style="color:var(--success)">${returned}</div></div>
+    <div class="stat-row"><div class="stat-label">กำลังเช่า</div><div class="stat-value" style="color:var(--primary)">${active}</div></div>
+    <div class="stat-row"><div class="stat-label">จอง</div><div class="stat-value" style="color:#f59e0b">${bookedRentals}</div></div>
+    <div class="stat-row"><div class="stat-label">เกินกำหนด</div><div class="stat-value" style="color:var(--danger)">${overdue}</div></div>
+    <div class="stat-row"><div class="stat-label">ค่าเฉลี่ย/รายการ</div><div class="stat-value price">฿${fmt(Math.round(totalRev/Math.max(rentals.length,1)))}</div></div>
+    <div class="stat-row"><div class="stat-label">ซ่อมบำรุง</div><div class="stat-value" style="color:var(--muted)">${repair} ชิ้น</div></div>
+  `;
 }
 
 // ========== PRODUCTS ==========
@@ -1009,35 +595,21 @@ function renderProducts(){
   if(prodPage>pages)prodPage=1;
   const start=(prodPage-1)*PER_PAGE;
   const slice=filtered.slice(start,start+PER_PAGE);
-  const isOps=currentRole==='ops';
-  const isSales=currentRole==='sales';
-
-  // ปรับ header
-  const thead=document.querySelector('#page-products #prod-view-table thead tr');
-  if(thead){
-    let hdr='<th>รหัส</th><th>Category</th><th>ชื่อสินค้า</th><th>รายละเอียด</th><th>หน่วย</th>';
-    if(!isOps) hdr+='<th class="text-right">ราคา/วัน</th>';
-    hdr+='<th class="text-center">สถานะ</th>';
-    if(!isSales) hdr+='<th class="text-center">จัดการ</th>';
-    thead.innerHTML=hdr;
-  }
-
-  document.getElementById('prod-table').innerHTML=slice.map(p=>{
-    let row=`<tr>
+  document.getElementById('prod-table').innerHTML=slice.map(p=>`
+    <tr>
       <td style="font-weight:600;font-size:12px">${p.id}</td>
       <td><span class="badge badge-gray">${p.cat}</span></td>
       <td>${p.name}</td>
       <td style="font-size:12px;color:var(--muted);max-width:250px">${p.desc}</td>
-      <td class="text-center">${p.unit}</td>`;
-    if(!isOps) row+=`<td class="text-right price">฿${fmt(p.price)}</td>`;
-    row+=`<td class="text-center"><span class="badge ${badgeClass(p.status)}">${p.status}</span></td>`;
-    if(!isSales) row+=`<td class="text-center"><select onchange="changeStatus('${p.id}',this.value)" style="padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px"><option ${p.status==='ว่าง'?'selected':''}>ว่าง</option><option ${p.status==='ถูกเช่า'?'selected':''}>ถูกเช่า</option><option ${p.status==='จอง'?'selected':''}>จอง</option><option ${p.status==='ซ่อม'?'selected':''}>ซ่อม</option></select></td>`;
-    row+=`</tr>`;
-    return row;
-  }).join('');
+      <td class="text-center">${p.unit}</td>
+      <td class="text-right price">฿${fmt(p.price)}</td>
+      <td class="text-center"><span class="badge ${badgeClass(p.status)}">${p.status}</span></td>
+      <td class="text-center"><select onchange="changeStatus('${p.id}',this.value)" style="padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px"><option ${p.status==='ว่าง'?'selected':''}>ว่าง</option><option ${p.status==='ถูกเช่า'?'selected':''}>ถูกเช่า</option><option ${p.status==='จอง'?'selected':''}>จอง</option><option ${p.status==='ซ่อม'?'selected':''}>ซ่อม</option></select></td>
+    </tr>
+  `).join('');
   renderPagination('prod-pagination',pages,prodPage,p=>{prodPage=p;renderProducts();});
 }
-function changeStatus(id,status){const p=products.find(x=>x.id===id);if(p){p.status=status;gsUpdateProductStatus(id,status);renderProducts();showToast(`เปลี่ยนสถานะ ${p.name} เป็น "${status}"`);}}
+function changeStatus(id,status){const p=products.find(x=>x.id===id);if(p){p.status=status;renderProducts();showToast(`เปลี่ยนสถานะ ${p.name} เป็น "${status}"`);}}
 
 // ========== RENTALS ==========
 let rentPage=1;
@@ -1045,80 +617,41 @@ function renderRentals(){
   const q=document.getElementById('rent-search').value.toLowerCase();
   const st=document.getElementById('rent-status-filter').value;
   let filtered=rentals.filter(r=>{
-    const prodText=Array.isArray(r.productNames)?r.productNames.join(' '):r.productName||'';
-    if(q&&!r.id.toLowerCase().includes(q)&&!r.customer.toLowerCase().includes(q)&&!prodText.toLowerCase().includes(q))return false;
+    if(q&&!r.id.toLowerCase().includes(q)&&!r.customer.toLowerCase().includes(q)&&!(Array.isArray(r.productNames)?r.productNames.join(' '):r.productName||'').toLowerCase().includes(q))return false;
     if(st&&r.status!==st)return false;
     return true;
-  });
-  // Sales: เห็นเฉพาะรายการของตัวเอง
-  if(currentRole==='sales') filtered=filtered.filter(r=>r.sales===currentUser);
-  filtered.sort((a,b)=>b.start-a.start);
+  }).sort((a,b)=>b.start-a.start);
   document.getElementById('rental-count').textContent=`${filtered.length} รายการ`;
-
-  // ปุ่ม +สร้างรายการจอง: เซลล์เห็น, ops ซ่อน
-  const createBtn=document.querySelector('#page-rentals .page-header .btn-primary');
-  if(createBtn){
-    if(currentRole==='ops') createBtn.classList.add('hidden-by-role');
-    else createBtn.classList.remove('hidden-by-role');
-  }
-
   const pages=Math.ceil(filtered.length/PER_PAGE);
   if(rentPage>pages)rentPage=1;
   const start=(rentPage-1)*PER_PAGE;
   const slice=filtered.slice(start,start+PER_PAGE);
-
-  // ปรับ table header ตามบทบาท
-  const isSales=currentRole==='sales';
-  const isOps=currentRole==='ops';
-  const thead=document.querySelector('#page-rentals thead tr');
-  if(thead){
-    let hdrHtml='<th>เลขที่</th><th>วันเช่า</th><th>กำหนดคืน</th><th>วันส่งของ</th><th>คืนจริง</th><th>สินค้า</th>';
-    if(!isOps) hdrHtml+='<th class="text-right">ราคา/วัน</th><th class="text-center">วัน</th><th class="text-right">รวม (฿)</th><th class="text-right">มัดจำ</th><th>การโอน</th>';
-    hdrHtml+='<th>ผู้เช่า</th><th>เซลล์</th>';
-    if(!isSales) hdrHtml+='<th>ผู้ส่งสินค้า</th><th class="text-right">ค่าส่ง</th><th>ผู้จ่าย(ส่ง)</th><th>จัดส่งโดย</th><th>ผู้รับคืน</th><th class="text-right">ค่าส่งกลับ</th><th>ผู้จ่าย(คืน)</th>';
-    hdrHtml+='<th class="text-center">สถานะ</th><th class="text-center">จัดการ</th>';
-    thead.innerHTML=hdrHtml;
-  }
-
-  document.getElementById('rent-table').innerHTML=slice.map(r=>{
-    let rowHtml=`<tr>
+  document.getElementById('rent-table').innerHTML=slice.map(r=>`
+    <tr>
       <td style="font-weight:600;font-size:12px">${r.id}</td>
       <td>${fmtDate(r.start)}</td>
       <td>${fmtDate(r.due)}</td>
       <td>${fmtDate(r.deliverDate)}</td>
       <td>${fmtDate(r.returnDate)}</td>
-      <td style="font-size:12px">${Array.isArray(r.productNames)?r.productNames.join(', '):r.productName||''}</td>`;
-    if(!isOps) rowHtml+=`
+      <td style="font-size:12px">${Array.isArray(r.productNames)?r.productNames.join(', '):r.productName||''}</td>
       <td class="text-right">฿${fmt(r.totalPricePerDay)}</td>
       <td class="text-center">${r.days}</td>
       <td class="text-right price">฿${fmt(r.total)}</td>
       <td class="text-right">${r.deposit?'฿'+fmt(r.deposit):'—'}</td>
-      <td style="font-size:12px"><span class="badge ${r.paymentStatus==='โอน'?'badge-green':r.paymentStatus==='จ่ายหน้างาน'?'badge-orange':'badge-gray'}">${r.paymentStatus||'—'}</span></td>`;
-    rowHtml+=`
+      <td style="font-size:12px"><span class="badge ${r.paymentStatus==='โอน'?'badge-green':r.paymentStatus==='จ่ายหน้างาน'?'badge-orange':'badge-gray'}">${r.paymentStatus||'—'}</span></td>
       <td style="font-size:12px">${r.customer}</td>
-      <td style="font-size:12px">${r.sales||'—'}</td>`;
-    if(!isSales) rowHtml+=`
+      <td style="font-size:12px">${r.sales||'—'}</td>
       <td style="font-size:12px">${r.sender||'—'}</td>
       <td class="text-right">${r.deliveryShippingCost?'฿'+fmt(r.deliveryShippingCost):'—'}</td>
       <td style="font-size:12px">${r.deliveryPayer||'—'}</td>
       <td style="font-size:12px">${r.deliveryBy||'—'}</td>
       <td style="font-size:12px">${r.receiver||'—'}</td>
       <td class="text-right">${r.shippingCost?'฿'+fmt(r.shippingCost):'—'}</td>
-      <td style="font-size:12px">${r.payer||'—'}</td>`;
-    rowHtml+=`
+      <td style="font-size:12px">${r.payer||'—'}</td>
       <td class="text-center"><span class="badge ${badgeClass(r.status)}">${r.status}</span></td>
-      <td class="text-center">`;
-    // Sales: เห็นแค่ปุ่มยกเลิก (ไม่เห็นยืนยัน/คืน)
-    // Ops: เห็นปุ่มยืนยันจอง + คืน
-    if(isSales){
-      if(r.status==='จอง') rowHtml+=`<button class="btn btn-sm" onclick="cancelBooking('${r.id}')" style="font-size:11px;margin:1px;background:#fee2e2;color:#991b1b">ยกเลิก</button>`;
-    } else {
-      if(r.status==='จอง') rowHtml+=`<button class="btn btn-sm btn-primary" onclick="openConfirmBookingModal('${r.id}')" style="font-size:11px;margin:1px">ยืนยัน</button><button class="btn btn-sm" onclick="cancelBooking('${r.id}')" style="font-size:11px;margin:1px;background:#fee2e2;color:#991b1b">ยกเลิก</button>`;
-      if(r.status==='กำลังเช่า'||r.status==='เกินกำหนด') rowHtml+=`<button class="btn btn-sm btn-success" onclick="openReturnModal('${r.id}')">คืน</button>`;
-    }
-    rowHtml+=`</td></tr>`;
-    return rowHtml;
-  }).join('');
+      <td class="text-center">${r.status==='จอง'?`<button class="btn btn-sm btn-primary" onclick="openConfirmBookingModal('${r.id}')" style="font-size:11px;margin:1px">ยืนยัน</button><button class="btn btn-sm" onclick="cancelBooking('${r.id}')" style="font-size:11px;margin:1px;background:#fee2e2;color:#991b1b">ยกเลิก</button>`:r.status==='กำลังเช่า'||r.status==='เกินกำหนด'?`<button class="btn btn-sm btn-success" onclick="openReturnModal('${r.id}')">คืน</button>`:''}</td>
+    </tr>
+  `).join('');
   renderPagination('rent-pagination',pages,rentPage,p=>{rentPage=p;renderRentals();});
 }
 
@@ -1141,11 +674,9 @@ function renderCustomers(){
 // ========== ALERTS ==========
 function renderAlerts(){
   const overdue=rentals.filter(r=>r.status==='เกินกำหนด');
-  const isOps=currentRole==='ops';
-  document.getElementById('overdue-alerts').innerHTML=overdue.length?overdue.map(r=>{
-    const priceInfo=isOps?'':`| ค่าเช่า: ฿${fmt(r.total)}`;
-    return `<div class="alert-item"><div class="alert-icon">&#9888;</div><div class="alert-text"><strong>${r.id} — ${Array.isArray(r.productNames)?r.productNames.join(', '):r.productName||''}</strong>ผู้เช่า: ${r.customer} | เซลล์: ${r.sales||'—'} | กำหนดคืน: ${fmtDate(r.due)} ${priceInfo}</div><button class="btn btn-sm btn-danger" onclick="openReturnModal('${r.id}')">บันทึกคืน</button></div>`;
-  }).join(''):'<div class="empty-state"><p>ไม่มีรายการเกินกำหนด</p></div>';
+  document.getElementById('overdue-alerts').innerHTML=overdue.length?overdue.map(r=>`
+    <div class="alert-item"><div class="alert-icon">&#9888;</div><div class="alert-text"><strong>${r.id} — ${Array.isArray(r.productNames)?r.productNames.join(', '):r.productName||''}</strong>ผู้เช่า: ${r.customer} | เซลล์: ${r.sales||'—'} | กำหนดคืน: ${fmtDate(r.due)} | ค่าเช่า: ฿${fmt(r.total)}</div><button class="btn btn-sm btn-danger" onclick="openReturnModal('${r.id}')">บันทึกคืน</button></div>
+  `).join(''):'<div class="empty-state"><p>ไม่มีรายการเกินกำหนด</p></div>';
 
   const repairs=products.filter(p=>p.status==='ซ่อม');
   document.getElementById('repair-alerts').innerHTML=repairs.length?repairs.map(p=>`
@@ -1318,24 +849,37 @@ function renderGantt(){
 }
 
 // ========== MODALS ==========
-let selectedProductIds = [];
+let selectedCatQty = {}; // { cat: quantity }
+let autoAssignedProducts = []; // product ids auto-assigned
+
+function getAvailableByCat() {
+  const map = {};
+  products.forEach(p => {
+    if (p.status === 'ว่าง') {
+      if (!map[p.cat]) map[p.cat] = [];
+      map[p.cat].push(p);
+    }
+  });
+  return map;
+}
+
+function getCatInfo() {
+  const info = {};
+  products.forEach(p => {
+    if (!info[p.cat]) info[p.cat] = { cat: p.cat, price: p.price, unit: p.unit, total: 0, available: 0, sample: p };
+    info[p.cat].total++;
+    if (p.status === 'ว่าง') info[p.cat].available++;
+  });
+  return Object.values(info).sort((a, b) => a.cat.localeCompare(b.cat));
+}
 
 function openRentalModal(){
-  selectedProductIds = [];
+  selectedCatQty = {};
+  autoAssignedProducts = [];
   const sel=document.getElementById('rm-customer');
   sel.innerHTML='<option value="">-- เลือกลูกค้า --</option>'+customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-  // Auto-set sales name if role is sales
-  const salesSel=document.getElementById('rm-sales');
-  salesSel.innerHTML='<option value="">-- เลือกเซลล์ --</option>'+salesNames.map(n=>`<option value="${n}">${n}</option>`).join('');
-  if(currentRole==='sales'&&currentUser){
-    salesSel.value=currentUser;
-    salesSel.disabled=true;
-  } else {
-    salesSel.value='';
-    salesSel.disabled=false;
-  }
-  document.getElementById('rm-product-search').value='';
-  renderProductCheckboxes();
+  document.getElementById('rm-sales').value='';
+  renderCatPicker();
   renderSelectedProducts();
   document.getElementById('rm-start').value=new Date().toISOString().split('T')[0];
   document.getElementById('rm-end').value='';
@@ -1347,45 +891,82 @@ function openRentalModal(){
   document.getElementById('rental-modal').classList.add('show');
 }
 
-function renderProductCheckboxes(){
-  const q=document.getElementById('rm-product-search').value.toLowerCase();
-  const avail=products.filter(p=>p.status==='ว่าง');
-  const filtered=q?avail.filter(p=>p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q)):avail;
-  document.getElementById('rm-product-list').innerHTML=filtered.map(p=>`
-    <label><input type="checkbox" value="${p.id}" data-price="${p.price}" ${selectedProductIds.includes(p.id)?'checked':''} onchange="toggleProduct('${p.id}',${p.price},this.checked)"><span>${p.name}</span><span class="price-tag">฿${fmt(p.price)}/วัน</span></label>
-  `).join('')||'<div style="padding:10px;text-align:center;color:var(--muted);font-size:13px">ไม่พบสินค้าที่ว่าง</div>';
+function renderCatPicker() {
+  const cats = getCatInfo();
+  const el = document.getElementById('rm-cat-picker');
+  el.innerHTML = cats.map(c => {
+    const qty = selectedCatQty[c.cat] || 0;
+    const isFull = c.available === 0;
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;margin-bottom:4px;background:${qty > 0 ? '#eff6ff' : isFull ? '#fef2f2' : '#fff'};border:1.5px solid ${qty > 0 ? '#3b82f6' : isFull ? '#fecaca' : 'var(--border)'}">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:13px">${c.cat}</div>
+          <div style="font-size:11px;color:var(--muted)">฿${fmt(c.price)}/${c.unit}/วัน · ว่าง <span style="font-weight:700;color:${c.available > 0 ? 'var(--success)' : 'var(--danger)'}">${c.available}</span>/${c.total} ${c.unit}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          <button onclick="changeCatQty('${c.cat}',-1)" style="width:28px;height:28px;border-radius:6px;border:1.5px solid var(--border);background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center" ${qty <= 0 ? 'disabled style="opacity:.3;cursor:not-allowed;width:28px;height:28px;border-radius:6px;border:1.5px solid var(--border);background:#fff;font-size:16px;display:flex;align-items:center;justify-content:center"' : ''}>−</button>
+          <span style="min-width:28px;text-align:center;font-weight:700;font-size:15px;color:${qty > 0 ? 'var(--primary)' : 'var(--muted)'}">${qty}</span>
+          <button onclick="changeCatQty('${c.cat}',1)" style="width:28px;height:28px;border-radius:6px;border:1.5px solid var(--primary);background:var(--primary);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center" ${qty >= c.available ? 'disabled style="opacity:.3;cursor:not-allowed;width:28px;height:28px;border-radius:6px;border:1.5px solid var(--border);background:#eee;color:var(--muted);font-size:16px;display:flex;align-items:center;justify-content:center"' : ''}>+</button>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
-function filterProductCheckboxes(){renderProductCheckboxes();}
 
-function toggleProduct(id,price,checked){
-  if(checked&&!selectedProductIds.includes(id))selectedProductIds.push(id);
-  if(!checked)selectedProductIds=selectedProductIds.filter(x=>x!==id);
+function changeCatQty(cat, delta) {
+  const cats = getCatInfo();
+  const info = cats.find(c => c.cat === cat);
+  if (!info) return;
+  const current = selectedCatQty[cat] || 0;
+  const next = Math.max(0, Math.min(info.available, current + delta));
+  if (next === 0) delete selectedCatQty[cat];
+  else selectedCatQty[cat] = next;
+  doAutoAssign();
+  renderCatPicker();
   renderSelectedProducts();
   calcRental();
 }
-function removeProduct(id){
-  selectedProductIds=selectedProductIds.filter(x=>x!==id);
-  renderProductCheckboxes();
-  renderSelectedProducts();
-  calcRental();
+
+function doAutoAssign() {
+  const availMap = getAvailableByCat();
+  autoAssignedProducts = [];
+  Object.entries(selectedCatQty).forEach(([cat, qty]) => {
+    const avail = (availMap[cat] || []).slice();
+    for (let i = 0; i < qty && i < avail.length; i++) {
+      autoAssignedProducts.push(avail[i].id);
+    }
+  });
 }
+
 function renderSelectedProducts(){
   const el=document.getElementById('rm-selected-products');
-  if(!selectedProductIds.length){el.innerHTML='';return;}
-  el.innerHTML=selectedProductIds.map(id=>{
-    const p=products.find(x=>x.id===id);
-    return `<span class="selected-item">${p.name} <span class="remove" onclick="removeProduct('${id}')">&times;</span></span>`;
-  }).join('');
+  if(!autoAssignedProducts.length){el.innerHTML='';return;}
+  // Group by cat for display
+  const groups = {};
+  autoAssignedProducts.forEach(id => {
+    const p = products.find(x => x.id === id);
+    if (!p) return;
+    if (!groups[p.cat]) groups[p.cat] = [];
+    groups[p.cat].push(p);
+  });
+  el.innerHTML = Object.entries(groups).map(([cat, prods]) =>
+    `<div style="width:100%;margin-bottom:6px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:3px">${cat} (${prods.length} ${prods[0].unit})</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px">${prods.map(p =>
+        `<span class="selected-item">${p.name}</span>`
+      ).join('')}</div>
+    </div>`
+  ).join('');
 }
 
 function calcRental(){
   const s=document.getElementById('rm-start').value;
   const e=document.getElementById('rm-end').value;
-  const totalPricePerDay=selectedProductIds.reduce((sum,id)=>{const p=products.find(x=>x.id===id);return sum+(p?p.price:0);},0);
+  const totalPricePerDay=autoAssignedProducts.reduce((sum,id)=>{const p=products.find(x=>x.id===id);return sum+(p?p.price:0);},0);
   if(s&&e){
     const days=Math.max(1,Math.round((new Date(e)-new Date(s))/86400000));
     document.getElementById('rm-days').value=days;
-    document.getElementById('rm-total').value=selectedProductIds.length?`฿${fmt(totalPricePerDay*days)}  (${selectedProductIds.length} รายการ x ${days} วัน)`:'';
+    document.getElementById('rm-total').value=autoAssignedProducts.length?`฿${fmt(totalPricePerDay*days)}  (${autoAssignedProducts.length} รายการ x ${days} วัน)`:'';
   }
 }
 document.getElementById('rm-start').addEventListener('change',calcRental);
@@ -1394,15 +975,13 @@ document.getElementById('rm-end').addEventListener('change',calcRental);
 function openConfirmBookingModal(id){
   const r=rentals.find(x=>x.id===id);if(!r||r.status!=='จอง')return;
   const prodNames=Array.isArray(r.productNames)?r.productNames.join(', '):r.productName||'';
-  let infoHtml=`
+  document.getElementById('cb-info').innerHTML=`
     <div class="stat-row"><div class="stat-label">เลขที่จอง</div><div class="stat-value" style="font-weight:700">${r.id}</div></div>
     <div class="stat-row"><div class="stat-label">สินค้า (${(r.productIds||[r.productId]).length} รายการ)</div><div class="stat-value" style="font-size:12px">${prodNames}</div></div>
     <div class="stat-row"><div class="stat-label">ผู้เช่า</div><div class="stat-value">${r.customer}</div></div>
-    <div class="stat-row"><div class="stat-label">เซลล์</div><div class="stat-value">${r.sales||'—'}</div></div>`;
-  if(currentRole!=='ops') infoHtml+=`<div class="stat-row"><div class="stat-label">ค่าเช่ารวม</div><div class="stat-value price">฿${fmt(r.total)}</div></div>`;
-  document.getElementById('cb-info').innerHTML=infoHtml;
-  const senderSel=document.getElementById('cb-sender');
-  senderSel.innerHTML='<option value="">-- เลือกผู้ส่งสินค้า --</option>'+opsNames.map(n=>`<option value="${n}">${n}</option>`).join('');
+    <div class="stat-row"><div class="stat-label">เซลล์</div><div class="stat-value">${r.sales||'—'}</div></div>
+    <div class="stat-row"><div class="stat-label">ค่าเช่ารวม</div><div class="stat-value price">฿${fmt(r.total)}</div></div>
+  `;
   document.getElementById('cb-sender').value='';
   document.getElementById('cb-shipping-cost').value='';
   document.getElementById('cb-payer').value='';
@@ -1424,14 +1003,10 @@ function doConfirmBooking(){
   r.deliveryPayer=payer;
   r.deliveryBy=deliveryBy;
   r.status='กำลังเช่า';
-  r.senderCommission=Math.round(r.total*0.05);
-  r.confirmedDate=new Date();
   const ids=r.productIds||[r.productId];
   ids.forEach(pid=>{const prod=products.find(p=>p.id===pid);if(prod)prod.status='ถูกเช่า';});
   closeModal('confirm-booking-modal');
-  showToast(`ยืนยันจอง ${r.id} → กำลังเช่า สำเร็จ! (คอมฯส่ง ฿${fmt(r.senderCommission)})`);
-  gsUpdateRental(r);
-  ids.forEach(pid=>gsUpdateProductStatus(pid,'ถูกเช่า'));
+  showToast(`ยืนยันจอง ${r.id} → กำลังเช่า สำเร็จ!`);
   renderRentals();renderDashboard();renderProducts();
 }
 
@@ -1441,8 +1016,6 @@ function cancelBooking(id){
   ids.forEach(pid=>{const prod=products.find(p=>p.id===pid);if(prod)prod.status='ว่าง';});
   r.status='ยกเลิก';
   showToast(`ยกเลิกการจอง ${r.id} สำเร็จ`);
-  gsUpdateRental(r);
-  ids.forEach(pid=>gsUpdateProductStatus(pid,'ว่าง'));
   renderRentals();renderDashboard();renderProducts();
 }
 
@@ -1452,19 +1025,18 @@ function saveRental(){
   const start=document.getElementById('rm-start').value;
   const end=document.getElementById('rm-end').value;
   const deliver=document.getElementById('rm-deliver').value;
-  if(!custId||!selectedProductIds.length||!start||!end){showToast('กรุณากรอกข้อมูลให้ครบ (ลูกค้า, สินค้า, วันเช่า, กำหนดคืน)','error');return;}
+  if(!custId||!autoAssignedProducts.length||!start||!end){showToast('กรุณากรอกข้อมูลให้ครบ (ลูกค้า, สินค้า, วันเช่า, กำหนดคืน)','error');return;}
   const cust=customers.find(c=>c.id===custId);
   const days=parseInt(document.getElementById('rm-days').value);
-  const selProds=selectedProductIds.map(id=>products.find(p=>p.id===id)).filter(Boolean);
+  const selProds=autoAssignedProducts.map(id=>products.find(p=>p.id===id)).filter(Boolean);
   const totalPricePerDay=selProds.reduce((s,p)=>s+p.price,0);
   const total=totalPricePerDay*days;
   rentalCounter++;
-  gsIncCounter();
   const d=new Date(start);
   rentals.push({
     id:`RN-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}-${String(rentalCounter).padStart(4,'0')}`,
     start:new Date(start),due:new Date(end),deliverDate:deliver?new Date(deliver):null,returnDate:null,
-    productIds:selectedProductIds.slice(),productNames:selProds.map(p=>p.name),
+    productIds:autoAssignedProducts.slice(),productNames:selProds.map(p=>p.name),
     totalPricePerDay,price:totalPricePerDay,days,total,
     customer:cust.name,sales:sales||'—',
     deposit:parseFloat(document.getElementById('rm-deposit').value)||0,
@@ -1475,24 +1047,21 @@ function saveRental(){
   cust.rentCount++;cust.total+=total;
   closeModal('rental-modal');
   showToast(`บันทึกจอง ${selProds.length} รายการ สำเร็จ!`);
-  gsSaveRental(rentals[rentals.length-1]);
   renderRentals();
 }
 
 function openReturnModal(id){
   const r=rentals.find(x=>x.id===id);if(!r)return;
   const prodDisplay=Array.isArray(r.productNames)?r.productNames.join(', '):r.productName||'';
-  let infoHtml=`
+  document.getElementById('return-info').innerHTML=`
     <div class="stat-row"><div class="stat-label">เลขที่เช่า</div><div class="stat-value">${r.id}</div></div>
     <div class="stat-row"><div class="stat-label">สินค้า (${Array.isArray(r.productNames)?r.productNames.length:1} รายการ)</div><div class="stat-value" style="font-size:12px">${prodDisplay}</div></div>
     <div class="stat-row"><div class="stat-label">ผู้เช่า</div><div class="stat-value">${r.customer}</div></div>
     <div class="stat-row"><div class="stat-label">เซลล์</div><div class="stat-value">${r.sales||'—'}</div></div>
-    <div class="stat-row"><div class="stat-label">กำหนดคืน</div><div class="stat-value">${fmtDate(r.due)}</div></div>`;
-  if(currentRole!=='ops') infoHtml+=`<div class="stat-row"><div class="stat-label">ค่าเช่ารวม</div><div class="stat-value price">฿${fmt(r.total)}</div></div>`;
-  document.getElementById('return-info').innerHTML=infoHtml;
+    <div class="stat-row"><div class="stat-label">กำหนดคืน</div><div class="stat-value">${fmtDate(r.due)}</div></div>
+    <div class="stat-row"><div class="stat-label">ค่าเช่ารวม</div><div class="stat-value price">฿${fmt(r.total)}</div></div>
+  `;
   document.getElementById('ret-date').value=new Date().toISOString().split('T')[0];
-  const recvSel=document.getElementById('ret-receiver');
-  recvSel.innerHTML='<option value="">-- เลือกผู้รับสินค้า --</option>'+opsNames.map(n=>`<option value="${n}">${n}</option>`).join('');
   document.getElementById('ret-receiver').value='';
   document.getElementById('ret-shipping').value='';
   document.getElementById('ret-payer').value='';
@@ -1507,14 +1076,10 @@ function confirmReturn(){
   r.shippingCost=parseFloat(document.getElementById('ret-shipping').value)||0;
   r.payer=document.getElementById('ret-payer').value;
   r.status='คืนแล้ว';
-  r.receiverCommission=Math.round(r.total*0.05);
   const ids=r.productIds||[r.productId];
   ids.forEach(id=>{const prod=products.find(p=>p.id===id);if(prod)prod.status='ว่าง';});
   closeModal('return-modal');
-  const prodDisplay=Array.isArray(r.productNames)?r.productNames.join(', '):r.productName||'';
-  showToast(`คืนสินค้า ${prodDisplay} สำเร็จ! (คอมฯรับ ฿${fmt(r.receiverCommission)})`);
-  gsUpdateRental(r);
-  ids.forEach(id=>gsUpdateProductStatus(id,'ว่าง'));
+  showToast(`คืนสินค้า ${r.productName} สำเร็จ!`);
   renderRentals();
 }
 
@@ -1525,370 +1090,10 @@ function openCustomerModal(){
 function saveCustomer(){
   const name=document.getElementById('cm-name').value;
   if(!name){showToast('กรุณากรอกชื่อลูกค้า','error');return;}
-  const newCust = {id:`C-${String(customers.length+1).padStart(4,'0')}`,name,phone:document.getElementById('cm-phone').value,address:document.getElementById('cm-address').value,rentCount:0,total:0};
-  customers.push(newCust);
-  gsAddCustomer(newCust);
+  customers.push({id:`C-${String(customers.length+1).padStart(4,'0')}`,name,phone:document.getElementById('cm-phone').value,address:document.getElementById('cm-address').value,rentCount:0,total:0});
   closeModal('customer-modal');
   showToast(`เพิ่มลูกค้า "${name}" สำเร็จ!`);
   renderCustomers();
-}
-
-// ========== QR CODE ==========
-// QR Code generator (minimal inline implementation)
-const QRGen=(function(){
-  function createQR(text,size){
-    const canvas=document.createElement('canvas');
-    canvas.width=size;canvas.height=size;
-    const ctx=canvas.getContext('2d');
-    // Use a simple encoding: data URL with product ID
-    // For real QR, we'll load a library
-    const url='https://api.qrserver.com/v1/create-qr-code/?size='+size+'x'+size+'&data='+encodeURIComponent(text);
-    const img=new Image();
-    img.crossOrigin='anonymous';
-    img.onload=()=>{ctx.drawImage(img,0,0,size,size);};
-    img.src=url;
-    return canvas;
-  }
-  return{create:createQR};
-})();
-
-function renderQRPage(){
-  const q=(document.getElementById('qr-search').value||'').toLowerCase();
-  const cat=document.getElementById('qr-cat-filter').value;
-  const st=document.getElementById('qr-status-filter').value;
-
-  // Populate cat filter
-  const catSel=document.getElementById('qr-cat-filter');
-  if(catSel.options.length<=1){
-    const cats=[...new Set(products.map(p=>p.cat))].sort();
-    cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;catSel.appendChild(o);});
-  }
-
-  let filtered=products.filter(p=>{
-    if(q&&!p.id.toLowerCase().includes(q)&&!p.name.toLowerCase().includes(q))return false;
-    if(cat&&p.cat!==cat)return false;
-    if(st&&p.status!==st)return false;
-    return true;
-  });
-
-  document.getElementById('qr-count').textContent=`${filtered.length} รายการ`;
-
-  const grid=document.getElementById('qr-grid');
-  grid.innerHTML=filtered.map(p=>{
-    const stClass=p.status==='จอง'?'booked':p.status==='ถูกเช่า'?'rented':p.status==='ซ่อม'?'repair':'';
-    // Find active rental for this product
-    const activeRental=rentals.find(r=>(r.productIds||[]).includes(p.id)&&(r.status==='กำลังเช่า'||r.status==='จอง'||r.status==='เกินกำหนด'));
-    const rentalInfo=activeRental?`<div style="font-size:10px;margin-top:4px;padding:3px 6px;background:#fef3c7;border-radius:4px;color:#92400e">${activeRental.customer} (${activeRental.status})</div>`:'';
-    return `<div class="qr-card ${stClass}" onclick="showQRDetail('${p.id}')">
-      <div class="qr-status"><span class="badge ${badgeClass(p.status)}" style="font-size:10px">${p.status}</span></div>
-      <div id="qr-canvas-${CSS.escape(p.id)}" style="display:flex;justify-content:center;margin:8px 0"></div>
-      <div class="qr-name">${p.name}</div>
-      <div class="qr-cat">${p.cat}</div>
-      <div class="qr-id">${p.id}</div>
-      ${rentalInfo}
-    </div>`;
-  }).join('');
-
-  // Generate QR codes after DOM is ready
-  setTimeout(()=>{
-    filtered.forEach(p=>{
-      const container=document.getElementById('qr-canvas-'+CSS.escape(p.id));
-      if(container&&!container.querySelector('img')){
-        const img=document.createElement('img');
-        img.src='https://api.qrserver.com/v1/create-qr-code/?size=120x120&data='+encodeURIComponent('JIARAKSA:'+p.id);
-        img.width=120;img.height=120;
-        img.style.borderRadius='8px';
-        img.alt=p.id;
-        container.appendChild(img);
-      }
-    });
-  },50);
-}
-
-function showQRDetail(id){
-  const p=products.find(x=>x.id===id);if(!p)return;
-  const activeRental=rentals.find(r=>(r.productIds||[]).includes(p.id)&&(r.status==='กำลังเช่า'||r.status==='จอง'||r.status==='เกินกำหนด'));
-  const isOps=currentRole==='ops';
-
-  let html=`
-    <div style="text-align:center;margin-bottom:16px">
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('JIARAKSA:'+p.id)}" width="200" height="200" style="border-radius:12px;border:2px solid var(--border)">
-    </div>
-    <div class="stat-row"><div class="stat-label">รหัสสินค้า</div><div class="stat-value">${p.id}</div></div>
-    <div class="stat-row"><div class="stat-label">ชื่อ</div><div class="stat-value">${p.name}</div></div>
-    <div class="stat-row"><div class="stat-label">Category</div><div class="stat-value">${p.cat}</div></div>`;
-  if(!isOps) html+=`<div class="stat-row"><div class="stat-label">ราคา/วัน</div><div class="stat-value price">฿${fmt(p.price)}</div></div>`;
-  html+=`<div class="stat-row"><div class="stat-label">สถานะ</div><div class="stat-value"><span class="badge ${badgeClass(p.status)}">${p.status}</span></div></div>`;
-
-  if(activeRental){
-    html+=`<div style="margin-top:16px;padding:12px;background:#fffbeb;border-radius:8px;border-left:4px solid #f59e0b">
-      <div style="font-weight:700;font-size:14px;color:#92400e;margin-bottom:6px">รายการเช่าปัจจุบัน</div>
-      <div class="stat-row"><div class="stat-label">เลขที่</div><div class="stat-value">${activeRental.id}</div></div>
-      <div class="stat-row"><div class="stat-label">ผู้เช่า</div><div class="stat-value">${activeRental.customer}</div></div>
-      <div class="stat-row"><div class="stat-label">เซลล์</div><div class="stat-value">${activeRental.sales||'—'}</div></div>
-      <div class="stat-row"><div class="stat-label">วันเช่า</div><div class="stat-value">${fmtDate(activeRental.start)}</div></div>
-      <div class="stat-row"><div class="stat-label">กำหนดคืน</div><div class="stat-value">${fmtDate(activeRental.due)}</div></div>
-      <div class="stat-row"><div class="stat-label">สถานะ</div><div class="stat-value"><span class="badge ${badgeClass(activeRental.status)}">${activeRental.status}</span></div></div>
-    </div>`;
-  }
-
-  document.getElementById('qr-detail-body').innerHTML=html;
-
-  let footerHtml='<button class="btn btn-outline" onclick="closeModal(\'qr-detail-modal\')">ปิด</button>';
-  if(!isOps){
-    footerHtml+=`<button class="btn btn-outline" onclick="printSingleQR('${p.id}')">🖨️ พิมพ์ QR</button>`;
-  }
-  document.getElementById('qr-detail-footer').innerHTML=footerHtml;
-  document.getElementById('qr-detail-modal').classList.add('show');
-}
-
-function openScanModal(){
-  document.getElementById('qr-scan-overlay').classList.add('show');
-  document.getElementById('qr-scan-input').value='';
-  document.getElementById('qr-scan-result').innerHTML='';
-  setTimeout(()=>document.getElementById('qr-scan-input').focus(),100);
-}
-function closeScanModal(){
-  document.getElementById('qr-scan-overlay').classList.remove('show');
-}
-function clearScan(){
-  document.getElementById('qr-scan-input').value='';
-  document.getElementById('qr-scan-result').innerHTML='';
-  document.getElementById('qr-scan-input').focus();
-}
-
-function checkScannedQR(){
-  let val=document.getElementById('qr-scan-input').value.trim();
-  if(!val){document.getElementById('qr-scan-result').innerHTML='';return;}
-  // Strip prefix if scanned from QR
-  if(val.startsWith('JIARAKSA:'))val=val.replace('JIARAKSA:','');
-
-  const p=products.find(x=>x.id===val);
-  const result=document.getElementById('qr-scan-result');
-  if(!p){
-    result.innerHTML=`<div class="qr-mismatch"><div style="font-weight:700;font-size:16px;color:#991b1b">ไม่พบสินค้า</div><div style="font-size:13px;margin-top:4px">รหัส "${val}" ไม่มีในระบบ</div></div>`;
-    return;
-  }
-
-  const activeRental=rentals.find(r=>(r.productIds||[]).includes(p.id)&&(r.status==='กำลังเช่า'||r.status==='จอง'||r.status==='เกินกำหนด'));
-  const isOps=currentRole==='ops';
-
-  let html=`<div class="qr-match">
-    <div style="font-weight:700;font-size:16px;color:#065f46">พบสินค้า!</div>
-    <div class="stat-row"><div class="stat-label">ชื่อ</div><div class="stat-value">${p.name}</div></div>
-    <div class="stat-row"><div class="stat-label">Category</div><div class="stat-value">${p.cat}</div></div>
-    <div class="stat-row"><div class="stat-label">สถานะ</div><div class="stat-value"><span class="badge ${badgeClass(p.status)}">${p.status}</span></div></div>`;
-  if(!isOps) html+=`<div class="stat-row"><div class="stat-label">ราคา/วัน</div><div class="stat-value price">฿${fmt(p.price)}</div></div>`;
-
-  if(activeRental){
-    html+=`<div style="margin-top:10px;padding:10px;background:#fef3c7;border-radius:8px">
-      <div style="font-weight:700;color:#92400e">จองให้: ${activeRental.customer}</div>
-      <div style="font-size:12px;color:#92400e">เลขที่ ${activeRental.id} | เซลล์: ${activeRental.sales||'—'} | กำหนดคืน: ${fmtDate(activeRental.due)}</div>
-    </div>`;
-  }
-  html+=`</div>`;
-  result.innerHTML=html;
-}
-
-function printSingleQR(id){
-  const p=products.find(x=>x.id===id);if(!p)return;
-  const w=window.open('','','width=400,height=500');
-  w.document.write(`<html><head><title>QR - ${p.id}</title><style>body{font-family:sans-serif;text-align:center;padding:40px}h2{margin:0 0 4px;font-size:18px}p{margin:2px 0;color:#666;font-size:13px}.id{font-size:14px;font-weight:700;margin-top:8px}</style></head><body>
-    <h2>${p.name}</h2><p>${p.cat}</p>
-    <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent('JIARAKSA:'+p.id)}" width="250" height="250" style="margin:16px 0">
-    <div class="id">${p.id}</div>
-    <p>JIARAKSA ระบบเช่า-ยืม</p>
-    <script>setTimeout(()=>{window.print();},500)<\/script>
-  </body></html>`);
-  w.document.close();
-}
-
-function printAllQR(){
-  const q=(document.getElementById('qr-search').value||'').toLowerCase();
-  const cat=document.getElementById('qr-cat-filter').value;
-  const filtered=products.filter(p=>{
-    if(q&&!p.id.toLowerCase().includes(q)&&!p.name.toLowerCase().includes(q))return false;
-    if(cat&&p.cat!==cat)return false;
-    return true;
-  });
-  const w=window.open('','','width=800,height=600');
-  let html=`<html><head><title>QR Codes - JIARAKSA</title><style>
-    body{font-family:sans-serif;margin:0;padding:20px}
-    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    .item{text-align:center;padding:12px;border:1px solid #ddd;border-radius:8px;page-break-inside:avoid}
-    .item h4{margin:0;font-size:12px}.item p{margin:2px 0;font-size:10px;color:#666}
-    @media print{.grid{grid-template-columns:repeat(3,1fr)}.item{break-inside:avoid}}
-  </style></head><body>
-  <h2 style="text-align:center;margin-bottom:16px">QR Code สินค้า — JIARAKSA (${filtered.length} รายการ)</h2>
-  <div class="grid">`;
-  filtered.forEach(p=>{
-    html+=`<div class="item">
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent('JIARAKSA:'+p.id)}" width="140" height="140">
-      <h4>${p.name}</h4><p>${p.cat}</p><p style="font-weight:700">${p.id}</p>
-    </div>`;
-  });
-  html+=`</div><script>setTimeout(()=>{window.print();},1500)<\/script></body></html>`;
-  w.document.write(html);
-  w.document.close();
-}
-
-// ========== COMMISSION ==========
-let commYear=new Date().getFullYear(), commMonth=new Date().getMonth();
-function commNav(dir){
-  if(dir===0){commYear=new Date().getFullYear();commMonth=new Date().getMonth();}
-  else{commMonth+=dir;if(commMonth<0){commMonth=11;commYear--;}if(commMonth>11){commMonth=0;commYear++;}}
-  renderCommission();
-}
-function renderCommission(){
-  document.getElementById('comm-month-label').textContent=`${thaiMonths[commMonth]} ${commYear+543}`;
-  // Populate person filter
-  const pSel=document.getElementById('comm-person-filter');
-  if(pSel.options.length<=1){
-    opsNames.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;pSel.appendChild(o);});
-  }
-  const filterPerson=pSel.value;
-
-  // Build commission records for this month
-  const records=[];
-  rentals.forEach(r=>{
-    // ส่งสินค้า (sender commission)
-    if(r.sender && r.confirmedDate){
-      const cd=r.confirmedDate;
-      if(cd.getFullYear()===commYear && cd.getMonth()===commMonth){
-        const comm=r.senderCommission||Math.round(r.total*0.05);
-        if(!filterPerson || r.sender===filterPerson){
-          records.push({id:r.id, date:cd, type:'ส่งสินค้า', prods:Array.isArray(r.productNames)?r.productNames.join(', '):'', customer:r.customer, person:r.sender, rental:r.total, commission:comm});
-        }
-      }
-    }
-    // รับคืน (receiver commission)
-    if(r.receiver && r.returnDate){
-      const rd=r.returnDate;
-      if(rd.getFullYear()===commYear && rd.getMonth()===commMonth){
-        const comm=r.receiverCommission||Math.round(r.total*0.05);
-        if(!filterPerson || r.receiver===filterPerson){
-          records.push({id:r.id, date:rd, type:'รับคืน', prods:Array.isArray(r.productNames)?r.productNames.join(', '):'', customer:r.customer, person:r.receiver, rental:r.total, commission:comm});
-        }
-      }
-    }
-  });
-  records.sort((a,b)=>a.date-b.date);
-
-  const totalComm=records.reduce((s,r)=>s+r.commission,0);
-  const sendCount=records.filter(r=>r.type==='ส่งสินค้า').length;
-  const recvCount=records.filter(r=>r.type==='รับคืน').length;
-
-  // KPI
-  document.getElementById('comm-kpi').innerHTML=`
-    <div class="kpi-card cyan"><div class="kpi-label">คอมมิชชั่นรวม</div><div class="kpi-value" style="font-size:28px">฿${fmt(totalComm)}</div><div style="font-size:12px;color:var(--muted)">${records.length} รายการ</div></div>
-    <div class="kpi-card blue"><div class="kpi-label">เที่ยวส่ง</div><div class="kpi-value">${sendCount}</div><div style="font-size:12px;color:var(--muted)">฿${fmt(records.filter(r=>r.type==='ส่งสินค้า').reduce((s,r)=>s+r.commission,0))}</div></div>
-    <div class="kpi-card green"><div class="kpi-label">เที่ยวรับ</div><div class="kpi-value">${recvCount}</div><div style="font-size:12px;color:var(--muted)">฿${fmt(records.filter(r=>r.type==='รับคืน').reduce((s,r)=>s+r.commission,0))}</div></div>
-  `;
-
-  // Hide rental price column for ops
-  const isOps=currentRole==='ops';
-  document.getElementById('comm-thead').innerHTML=isOps
-    ?'<tr><th>เลขที่</th><th>วันที่</th><th>ประเภท</th><th>สินค้า</th><th>ผู้เช่า</th><th>ผู้ดำเนินการ</th><th class="text-right">คอมฯ 5%</th></tr>'
-    :'<tr><th>เลขที่</th><th>วันที่</th><th>ประเภท</th><th>สินค้า</th><th>ผู้เช่า</th><th>ผู้ดำเนินการ</th><th class="text-right">ค่าเช่ารวม</th><th class="text-right">คอมฯ 5%</th></tr>';
-
-  // Table
-  document.getElementById('comm-table').innerHTML=records.length?records.map(r=>{
-    let row=`<tr>
-      <td style="font-weight:600;font-size:12px">${r.id}</td>
-      <td>${fmtDate(r.date)}</td>
-      <td><span class="badge ${r.type==='ส่งสินค้า'?'badge-blue':'badge-green'}">${r.type}</span></td>
-      <td style="font-size:12px">${r.prods}</td>
-      <td style="font-size:12px">${r.customer}</td>
-      <td style="font-weight:600">${r.person}</td>`;
-    if(!isOps) row+=`<td class="text-right">฿${fmt(r.rental)}</td>`;
-    row+=`<td class="text-right price" style="font-weight:700">฿${fmt(r.commission)}</td></tr>`;
-    return row;
-  }).join(''):`<tr><td colspan="${isOps?7:8}" class="text-center" style="padding:30px;color:var(--muted)">ไม่มีข้อมูลคอมมิชชั่นในเดือนนี้</td></tr>`;
-
-  // Summary by person
-  const byPerson={};
-  records.forEach(r=>{
-    if(!byPerson[r.person]) byPerson[r.person]={send:0,recv:0,sendComm:0,recvComm:0,total:0};
-    if(r.type==='ส่งสินค้า'){byPerson[r.person].send++;byPerson[r.person].sendComm+=r.commission;}
-    else{byPerson[r.person].recv++;byPerson[r.person].recvComm+=r.commission;}
-    byPerson[r.person].total+=r.commission;
-  });
-  const entries=Object.entries(byPerson).sort((a,b)=>b[1].total-a[1].total);
-  document.getElementById('comm-summary').innerHTML=entries.length?entries.map(([name,d])=>`
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)">
-      <div><span style="font-weight:700;font-size:15px">${name}</span><div style="font-size:12px;color:var(--muted)">ส่ง ${d.send} เที่ยว (฿${fmt(d.sendComm)}) | รับ ${d.recv} เที่ยว (฿${fmt(d.recvComm)})</div></div>
-      <div style="font-size:20px;font-weight:800;color:var(--primary)">฿${fmt(d.total)}</div>
-    </div>
-  `).join(''):'<div class="empty-state"><p>ไม่มีข้อมูล</p></div>';
-}
-
-// ========== ADD PRODUCT ==========
-let recentlyAdded=[];
-function initAddProductPage(){
-  const sel=document.getElementById('ap-cat');
-  const cats=[...new Set(products.map(p=>p.cat))].sort();
-  sel.innerHTML='<option value="">-- เลือก Category --</option>'+cats.map(c=>`<option value="${c}">${c}</option>`).join('')+'<option value="__new__">+ เพิ่ม Category ใหม่</option>';
-  renderRecentProducts();
-}
-function toggleNewCat(){
-  const v=document.getElementById('ap-cat').value;
-  document.getElementById('ap-newcat-group').style.display=v==='__new__'?'':'none';
-  if(v!=='__new__') document.getElementById('ap-newcat').value='';
-}
-function saveNewProduct(){
-  const id=document.getElementById('ap-id').value.trim();
-  let cat=document.getElementById('ap-cat').value;
-  if(cat==='__new__'){
-    cat=document.getElementById('ap-newcat').value.trim();
-    if(!cat){showToast('กรุณาพิมพ์ชื่อ Category ใหม่','error');return;}
-  }
-  const name=document.getElementById('ap-name').value.trim();
-  const price=parseFloat(document.getElementById('ap-price').value)||0;
-  const unit=document.getElementById('ap-unit').value;
-  const status=document.getElementById('ap-status').value;
-  const desc=document.getElementById('ap-desc').value.trim();
-  if(!id||!cat||!name||!price){showToast('กรุณากรอกข้อมูลให้ครบ (รหัส, Category, ชื่อ, ราคา)','error');return;}
-  if(products.find(p=>p.id===id)){showToast(`รหัส "${id}" มีอยู่แล้วในระบบ!`,'error');return;}
-  const newProd={id,cat,name,desc:desc||name,unit,price,status,idx:products.length};
-  products.push(newProd);
-  recentlyAdded.unshift(newProd);
-  gsAddProduct(newProd);
-  showToast(`เพิ่มสินค้า "${name}" สำเร็จ!`);
-  clearProductForm();
-  renderRecentProducts();
-  // Update category filter on product page
-  const cats2=[...new Set(products.map(p=>p.cat))].sort();
-  document.getElementById('prod-cat-filter').innerHTML='<option value="">ทุก Category</option>'+cats2.map(c=>`<option>${c}</option>`).join('');
-  // Re-init cat dropdown
-  initAddProductPage();
-}
-function clearProductForm(){
-  ['ap-id','ap-name','ap-desc','ap-price','ap-newcat'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('ap-cat').value='';
-  document.getElementById('ap-unit').value='ตัว';
-  document.getElementById('ap-status').value='ว่าง';
-  document.getElementById('ap-newcat-group').style.display='none';
-}
-function renderRecentProducts(){
-  document.getElementById('ap-recent-count').textContent=recentlyAdded.length?`${recentlyAdded.length} รายการ`:'';
-  document.getElementById('ap-recent-table').innerHTML=recentlyAdded.length?recentlyAdded.map(p=>`
-    <tr>
-      <td style="font-weight:600;font-size:12px">${p.id}</td>
-      <td><span class="badge badge-gray">${p.cat}</span></td>
-      <td>${p.name}</td>
-      <td style="font-size:12px;color:var(--muted)">${p.desc}</td>
-      <td class="text-center">${p.unit}</td>
-      <td class="text-right price">฿${fmt(p.price)}</td>
-      <td class="text-center"><span class="badge ${badgeClass(p.status)}">${p.status}</span></td>
-      <td class="text-center"><button class="btn btn-sm btn-danger" onclick="removeRecentProduct('${p.id}')">ลบ</button></td>
-    </tr>
-  `).join(''):'<tr><td colspan="8" class="text-center" style="padding:30px;color:var(--muted)">ยังไม่มีสินค้าที่เพิ่มใหม่</td></tr>';
-}
-function removeRecentProduct(id){
-  products=products.filter(p=>p.id!==id);
-  recentlyAdded=recentlyAdded.filter(p=>p.id!==id);
-  showToast('ลบสินค้าออกแล้ว');
-  renderRecentProducts();
 }
 
 // ========== PAGINATION ==========
@@ -1904,25 +1109,12 @@ function renderPagination(containerId,totalPages,current,onClick){
 }
 
 // ========== INIT ==========
-async function init(){
-  // โหลดชื่อพนักงานก่อนแสดงหน้าเลือกบทบาท
-  const data = await gsAPI({action: 'getAll'});
-  if(data && data.staff){
-    salesNames = data.staff.filter(s => s.role === 'sales').map(s => s.name);
-    opsNames = data.staff.filter(s => s.role === 'ops').map(s => s.name);
-  }
-  if (!salesNames.length) salesNames = ['พี่มิ้ง','พี่ป่าน','พี่แก้มใส','พี่แนน'];
-  if (!opsNames.length) opsNames = ['ป่าน','เจ๋ง','ตี๋','ปั้น','หมวย'];
-}
-init();
-
-// Called after enterSystem
-async function loadDataAndRender(){
-  await loadFromSheets();
+function init(){
   const cats=[...new Set(products.map(p=>p.cat))].sort();
   document.getElementById('prod-cat-filter').innerHTML='<option value="">ทุก Category</option>'+cats.map(c=>`<option>${c}</option>`).join('');
-  showPage('dashboard');
+  renderDashboard();
 }
+init();
 </script>
 </body>
 </html>
