@@ -8,6 +8,20 @@
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--primary:#2563eb;--primary-dark:#1d4ed8;--secondary:#0891b2;--success:#059669;--warning:#d97706;--danger:#dc2626;--bg:#f0f4f8;--card:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--radius:12px;--shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06)}
 body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+.login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#1e3a5f 0%,#0f2744 60%,#0a1628 100%);z-index:9999;display:flex;align-items:center;justify-content:center}
+.login-box{background:#fff;border-radius:20px;padding:40px 36px;width:90%;max-width:380px;box-shadow:0 25px 60px rgba(0,0,0,.4);text-align:center}
+.login-box h1{font-size:24px;font-weight:800;color:#1e3a5f;margin-bottom:2px;letter-spacing:.5px}
+.login-box .subtitle{font-size:13px;color:var(--muted);margin-bottom:28px}
+.login-box .logo-icon{font-size:48px;margin-bottom:16px}
+.login-input{width:100%;padding:12px 16px;border:2px solid var(--border);border-radius:10px;font-size:15px;outline:none;transition:border-color .2s;text-align:center;letter-spacing:2px}
+.login-input:focus{border-color:var(--primary)}
+.login-input.error{border-color:var(--danger);animation:shake .4s}
+.login-btn{width:100%;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:12px;transition:opacity .2s}
+.login-btn:hover{opacity:.9}
+.login-btn:disabled{opacity:.5;cursor:not-allowed}
+.login-error{color:var(--danger);font-size:13px;margin-top:10px;min-height:20px;font-weight:600}
+.login-footer{font-size:11px;color:var(--muted);margin-top:24px}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
 .app{display:flex;min-height:100vh}
 .sidebar{width:260px;background:linear-gradient(180deg,#1e3a5f 0%,#0f2744 100%);color:#fff;padding:0;position:fixed;height:100vh;overflow-y:auto;z-index:100}
 .sidebar-header{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
@@ -153,7 +167,20 @@ tr:hover{background:#f8fafc}
 </style>
 </head>
 <body>
-<div class="app">
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="login-screen">
+<div class="login-box">
+<div class="logo-icon">🏥</div>
+<h1>JIARAKSA</h1>
+<div class="subtitle">ระบบจัดการเช่า-ยืม อุปกรณ์ฝึกสอน CPR/AED</div>
+<input type="password" class="login-input" id="login-pass" placeholder="กรอกรหัสผ่าน" onkeydown="if(event.key==='Enter')doLogin()" autofocus>
+<div class="login-error" id="login-error"></div>
+<button class="login-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
+<div class="login-footer">บริษัท เจี๋ยรักษา จำกัด — สำหรับพนักงานเท่านั้น</div>
+</div>
+</div>
+
+<div class="app" id="main-app" style="display:none">
 <nav class="sidebar">
 <div class="sidebar-header">
 <h1>JIARAKSA</h1>
@@ -187,6 +214,12 @@ Dashboard
 <div class="nav-item" onclick="showPage('alerts')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
 แจ้งเตือน
+</div>
+</div>
+<div class="nav-section" style="padding:12px 20px;margin-top:auto;border-top:1px solid rgba(255,255,255,.1)">
+<div class="nav-item" onclick="doLogout()" style="color:rgba(255,255,255,.6);font-size:13px">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+ออกจากระบบ
 </div>
 </div>
 </nav>
@@ -1442,8 +1475,55 @@ function renderPagination(containerId,totalPages,current,onClick){
   c.innerHTML=html;
 }
 
+// ========== LOGIN / LOGOUT ==========
+// รหัสผ่าน — เปลี่ยนตรงนี้ได้เลย
+const APP_PASSWORD = 'jia2026';
+const SESSION_KEY = 'jia_logged_in';
+const SESSION_EXPIRE = 8 * 60 * 60 * 1000; // 8 ชั่วโมง
+
+function doLogin() {
+  const pass = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  const inputEl = document.getElementById('login-pass');
+  if (!pass) { errEl.textContent = 'กรุณากรอกรหัสผ่าน'; inputEl.classList.add('error'); setTimeout(() => inputEl.classList.remove('error'), 400); return; }
+  if (pass !== APP_PASSWORD) {
+    errEl.textContent = 'รหัสผ่านไม่ถูกต้อง';
+    inputEl.classList.add('error');
+    inputEl.value = '';
+    setTimeout(() => inputEl.classList.remove('error'), 400);
+    return;
+  }
+  // บันทึก session
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ time: Date.now() }));
+  showApp();
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = 'flex';
+}
+
+function checkSession() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SESSION_KEY));
+    if (s && (Date.now() - s.time) < SESSION_EXPIRE) { showApp(); return; }
+  } catch {}
+  // ยังไม่ได้ login หรือ session หมดอายุ
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('main-app').style.display = 'none';
+}
+
+function doLogout() {
+  localStorage.removeItem(SESSION_KEY);
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').textContent = '';
+}
+
 // ========== INIT ==========
 function init(){
+  checkSession();
   const cats=[...new Set(products.map(p=>p.cat))].sort();
   document.getElementById('prod-cat-filter').innerHTML='<option value="">ทุก Category</option>'+cats.map(c=>`<option>${c}</option>`).join('');
   renderDashboard();
