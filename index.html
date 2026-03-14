@@ -894,6 +894,30 @@ QR Code สินค้า
 </div>
 </div>
 
+<!-- EXTEND RENTAL MODAL (ต่ออายุการเช่า) -->
+<div class="modal-overlay" id="extend-modal">
+<div class="modal" style="max-width:500px">
+<div class="modal-header" style="background:linear-gradient(135deg,#0891b2,#0e7490)"><h3 style="color:#fff">🔄 ต่ออายุการเช่า</h3><button class="modal-close" onclick="closeModal('extend-modal')" style="color:#fff">&times;</button></div>
+<div class="modal-body">
+<div id="ext-info"></div>
+<div class="form-group" style="margin-top:16px">
+<label>กำหนดคืนเดิม</label>
+<input type="text" id="ext-old-due" readonly style="background:#f1f5f9;font-weight:700">
+</div>
+<div class="form-group">
+<label>กำหนดคืนใหม่ <span style="color:var(--danger)">*</span></label>
+<input type="date" id="ext-new-due" onchange="calcExtend()">
+</div>
+<div id="ext-calc" style="margin-top:8px"></div>
+<div class="form-group" style="margin-top:12px"><label>หมายเหตุ</label><input id="ext-note" placeholder="เหตุผลที่ต่ออายุ (ถ้ามี)"></div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-outline" onclick="closeModal('extend-modal')">ยกเลิก</button>
+<button class="btn btn-primary" onclick="saveExtend()" style="background:linear-gradient(135deg,#0891b2,#0e7490)">🔄 ยืนยันต่ออายุ</button>
+</div>
+</div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1304,7 +1328,7 @@ function renderRentals(){
       if(r.status==='จอง') rowHtml+=`<button class="btn btn-sm" onclick="cancelBooking('${r.id}')" style="font-size:11px;margin:1px;background:#fee2e2;color:#991b1b">ยกเลิก</button>`;
     } else {
       if(r.status==='จอง') rowHtml+=`<button class="btn btn-sm btn-primary" onclick="openConfirmBookingModal('${r.id}')" style="font-size:11px;margin:1px">ยืนยัน</button><button class="btn btn-sm" onclick="cancelBooking('${r.id}')" style="font-size:11px;margin:1px;background:#fee2e2;color:#991b1b">ยกเลิก</button>`;
-      if(r.status==='กำลังเช่า'||r.status==='เกินกำหนด'||r.status==='ยืมด่วน') rowHtml+=`<button class="btn btn-sm btn-success" onclick="openReturnModal('${r.id}')">คืน</button>`;
+      if(r.status==='กำลังเช่า'||r.status==='เกินกำหนด'||r.status==='ยืมด่วน') rowHtml+=`<button class="btn btn-sm" onclick="openExtendModal('${r.id}')" style="font-size:11px;margin:1px;background:#e0f2fe;color:#0369a1" title="ต่ออายุ">🔄</button><button class="btn btn-sm btn-success" onclick="openReturnModal('${r.id}')">คืน</button>`;
     }
     rowHtml+=`</td></tr>`;
     return rowHtml;
@@ -1440,8 +1464,19 @@ function updateSmartAvail(row){
   const qty=parseInt(row.querySelector('.smart-qty').value)||0;
   const badge=row.querySelector('.avail-badge');
   if(!cat){badge.textContent='';return;}
-  const availCount=products.filter(p=>p.cat===cat&&p.status==='ว่าง').length;
-  badge.textContent=`ว่าง ${availCount} ชิ้น`;
+  const startVal=document.getElementById('rm-start').value;
+  const startDate=startVal?new Date(startVal):null;
+  // นับทั้งที่ว่างตอนนี้ + ที่จะว่างทันวันเช่า
+  const availCount=products.filter(p=>{
+    if(p.cat!==cat)return false;
+    if(p.status==='ว่าง')return true;
+    if(startDate&&(p.status==='ถูกเช่า'||p.status==='จอง')){
+      const ar=rentals.find(r=>(r.productIds||[]).includes(p.id)&&(r.status==='กำลังเช่า'||r.status==='จอง'||r.status==='เกินกำหนด'||r.status==='ยืมด่วน'));
+      if(ar&&ar.due){const dd=new Date(ar.due);dd.setHours(0,0,0,0);const sd=new Date(startDate);sd.setHours(0,0,0,0);if(dd<sd)return true;}
+    }
+    return false;
+  }).length;
+  badge.textContent=`พร้อมใช้ ${availCount} ชิ้น`;
   badge.style.color=availCount>=qty?'var(--success)':'var(--danger)';
   autoSelectSmartProducts();
 }
@@ -1450,18 +1485,32 @@ function autoSelectSmartProducts(){
   selectedProductIds=[];
   const rows=document.querySelectorAll('#smart-rows .smart-select-row');
   const display=document.getElementById('smart-auto-selected');
+  const startVal=document.getElementById('rm-start').value;
+  const startDate=startVal?new Date(startVal):null;
   let allOk=true;
   let html='';
   rows.forEach(row=>{
     const cat=row.querySelector('.smart-cat').value;
     const qty=parseInt(row.querySelector('.smart-qty').value)||0;
     if(!cat||!qty)return;
-    const avail=products.filter(p=>p.cat===cat&&p.status==='ว่าง'&&!selectedProductIds.includes(p.id));
+    // รวมของว่าง + ของที่จะว่างทัน
+    const avail=products.filter(p=>{
+      if(p.cat!==cat||selectedProductIds.includes(p.id))return false;
+      if(p.status==='ว่าง')return true;
+      if(startDate&&(p.status==='ถูกเช่า'||p.status==='จอง')){
+        const ar=rentals.find(r=>(r.productIds||[]).includes(p.id)&&(r.status==='กำลังเช่า'||r.status==='จอง'||r.status==='เกินกำหนด'||r.status==='ยืมด่วน'));
+        if(ar&&ar.due){const dd=new Date(ar.due);dd.setHours(0,0,0,0);const sd=new Date(startDate);sd.setHours(0,0,0,0);if(dd<sd)return true;}
+      }
+      return false;
+    });
     const pick=avail.slice(0,qty);
     pick.forEach(p=>selectedProductIds.push(p.id));
     if(pick.length<qty)allOk=false;
     html+=`<div style="margin-bottom:6px"><strong>${cat}</strong> × ${qty}: `;
-    html+=pick.map(p=>`<span class="selected-item">${p.name} (${p.id})</span>`).join(' ');
+    html+=pick.map(p=>{
+      const isFuture=p.status!=='ว่าง';
+      return `<span class="selected-item" ${isFuture?'style="background:#e0f2fe;color:#0369a1"':''}>${p.name} (${p.id})${isFuture?' 📅':''}</span>`;
+    }).join(' ');
     if(pick.length<qty)html+=` <span style="color:var(--danger);font-size:12px">⚠ ไม่พอ (ขาด ${qty-pick.length})</span>`;
     html+=`</div>`;
   });
@@ -1503,11 +1552,43 @@ function openRentalModal(){
 
 function renderProductCheckboxes(){
   const q=document.getElementById('rm-product-search').value.toLowerCase();
-  const avail=products.filter(p=>p.status==='ว่าง');
-  const filtered=q?avail.filter(p=>p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q)):avail;
-  document.getElementById('rm-product-list').innerHTML=filtered.map(p=>`
-    <label><input type="checkbox" value="${p.id}" data-price="${p.price}" ${selectedProductIds.includes(p.id)?'checked':''} onchange="toggleProduct('${p.id}',${p.price},this.checked)"><span>${p.name}</span><span class="price-tag">฿${fmt(p.price)}/วัน</span></label>
-  `).join('')||'<div style="padding:10px;text-align:center;color:var(--muted);font-size:13px">ไม่พบสินค้าที่ว่าง</div>';
+  const startVal=document.getElementById('rm-start').value;
+  const startDate=startVal?new Date(startVal):null;
+
+  // ฟังก์ชันเช็คว่าสินค้าจะว่างทันวันเช่าหรือไม่
+  function getAvailability(p){
+    if(p.status==='ว่าง') return {available:true, label:'ว่าง', cls:'badge-green'};
+    if(p.status==='ซ่อม') return {available:false, label:'ซ่อม', cls:'badge-gray'};
+    // หาว่า rental ปัจจุบันกำหนดคืนเมื่อไหร่
+    if(startDate && (p.status==='ถูกเช่า'||p.status==='จอง')){
+      const activeRental=rentals.find(r=>(r.productIds||[]).includes(p.id)&&(r.status==='กำลังเช่า'||r.status==='จอง'||r.status==='เกินกำหนด'||r.status==='ยืมด่วน'));
+      if(activeRental && activeRental.due){
+        const dueDate=new Date(activeRental.due.getFullYear(),activeRental.due.getMonth(),activeRental.due.getDate());
+        const sDate=new Date(startDate.getFullYear(),startDate.getMonth(),startDate.getDate());
+        if(dueDate < sDate){
+          return {available:true, label:`ว่างทัน (คืน ${fmtDate(activeRental.due)})`, cls:'badge-blue', future:true, dueDate:activeRental.due, customer:activeRental.customer};
+        }
+      }
+    }
+    return {available:false, label:p.status, cls:badgeClass(p.status)};
+  }
+
+  const allProds=products.filter(p=>{
+    const avail=getAvailability(p);
+    if(!avail.available)return false;
+    if(q&&!p.name.toLowerCase().includes(q)&&!p.id.toLowerCase().includes(q)&&!p.cat.toLowerCase().includes(q))return false;
+    return true;
+  });
+
+  document.getElementById('rm-product-list').innerHTML=allProds.map(p=>{
+    const avail=getAvailability(p);
+    const futureTag=avail.future?`<span style="font-size:10px;color:var(--secondary);margin-left:4px">📅 ${avail.label}</span>`:'';
+    return `<label style="${avail.future?'background:#eff6ff;border-radius:6px':''}">
+      <input type="checkbox" value="${p.id}" data-price="${p.price}" ${selectedProductIds.includes(p.id)?'checked':''} onchange="toggleProduct('${p.id}',${p.price},this.checked)">
+      <span>${p.name}${futureTag}</span>
+      <span class="price-tag">฿${fmt(p.price)}/วัน</span>
+    </label>`;
+  }).join('')||'<div style="padding:10px;text-align:center;color:var(--muted);font-size:13px">ไม่พบสินค้าที่ว่าง'+(startDate?' (ลองเลื่อนวันเช่าดู)':'')+'</div>';
 }
 function filterProductCheckboxes(){renderProductCheckboxes();}
 function toggleProduct(id,price,checked){
@@ -1531,7 +1612,7 @@ function calcRental(){
     document.getElementById('rm-total').value=selectedProductIds.length?`฿${fmt(totalPricePerDay*days)}  (${selectedProductIds.length} รายการ x ${days} วัน)`:'';
   }
 }
-document.getElementById('rm-start').addEventListener('change',calcRental);
+document.getElementById('rm-start').addEventListener('change',()=>{calcRental();renderProductCheckboxes();});
 document.getElementById('rm-end').addEventListener('change',calcRental);
 
 function saveRental(){
@@ -2046,6 +2127,95 @@ function confirmReturn(){
   showToast(`คืนสินค้าสำเร็จ! (สแกนครบ ${ids.length} ชิ้น)${r.receiverCommission?' คอมฯรับ ฿'+fmt(r.receiverCommission):''}`);
   gsUpdateRental(r);ids.forEach(id=>gsUpdateProductStatus(id,'ว่าง'));
   renderRentals();renderDashboard();renderProducts();
+}
+
+// ========== EXTEND RENTAL (ต่ออายุการเช่า) ==========
+let extendingRentalId = null;
+
+function openExtendModal(id){
+  const r=rentals.find(x=>x.id===id);
+  if(!r||(r.status!=='กำลังเช่า'&&r.status!=='เกินกำหนด'&&r.status!=='ยืมด่วน'))return;
+  extendingRentalId=id;
+  const prodNames=(r.productNames||[]).join(', ');
+  document.getElementById('ext-info').innerHTML=`
+    <div class="stat-row"><div class="stat-label">เลขที่</div><div class="stat-value" style="font-weight:700">${r.id}</div></div>
+    <div class="stat-row"><div class="stat-label">ผู้เช่า</div><div class="stat-value">${r.customer}</div></div>
+    <div class="stat-row"><div class="stat-label">สินค้า</div><div class="stat-value" style="font-size:12px">${prodNames}</div></div>
+  `;
+  document.getElementById('ext-old-due').value=fmtDate(r.due);
+  // ตั้ง min ของวันใหม่เป็นวันกำหนดคืนเดิม+1
+  const minDate=new Date(r.due);minDate.setDate(minDate.getDate()+1);
+  document.getElementById('ext-new-due').min=minDate.toISOString().split('T')[0];
+  document.getElementById('ext-new-due').value='';
+  document.getElementById('ext-calc').innerHTML='';
+  document.getElementById('ext-note').value='';
+  document.getElementById('extend-modal').classList.add('show');
+}
+
+function calcExtend(){
+  const r=rentals.find(x=>x.id===extendingRentalId);if(!r)return;
+  const newDueVal=document.getElementById('ext-new-due').value;
+  if(!newDueVal){document.getElementById('ext-calc').innerHTML='';return;}
+  const newDue=new Date(newDueVal);
+  const oldDue=r.due;
+  const extraDays=Math.max(0,Math.round((newDue-oldDue)/86400000));
+  const extraCost=r.totalPricePerDay*extraDays;
+  const newTotal=r.total+extraCost;
+  const isOps=currentRole==='ops';
+
+  // ตรวจสอบว่าสินค้าตัวไหนมีคนจองไว้ในช่วงที่ต่อ
+  const ids=r.productIds||[r.productId];
+  let conflicts=[];
+  ids.forEach(pid=>{
+    const otherRental=rentals.find(or=>or.id!==r.id&&(or.productIds||[]).includes(pid)&&(or.status==='จอง'||or.status==='กำลังเช่า')&&or.start&&or.start<=newDue&&or.due>=oldDue);
+    if(otherRental){
+      const p=products.find(x=>x.id===pid);
+      conflicts.push({product:p?p.name:pid, rental:otherRental.id, customer:otherRental.customer, start:fmtDate(otherRental.start)});
+    }
+  });
+
+  let html=`<div style="padding:12px;background:#f0f8ff;border-radius:8px;border:1px solid #bfdbfe">
+    <div style="font-weight:700;color:var(--primary);margin-bottom:6px">📊 สรุปการต่ออายุ</div>
+    <div class="stat-row"><div class="stat-label">เพิ่มอีก</div><div class="stat-value">${extraDays} วัน</div></div>
+    <div class="stat-row"><div class="stat-label">รวมทั้งหมด</div><div class="stat-value">${r.days+extraDays} วัน</div></div>`;
+  if(!isOps){
+    html+=`<div class="stat-row"><div class="stat-label">ค่าเช่าเพิ่ม</div><div class="stat-value price">฿${fmt(extraCost)}</div></div>
+    <div class="stat-row"><div class="stat-label">ค่าเช่ารวมใหม่</div><div class="stat-value" style="font-size:18px;font-weight:800;color:var(--primary)">฿${fmt(newTotal)}</div></div>`;
+  }
+  html+=`</div>`;
+
+  if(conflicts.length){
+    html+=`<div style="margin-top:10px;padding:10px;background:#fef2f2;border-radius:8px;border:1px solid #fca5a5">
+      <div style="font-weight:700;color:var(--danger);font-size:13px">⚠️ มีรายการจองชนกัน!</div>`;
+    conflicts.forEach(c=>{html+=`<div style="font-size:12px;margin-top:4px">• ${c.product} → ${c.rental} (${c.customer}, เริ่ม ${c.start})</div>`;});
+    html+=`<div style="font-size:11px;color:var(--muted);margin-top:6px">ต่ออายุได้ แต่ต้องจัดการรายการชนกันด้วย</div></div>`;
+  }
+
+  document.getElementById('ext-calc').innerHTML=html;
+}
+
+function saveExtend(){
+  const r=rentals.find(x=>x.id===extendingRentalId);if(!r)return;
+  const newDueVal=document.getElementById('ext-new-due').value;
+  if(!newDueVal){showToast('กรุณาเลือกวันกำหนดคืนใหม่','error');return;}
+  const newDue=new Date(newDueVal);
+  const oldDue=r.due;
+  const extraDays=Math.max(0,Math.round((newDue-oldDue)/86400000));
+  const extraCost=r.totalPricePerDay*extraDays;
+  const noteText=document.getElementById('ext-note').value.trim();
+
+  // อัพเดตข้อมูล
+  r.due=newDue;
+  r.days=r.days+extraDays;
+  r.total=r.total+extraCost;
+  r.note=(r.note?r.note+' | ':'')+'ต่ออายุ +'+extraDays+' วัน'+(noteText?' ('+noteText+')':'');
+  // ถ้าสถานะเป็นเกินกำหนด → เปลี่ยนกลับเป็นกำลังเช่า
+  if(r.status==='เกินกำหนด') r.status='กำลังเช่า';
+
+  closeModal('extend-modal');
+  gsUpdateRental(r);
+  showToast(`🔄 ต่ออายุ ${r.id} สำเร็จ! (+${extraDays} วัน, กำหนดคืนใหม่ ${fmtDate(newDue)})`);
+  renderRentals();renderDashboard();
 }
 
 function openCustomerModal(){['cm-name','cm-phone','cm-address'].forEach(id=>document.getElementById(id).value='');document.getElementById('customer-modal').classList.add('show');}
