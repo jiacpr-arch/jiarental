@@ -582,7 +582,7 @@ QR Code สินค้า
 <div class="modal-header"><h3 id="rental-modal-title">สร้างรายการจอง</h3><button class="modal-close" onclick="closeModal('rental-modal')">&times;</button></div>
 <div class="modal-body">
 <div class="form-group"><label>ผู้เช่า</label><select id="rm-customer"><option value="">-- เลือกลูกค้า --</option></select></div>
-<div class="form-group"><label>เซลล์</label><select id="rm-sales"><option value="">-- เลือกเซลล์ --</option><option value="พี่มิ้ง">พี่มิ้ง</option><option value="พี่ป่าน">พี่ป่าน</option><option value="พี่แก้มใส">พี่แก้มใส</option><option value="พี่แนน">พี่แนน</option></select></div>
+<div class="form-group"><label>เซลล์</label><select id="rm-sales"><option value="">-- เลือกเซลล์ --</option></select></div>
 <div class="form-group"><label>สินค้า (เลือกได้หลายรายการ)</label>
 <input class="search-input" id="rm-product-search" placeholder="พิมพ์เพื่อค้นหาสินค้า..." oninput="filterProductCheckboxes()" style="margin-bottom:6px;padding:8px 12px;font-size:13px">
 <div class="multi-select-wrap" id="rm-product-list"></div>
@@ -632,7 +632,7 @@ QR Code สินค้า
 <div class="modal-body">
 <div id="return-info"></div>
 <div class="form-group" style="margin-top:16px"><label>วันที่คืนจริง</label><input type="date" id="ret-date"></div>
-<div class="form-group"><label>ผู้รับสินค้า</label><select id="ret-receiver" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกผู้รับสินค้า --</option><option>ป่าน</option><option>เจ๋ง</option><option>ตี๋</option><option>ปั้น</option><option>หมวย</option></select></div>
+<div class="form-group"><label>ผู้รับสินค้า</label><select id="ret-receiver" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกผู้รับสินค้า --</option></select></div>
 <div class="form-group"><label>ราคาส่งกลับ (บาท)</label><input type="number" id="ret-shipping" min="0" placeholder="0" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none"></div>
 <div class="form-group"><label>ผู้จ่ายเงิน</label><select id="ret-payer" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกผู้จ่าย --</option><option>ลูกค้าออกเอง</option><option>หักจากเงินประกัน</option><option>ลูกค้านำมาส่ง</option></select></div>
 </div>
@@ -649,7 +649,7 @@ QR Code สินค้า
 <div class="modal-header" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><h3 style="color:#fff">ยืนยันการจอง → เริ่มเช่า</h3><button class="modal-close" onclick="closeModal('confirm-booking-modal')" style="color:#fff">&times;</button></div>
 <div class="modal-body">
 <div id="cb-info"></div>
-<div class="form-group" style="margin-top:16px"><label>ผู้ส่งสินค้า <span style="color:var(--danger)">*</span></label><select id="cb-sender" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกผู้ส่งสินค้า --</option><option>ป่าน</option><option>เจ๋ง</option><option>ตี๋</option><option>ปั้น</option><option>หมวย</option></select></div>
+<div class="form-group" style="margin-top:16px"><label>ผู้ส่งสินค้า <span style="color:var(--danger)">*</span></label><select id="cb-sender" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกผู้ส่งสินค้า --</option></select></div>
 <div class="form-group"><label>ค่าส่งสินค้า (บาท)</label><input type="number" id="cb-shipping-cost" min="0" placeholder="0" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none"></div>
 <div class="form-group"><label>ผู้จ่ายเงิน</label><select id="cb-payer" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกผู้จ่าย --</option><option>ลูกค้าออกเอง</option><option>หักจากเงินประกัน</option></select></div>
 <div class="form-group"><label>จัดส่งโดย</label><select id="cb-delivery-by" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกวิธีจัดส่ง --</option><option>ลาล่ามูฟ</option><option>เคอรี่</option><option>ลูกค้ามารับเอง</option></select></div>
@@ -667,8 +667,8 @@ QR Code สินค้า
 // ========== ROLE SYSTEM ==========
 let currentRole = ''; // 'sales' or 'ops'
 let currentUser = '';
-const salesNames = ['พี่มิ้ง','พี่ป่าน','พี่แก้มใส','พี่แนน'];
-const opsNames = ['ป่าน','เจ๋ง','ตี๋','ปั้น','หมวย'];
+let salesNames = [];
+let opsNames = [];
 
 function selectRole(role){
   currentRole = role;
@@ -777,6 +777,12 @@ async function loadFromSheets() {
     productNames: typeof r.productNames === 'string' ? r.productNames.split(',').map(s=>s.trim()).filter(Boolean) : (r.productNames||[])
   }));
   rentalCounter = data.counter?.value || 0;
+  // Load staff names from Sheets
+  const staff = data.staff || [];
+  salesNames = staff.filter(s => s.role === 'sales').map(s => s.name);
+  opsNames = staff.filter(s => s.role === 'ops').map(s => s.name);
+  if (!salesNames.length) salesNames = ['พี่มิ้ง','พี่ป่าน','พี่แก้มใส','พี่แนน'];
+  if (!opsNames.length) opsNames = ['ป่าน','เจ๋ง','ตี๋','ปั้น','หมวย'];
   isLoading = false;
   showToast('โหลดข้อมูลสำเร็จ! (สินค้า ' + products.length + ' | ลูกค้า ' + customers.length + ' | เช่า ' + rentals.length + ')', 'success');
 }
@@ -1289,6 +1295,7 @@ function openRentalModal(){
   sel.innerHTML='<option value="">-- เลือกลูกค้า --</option>'+customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
   // Auto-set sales name if role is sales
   const salesSel=document.getElementById('rm-sales');
+  salesSel.innerHTML='<option value="">-- เลือกเซลล์ --</option>'+salesNames.map(n=>`<option value="${n}">${n}</option>`).join('');
   if(currentRole==='sales'&&currentUser){
     salesSel.value=currentUser;
     salesSel.disabled=true;
@@ -1363,6 +1370,8 @@ function openConfirmBookingModal(id){
     <div class="stat-row"><div class="stat-label">เซลล์</div><div class="stat-value">${r.sales||'—'}</div></div>`;
   if(currentRole!=='ops') infoHtml+=`<div class="stat-row"><div class="stat-label">ค่าเช่ารวม</div><div class="stat-value price">฿${fmt(r.total)}</div></div>`;
   document.getElementById('cb-info').innerHTML=infoHtml;
+  const senderSel=document.getElementById('cb-sender');
+  senderSel.innerHTML='<option value="">-- เลือกผู้ส่งสินค้า --</option>'+opsNames.map(n=>`<option value="${n}">${n}</option>`).join('');
   document.getElementById('cb-sender').value='';
   document.getElementById('cb-shipping-cost').value='';
   document.getElementById('cb-payer').value='';
@@ -1451,6 +1460,8 @@ function openReturnModal(id){
   if(currentRole!=='ops') infoHtml+=`<div class="stat-row"><div class="stat-label">ค่าเช่ารวม</div><div class="stat-value price">฿${fmt(r.total)}</div></div>`;
   document.getElementById('return-info').innerHTML=infoHtml;
   document.getElementById('ret-date').value=new Date().toISOString().split('T')[0];
+  const recvSel=document.getElementById('ret-receiver');
+  recvSel.innerHTML='<option value="">-- เลือกผู้รับสินค้า --</option>'+opsNames.map(n=>`<option value="${n}">${n}</option>`).join('');
   document.getElementById('ret-receiver').value='';
   document.getElementById('ret-shipping').value='';
   document.getElementById('ret-payer').value='';
