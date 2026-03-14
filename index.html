@@ -228,6 +228,7 @@ Dashboard
 <div style="display:flex;gap:6px">
 <button class="btn btn-primary view-toggle active" id="btn-view-table" onclick="switchProdView('table')" style="padding:8px 16px">📋 ตาราง</button>
 <button class="btn btn-outline view-toggle" id="btn-view-gantt" onclick="switchProdView('gantt')" style="padding:8px 16px">📅 ปฏิทิน</button>
+<button class="btn btn-outline view-toggle" id="btn-view-check" onclick="switchProdView('check')" style="padding:8px 16px">🔍 เช็คของว่าง</button>
 </div>
 </div>
 
@@ -276,6 +277,24 @@ Dashboard
 </div>
 </div>
 
+<!-- CHECK AVAILABILITY VIEW -->
+<div id="prod-view-check" style="display:none">
+<div class="card">
+<div class="card-body">
+<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-bottom:20px">
+<div class="form-group" style="margin:0;flex:1;min-width:160px">
+<label style="font-size:13px;font-weight:600;margin-bottom:4px;display:block">วันเช่า</label>
+<input type="date" id="chk-start" class="search-input" style="width:100%;padding:10px 12px" onchange="renderAvailCheck()">
+</div>
+<div class="form-group" style="margin:0;flex:1;min-width:160px">
+<label style="font-size:13px;font-weight:600;margin-bottom:4px;display:block">วันกำหนดคืน</label>
+<input type="date" id="chk-end" class="search-input" style="width:100%;padding:10px 12px" onchange="renderAvailCheck()">
+</div>
+<button class="btn btn-primary" onclick="renderAvailCheck()" style="height:42px">ตรวจสอบ</button>
+</div>
+<div id="chk-result"></div>
+</div>
+</div>
 </div>
 
 <!-- RENTALS -->
@@ -759,8 +778,10 @@ let ganttYear=new Date().getFullYear(), ganttMonth=new Date().getMonth();
 function switchProdView(view){
   document.getElementById('prod-view-table').style.display=view==='table'?'':'none';
   document.getElementById('prod-view-gantt').style.display=view==='gantt'?'':'none';
+  document.getElementById('prod-view-check').style.display=view==='check'?'':'none';
   document.getElementById('btn-view-table').className='btn '+(view==='table'?'btn-primary view-toggle active':'btn-outline view-toggle');
   document.getElementById('btn-view-gantt').className='btn '+(view==='gantt'?'btn-primary view-toggle active':'btn-outline view-toggle');
+  document.getElementById('btn-view-check').className='btn '+(view==='check'?'btn-primary view-toggle active':'btn-outline view-toggle');
   if(view==='gantt'){
     // populate cat filter
     const cats=[...new Set(products.map(p=>p.cat))].sort();
@@ -768,6 +789,91 @@ function switchProdView(view){
     if(sel.options.length<=1){cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});}
     renderGantt();
   }
+  if(view==='check'){
+    const today=new Date().toISOString().split('T')[0];
+    if(!document.getElementById('chk-start').value) document.getElementById('chk-start').value=today;
+    if(!document.getElementById('chk-end').value) document.getElementById('chk-end').value=today;
+    renderAvailCheck();
+  }
+}
+
+function renderAvailCheck(){
+  const startVal=document.getElementById('chk-start').value;
+  const endVal=document.getElementById('chk-end').value;
+  const el=document.getElementById('chk-result');
+  if(!startVal||!endVal){el.innerHTML='<div class="empty-state"><p>กรุณาเลือกวันเช่าและวันกำหนดคืน</p></div>';return;}
+  const chkStart=new Date(startVal);
+  const chkEnd=new Date(endVal);
+  if(chkEnd<chkStart){el.innerHTML='<div style="padding:16px;text-align:center;color:var(--danger);font-size:14px">วันกำหนดคืนต้องไม่น้อยกว่าวันเช่า</div>';return;}
+
+  // หาสินค้าที่ถูกจอง/เช่าในช่วงนี้
+  const busyIds=new Set();
+  rentals.forEach(r=>{
+    if(r.status==='ยกเลิก'||r.status==='คืนแล้ว')return;
+    const rStart=r.start;
+    const rEnd=r.returnDate||r.due;
+    // เช็คว่าช่วงเวลาซ้อนกันไหม
+    if(rStart<=chkEnd&&rEnd>=chkStart){
+      (r.productIds||[r.productId]).forEach(id=>busyIds.add(id));
+    }
+  });
+
+  // รวมตาม category
+  const catInfo={};
+  products.forEach(p=>{
+    if(!catInfo[p.cat]) catInfo[p.cat]={cat:p.cat,price:p.price,unit:p.unit,total:0,available:0,busy:0,repair:0,items:[]};
+    catInfo[p.cat].total++;
+    if(p.status==='ซ่อม'){
+      catInfo[p.cat].repair++;
+    } else if(busyIds.has(p.id)){
+      catInfo[p.cat].busy++;
+    } else if(p.status==='ว่าง'||p.status==='ถูกเช่า'||p.status==='จอง'){
+      // ถ้าสถานะถูกเช่า/จอง แต่ไม่ได้ชนวันที่เลือก = ว่างในช่วงนี้
+      if(!busyIds.has(p.id)&&p.status!=='ซ่อม'){
+        catInfo[p.cat].available++;
+        catInfo[p.cat].items.push(p);
+      }
+    }
+  });
+
+  const cats=Object.values(catInfo).sort((a,b)=>a.cat.localeCompare(b.cat));
+  const days=Math.max(1,Math.round((chkEnd-chkStart)/86400000));
+
+  el.innerHTML=`
+    <div style="margin-bottom:16px;padding:12px 16px;background:#eff6ff;border-radius:10px;border:1px solid #bfdbfe">
+      <div style="font-size:14px;font-weight:700;color:var(--primary)">📋 ผลการตรวจสอบ</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px">ช่วง ${fmtDate(chkStart)} — ${fmtDate(chkEnd)} (${days} วัน)</div>
+    </div>
+    <table>
+      <thead><tr>
+        <th>ชนิดอุปกรณ์</th>
+        <th class="text-center">ทั้งหมด</th>
+        <th class="text-center" style="color:var(--success)">ว่าง</th>
+        <th class="text-center" style="color:var(--primary)">ถูกจอง/เช่า</th>
+        <th class="text-center" style="color:var(--muted)">ซ่อม</th>
+        <th class="text-right">ราคา/วัน</th>
+        <th class="text-right">ค่าเช่า ${days} วัน</th>
+        <th>ตัวที่ว่าง</th>
+      </tr></thead>
+      <tbody>${cats.map(c=>{
+        const pct=c.total>0?Math.round(c.available/c.total*100):0;
+        const barColor=c.available===0?'#ef4444':c.available<=2?'#f59e0b':'#22c55e';
+        return `<tr>
+          <td><span style="font-weight:700">${c.cat}</span></td>
+          <td class="text-center">${c.total} ${c.unit}</td>
+          <td class="text-center"><span class="badge ${c.available>0?'badge-green':'badge-red'}" style="font-size:13px;padding:4px 12px">${c.available}</span></td>
+          <td class="text-center"><span class="badge badge-blue">${c.busy}</span></td>
+          <td class="text-center">${c.repair>0?'<span class="badge badge-gray">'+c.repair+'</span>':'—'}</td>
+          <td class="text-right price">฿${fmt(c.price)}</td>
+          <td class="text-right" style="font-weight:600">฿${fmt(c.price*days)}</td>
+          <td style="font-size:11px;max-width:250px">${c.available>0?c.items.map(p=>'<span style="display:inline-block;background:#d1fae5;color:#065f46;padding:1px 6px;border-radius:4px;margin:1px;font-size:10px">'+p.name+'</span>').join(''):'<span style="color:var(--danger);font-weight:600">ไม่มีว่าง</span>'}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>
+    <div style="margin-top:16px;padding:12px 16px;background:#f0fdf4;border-radius:10px;border:1px solid #bbf7d0">
+      <div style="font-size:13px;color:var(--success);font-weight:600">สรุป: ว่างทั้งหมด ${cats.reduce((s,c)=>s+c.available,0)} ชิ้น จาก ${cats.reduce((s,c)=>s+c.total,0)} ชิ้น</div>
+    </div>
+  `;
 }
 
 function ganttNav(dir){
