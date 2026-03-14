@@ -276,6 +276,31 @@ tr:hover{background:#f8fafc}
 .scan-tab{flex:1;padding:10px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:var(--muted);transition:all .2s}
 .scan-tab.active{background:var(--primary);color:#fff}
 #qr-camera-status{font-size:12px;color:var(--muted);text-align:center;margin:8px 0}
+
+/* Scan Verify Checklist */
+.scan-checklist{border:2px solid var(--border);border-radius:10px;padding:12px;margin:16px 0;background:#fafbfc}
+.scan-checklist-title{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.scan-checklist-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;margin-bottom:4px;font-size:13px;transition:all .3s}
+.scan-checklist-item.pending{background:#fef3c7;border:1px solid #fcd34d}
+.scan-checklist-item.verified{background:#d1fae5;border:1px solid #6ee7b7}
+.scan-checklist-item .check-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.scan-checklist-item.pending .check-icon{background:#fef3c7;border:2px solid #f59e0b;color:#f59e0b}
+.scan-checklist-item.verified .check-icon{background:#059669;color:#fff;border:2px solid #059669}
+.scan-checklist-item .item-name{flex:1;font-weight:600}
+.scan-checklist-item .item-id{font-size:11px;color:var(--muted)}
+.scan-verify-input-wrap{display:flex;gap:8px;margin-top:10px}
+.scan-verify-input{flex:1;padding:10px 12px;border:2px solid var(--border);border-radius:8px;font-size:15px;outline:none;text-align:center;letter-spacing:1px;font-family:inherit;transition:border-color .2s}
+.scan-verify-input:focus{border-color:var(--primary)}
+.scan-verify-input.error{border-color:var(--danger);animation:shake .3s}
+.scan-verify-input.success{border-color:var(--success)}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.scan-progress{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;font-weight:600}
+.scan-progress-bar{flex:1;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden}
+.scan-progress-fill{height:100%;border-radius:4px;transition:width .4s;background:linear-gradient(90deg,#f59e0b,#059669)}
+.scan-verify-camera-btn{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.scan-verify-camera-btn:hover{background:var(--primary-dark)}
+#cb-scan-camera-area,#ret-scan-camera-area{margin-top:10px;max-width:320px;margin-left:auto;margin-right:auto}
+#cb-scan-camera-area video,#ret-scan-camera-area video{border-radius:10px!important}
 </style>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
@@ -763,36 +788,64 @@ QR Code สินค้า
 
 <!-- RETURN MODAL -->
 <div class="modal-overlay" id="return-modal">
-<div class="modal">
-<div class="modal-header"><h3>บันทึกการคืนสินค้า</h3><button class="modal-close" onclick="closeModal('return-modal')">&times;</button></div>
+<div class="modal" style="max-width:600px">
+<div class="modal-header"><h3>บันทึกการคืนสินค้า</h3><button class="modal-close" onclick="closeReturnModalSafe()">&times;</button></div>
 <div class="modal-body">
 <div id="return-info"></div>
+
+<!-- SCAN VERIFY: ตรวจสอบสินค้าก่อนรับคืน -->
+<div class="scan-checklist" id="ret-scan-checklist">
+<div class="scan-checklist-title">📋 ตรวจสอบสินค้าที่รับคืน</div>
+<div id="ret-scan-items"></div>
+<div class="scan-progress"><span id="ret-scan-count">0/0</span><div class="scan-progress-bar"><div class="scan-progress-fill" id="ret-scan-bar" style="width:0%"></div></div></div>
+<div class="scan-verify-input-wrap">
+<input class="scan-verify-input" id="ret-scan-input" placeholder="สแกน QR หรือพิมพ์รหัส..." onkeydown="if(event.key==='Enter')verifyRetScan()">
+<button class="scan-verify-camera-btn" onclick="toggleRetCamera()">📷</button>
+</div>
+<div id="ret-scan-camera-area"></div>
+<div id="ret-scan-msg" style="font-size:12px;text-align:center;margin-top:6px"></div>
+</div>
+
 <div class="form-group" style="margin-top:16px"><label>วันที่คืนจริง</label><input type="date" id="ret-date"></div>
 <div class="form-group"><label>ผู้รับสินค้า</label><select id="ret-receiver" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกผู้รับสินค้า --</option></select></div>
 <div class="form-group"><label>ราคาส่งกลับ (บาท)</label><input type="number" id="ret-shipping" min="0" placeholder="0" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none"></div>
 <div class="form-group"><label>ผู้จ่ายเงิน</label><select id="ret-payer" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกผู้จ่าย --</option><option>ลูกค้าออกเอง</option><option>หักจากเงินประกัน</option><option>ลูกค้านำมาส่ง</option></select></div>
 </div>
 <div class="modal-footer">
-<button class="btn btn-outline" onclick="closeModal('return-modal')">ยกเลิก</button>
-<button class="btn btn-success" onclick="confirmReturn()">ยืนยันการคืน</button>
+<button class="btn btn-outline" onclick="closeReturnModalSafe()">ยกเลิก</button>
+<button class="btn btn-success" id="ret-confirm-btn" onclick="confirmReturn()" disabled>🔒 สแกนสินค้าให้ครบก่อน</button>
 </div>
 </div>
 </div>
 
 <!-- CONFIRM BOOKING MODAL -->
 <div class="modal-overlay" id="confirm-booking-modal">
-<div class="modal">
+<div class="modal" style="max-width:600px">
 <div class="modal-header" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><h3 style="color:#fff">ยืนยันการจอง → เริ่มเช่า</h3><button class="modal-close" onclick="closeModal('confirm-booking-modal')" style="color:#fff">&times;</button></div>
 <div class="modal-body">
 <div id="cb-info"></div>
+
+<!-- SCAN VERIFY: ตรวจสอบสินค้าก่อนส่ง -->
+<div class="scan-checklist" id="cb-scan-checklist">
+<div class="scan-checklist-title">📦 ตรวจสอบสินค้าก่อนส่ง</div>
+<div id="cb-scan-items"></div>
+<div class="scan-progress"><span id="cb-scan-count">0/0</span><div class="scan-progress-bar"><div class="scan-progress-fill" id="cb-scan-bar" style="width:0%"></div></div></div>
+<div class="scan-verify-input-wrap">
+<input class="scan-verify-input" id="cb-scan-input" placeholder="สแกน QR หรือพิมพ์รหัส..." onkeydown="if(event.key==='Enter')verifyCBScan()">
+<button class="scan-verify-camera-btn" onclick="toggleCBCamera()">📷</button>
+</div>
+<div id="cb-scan-camera-area"></div>
+<div id="cb-scan-msg" style="font-size:12px;text-align:center;margin-top:6px"></div>
+</div>
+
 <div class="form-group" style="margin-top:16px"><label>ผู้ส่งสินค้า <span style="color:var(--danger)">*</span></label><select id="cb-sender" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกผู้ส่งสินค้า --</option></select></div>
 <div class="form-group"><label>ค่าส่งสินค้า (บาท)</label><input type="number" id="cb-shipping-cost" min="0" placeholder="0" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none"></div>
 <div class="form-group"><label>ผู้จ่ายเงิน</label><select id="cb-payer" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกผู้จ่าย --</option><option>ลูกค้าออกเอง</option><option>หักจากเงินประกัน</option></select></div>
 <div class="form-group"><label>จัดส่งโดย</label><select id="cb-delivery-by" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;outline:none"><option value="">-- เลือกวิธีจัดส่ง --</option><option>ลาล่ามูฟ</option><option>เคอรี่</option><option>ลูกค้ามารับเอง</option></select></div>
 </div>
 <div class="modal-footer">
-<button class="btn btn-outline" onclick="closeModal('confirm-booking-modal')">ยกเลิก</button>
-<button class="btn btn-primary" onclick="doConfirmBooking()" style="background:linear-gradient(135deg,#f59e0b,#d97706)">ยืนยัน เริ่มเช่า</button>
+<button class="btn btn-outline" onclick="closeConfirmBookingModal()">ยกเลิก</button>
+<button class="btn btn-primary" id="cb-confirm-btn" onclick="doConfirmBooking()" style="background:linear-gradient(135deg,#f59e0b,#d97706)" disabled>🔒 สแกนสินค้าให้ครบก่อน</button>
 </div>
 </div>
 </div>
@@ -1716,6 +1769,16 @@ function saveVIP(){
 }
 
 // ========== CONFIRM BOOKING, CANCEL, RETURN ==========
+// Scan verification state
+let cbVerifiedIds = [];
+let cbRequiredIds = [];
+let cbCameraScanner = null;
+let cbCameraRunning = false;
+let retVerifiedIds = [];
+let retRequiredIds = [];
+let retCameraScanner = null;
+let retCameraRunning = false;
+
 function openConfirmBookingModal(id){
   const r=rentals.find(x=>x.id===id);if(!r||r.status!=='จอง')return;
   const prodNames=Array.isArray(r.productNames)?r.productNames.join(', '):r.productName||'';
@@ -1731,13 +1794,105 @@ function openConfirmBookingModal(id){
   document.getElementById('cb-shipping-cost').value='';
   document.getElementById('cb-payer').value='';
   document.getElementById('cb-delivery-by').value='';
+
+  // Setup scan checklist
+  cbRequiredIds = r.productIds || [r.productId];
+  cbVerifiedIds = [];
+  renderCBScanChecklist();
+  document.getElementById('cb-scan-input').value='';
+  document.getElementById('cb-scan-msg').innerHTML='';
+  document.getElementById('cb-scan-camera-area').innerHTML='';
+  cbCameraRunning=false;
+  updateCBConfirmBtn();
+
   document.getElementById('confirm-booking-modal').dataset.rentalId=id;
   document.getElementById('confirm-booking-modal').classList.add('show');
+  setTimeout(()=>document.getElementById('cb-scan-input').focus(),200);
+}
+
+function renderCBScanChecklist(){
+  document.getElementById('cb-scan-items').innerHTML=cbRequiredIds.map(pid=>{
+    const p=products.find(x=>x.id===pid);
+    const verified=cbVerifiedIds.includes(pid);
+    return `<div class="scan-checklist-item ${verified?'verified':'pending'}">
+      <div class="check-icon">${verified?'✓':'?'}</div>
+      <div class="item-name">${p?p.name:'ไม่พบ'}</div>
+      <div class="item-id">${pid}</div>
+    </div>`;
+  }).join('');
+  const done=cbVerifiedIds.length;const total=cbRequiredIds.length;
+  document.getElementById('cb-scan-count').textContent=`${done}/${total}`;
+  document.getElementById('cb-scan-bar').style.width=total?`${done/total*100}%`:'0%';
+}
+
+function verifyCBScan(){
+  let val=document.getElementById('cb-scan-input').value.trim();
+  if(!val)return;
+  if(val.startsWith('JIARAKSA:'))val=val.replace('JIARAKSA:','');
+  const input=document.getElementById('cb-scan-input');
+  const msg=document.getElementById('cb-scan-msg');
+
+  if(cbVerifiedIds.includes(val)){
+    input.className='scan-verify-input error';
+    msg.innerHTML=`<span style="color:var(--warning)">⚠️ "${val}" สแกนไปแล้ว</span>`;
+  } else if(cbRequiredIds.includes(val)){
+    cbVerifiedIds.push(val);
+    input.className='scan-verify-input success';
+    const p=products.find(x=>x.id===val);
+    msg.innerHTML=`<span style="color:var(--success)">✅ ${p?p.name:val} — ถูกต้อง!</span>`;
+    renderCBScanChecklist();
+    updateCBConfirmBtn();
+  } else {
+    input.className='scan-verify-input error';
+    msg.innerHTML=`<span style="color:var(--danger)">❌ "${val}" ไม่อยู่ในรายการจอง!</span>`;
+  }
+  input.value='';
+  setTimeout(()=>{input.className='scan-verify-input';},1500);
+  input.focus();
+}
+
+function toggleCBCamera(){
+  const area=document.getElementById('cb-scan-camera-area');
+  if(cbCameraRunning){
+    if(cbCameraScanner){cbCameraScanner.stop().then(()=>{cbCameraScanner.clear();cbCameraRunning=false;}).catch(()=>{cbCameraRunning=false;});}
+    area.innerHTML='';
+    return;
+  }
+  area.innerHTML='<div id="cb-qr-reader"></div><div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px">เล็งกล้องไปที่ QR Code</div>';
+  try{
+    cbCameraScanner=new Html5Qrcode("cb-qr-reader");
+    cbCameraScanner.start({facingMode:"environment"},{fps:10,qrbox:{width:200,height:200}},
+      (decoded)=>{
+        let val=decoded.trim();if(val.startsWith('JIARAKSA:'))val=val.replace('JIARAKSA:','');
+        document.getElementById('cb-scan-input').value=val;
+        verifyCBScan();
+        // หยุดกล้องถ้าสแกนครบ
+        if(cbVerifiedIds.length>=cbRequiredIds.length){
+          cbCameraScanner.stop().then(()=>{cbCameraScanner.clear();cbCameraRunning=false;area.innerHTML='';}).catch(()=>{});
+        }
+      },()=>{}
+    ).then(()=>{cbCameraRunning=true;}).catch(()=>{area.innerHTML='<div style="color:var(--danger);font-size:12px;text-align:center">ไม่สามารถเปิดกล้องได้</div>';});
+  }catch(e){area.innerHTML='<div style="color:var(--danger);font-size:12px;text-align:center">เบราว์เซอร์ไม่รองรับกล้อง</div>';}
+}
+
+function updateCBConfirmBtn(){
+  const btn=document.getElementById('cb-confirm-btn');
+  const allDone=cbVerifiedIds.length>=cbRequiredIds.length;
+  btn.disabled=!allDone;
+  btn.textContent=allDone?'✅ ยืนยัน เริ่มเช่า':`🔒 สแกนสินค้าให้ครบก่อน (${cbVerifiedIds.length}/${cbRequiredIds.length})`;
+}
+
+function closeConfirmBookingModal(){
+  if(cbCameraScanner&&cbCameraRunning){cbCameraScanner.stop().then(()=>{cbCameraScanner.clear();cbCameraRunning=false;}).catch(()=>{cbCameraRunning=false;});}
+  document.getElementById('cb-scan-camera-area').innerHTML='';
+  closeModal('confirm-booking-modal');
 }
 
 function doConfirmBooking(){
   const id=document.getElementById('confirm-booking-modal').dataset.rentalId;
   const r=rentals.find(x=>x.id===id);if(!r)return;
+  // ตรวจสอบว่าสแกนครบ
+  if(cbVerifiedIds.length<cbRequiredIds.length){showToast('กรุณาสแกนสินค้าให้ครบทุกรายการ','error');return;}
   const sender=document.getElementById('cb-sender').value;
   if(!sender){showToast('กรุณาเลือกผู้ส่งสินค้า','error');return;}
   r.sender=sender;
@@ -1749,8 +1904,8 @@ function doConfirmBooking(){
   r.confirmedDate=new Date();
   const ids=r.productIds||[r.productId];
   ids.forEach(pid=>{const prod=products.find(p=>p.id===pid);if(prod)prod.status='ถูกเช่า';});
-  closeModal('confirm-booking-modal');
-  showToast(`ยืนยันจอง ${r.id} → กำลังเช่า สำเร็จ! (คอมฯส่ง ฿${fmt(r.senderCommission)})`);
+  closeConfirmBookingModal();
+  showToast(`ยืนยันจอง ${r.id} → กำลังเช่า สำเร็จ! (สแกนครบ ${ids.length} ชิ้น)`);
   gsUpdateRental(r);ids.forEach(pid=>gsUpdateProductStatus(pid,'ถูกเช่า'));
   renderRentals();renderDashboard();renderProducts();
 }
@@ -1765,6 +1920,7 @@ function cancelBooking(id){
   renderRentals();renderDashboard();renderProducts();
 }
 
+// ========== RETURN with scan verification ==========
 function openReturnModal(id){
   const r=rentals.find(x=>x.id===id);if(!r)return;
   const prodDisplay=Array.isArray(r.productNames)?r.productNames.join(', '):r.productName||'';
@@ -1780,12 +1936,104 @@ function openReturnModal(id){
   document.getElementById('ret-receiver').value='';
   document.getElementById('ret-shipping').value='';
   document.getElementById('ret-payer').value='';
+
+  // Setup scan checklist
+  retRequiredIds = r.productIds || [r.productId];
+  retVerifiedIds = [];
+  renderRetScanChecklist();
+  document.getElementById('ret-scan-input').value='';
+  document.getElementById('ret-scan-msg').innerHTML='';
+  document.getElementById('ret-scan-camera-area').innerHTML='';
+  retCameraRunning=false;
+  updateRetConfirmBtn();
+
   document.getElementById('return-modal').dataset.rentalId=id;
   document.getElementById('return-modal').classList.add('show');
+  setTimeout(()=>document.getElementById('ret-scan-input').focus(),200);
 }
+
+function renderRetScanChecklist(){
+  document.getElementById('ret-scan-items').innerHTML=retRequiredIds.map(pid=>{
+    const p=products.find(x=>x.id===pid);
+    const verified=retVerifiedIds.includes(pid);
+    return `<div class="scan-checklist-item ${verified?'verified':'pending'}">
+      <div class="check-icon">${verified?'✓':'?'}</div>
+      <div class="item-name">${p?p.name:'ไม่พบ'}</div>
+      <div class="item-id">${pid}</div>
+    </div>`;
+  }).join('');
+  const done=retVerifiedIds.length;const total=retRequiredIds.length;
+  document.getElementById('ret-scan-count').textContent=`${done}/${total}`;
+  document.getElementById('ret-scan-bar').style.width=total?`${done/total*100}%`:'0%';
+}
+
+function verifyRetScan(){
+  let val=document.getElementById('ret-scan-input').value.trim();
+  if(!val)return;
+  if(val.startsWith('JIARAKSA:'))val=val.replace('JIARAKSA:','');
+  const input=document.getElementById('ret-scan-input');
+  const msg=document.getElementById('ret-scan-msg');
+
+  if(retVerifiedIds.includes(val)){
+    input.className='scan-verify-input error';
+    msg.innerHTML=`<span style="color:var(--warning)">⚠️ "${val}" สแกนไปแล้ว</span>`;
+  } else if(retRequiredIds.includes(val)){
+    retVerifiedIds.push(val);
+    input.className='scan-verify-input success';
+    const p=products.find(x=>x.id===val);
+    msg.innerHTML=`<span style="color:var(--success)">✅ ${p?p.name:val} — รับคืนแล้ว!</span>`;
+    renderRetScanChecklist();
+    updateRetConfirmBtn();
+  } else {
+    input.className='scan-verify-input error';
+    msg.innerHTML=`<span style="color:var(--danger)">❌ "${val}" ไม่อยู่ในรายการเช่านี้!</span>`;
+  }
+  input.value='';
+  setTimeout(()=>{input.className='scan-verify-input';},1500);
+  input.focus();
+}
+
+function toggleRetCamera(){
+  const area=document.getElementById('ret-scan-camera-area');
+  if(retCameraRunning){
+    if(retCameraScanner){retCameraScanner.stop().then(()=>{retCameraScanner.clear();retCameraRunning=false;}).catch(()=>{retCameraRunning=false;});}
+    area.innerHTML='';
+    return;
+  }
+  area.innerHTML='<div id="ret-qr-reader"></div><div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px">เล็งกล้องไปที่ QR Code</div>';
+  try{
+    retCameraScanner=new Html5Qrcode("ret-qr-reader");
+    retCameraScanner.start({facingMode:"environment"},{fps:10,qrbox:{width:200,height:200}},
+      (decoded)=>{
+        let val=decoded.trim();if(val.startsWith('JIARAKSA:'))val=val.replace('JIARAKSA:','');
+        document.getElementById('ret-scan-input').value=val;
+        verifyRetScan();
+        if(retVerifiedIds.length>=retRequiredIds.length){
+          retCameraScanner.stop().then(()=>{retCameraScanner.clear();retCameraRunning=false;area.innerHTML='';}).catch(()=>{});
+        }
+      },()=>{}
+    ).then(()=>{retCameraRunning=true;}).catch(()=>{area.innerHTML='<div style="color:var(--danger);font-size:12px;text-align:center">ไม่สามารถเปิดกล้องได้</div>';});
+  }catch(e){area.innerHTML='<div style="color:var(--danger);font-size:12px;text-align:center">เบราว์เซอร์ไม่รองรับกล้อง</div>';}
+}
+
+function updateRetConfirmBtn(){
+  const btn=document.getElementById('ret-confirm-btn');
+  const allDone=retVerifiedIds.length>=retRequiredIds.length;
+  btn.disabled=!allDone;
+  btn.textContent=allDone?'✅ ยืนยันการคืน':`🔒 สแกนสินค้าให้ครบก่อน (${retVerifiedIds.length}/${retRequiredIds.length})`;
+}
+
+function closeReturnModalSafe(){
+  if(retCameraScanner&&retCameraRunning){retCameraScanner.stop().then(()=>{retCameraScanner.clear();retCameraRunning=false;}).catch(()=>{retCameraRunning=false;});}
+  document.getElementById('ret-scan-camera-area').innerHTML='';
+  closeModal('return-modal');
+}
+
 function confirmReturn(){
   const id=document.getElementById('return-modal').dataset.rentalId;
   const r=rentals.find(x=>x.id===id);if(!r)return;
+  // ตรวจสอบว่าสแกนครบ
+  if(retVerifiedIds.length<retRequiredIds.length){showToast('กรุณาสแกนสินค้าให้ครบทุกรายการ','error');return;}
   r.returnDate=new Date(document.getElementById('ret-date').value);
   r.receiver=document.getElementById('ret-receiver').value;
   r.shippingCost=parseFloat(document.getElementById('ret-shipping').value)||0;
@@ -1794,8 +2042,8 @@ function confirmReturn(){
   r.receiverCommission=r.isVIP?0:Math.round(r.total*0.05);
   const ids=r.productIds||[r.productId];
   ids.forEach(id=>{const prod=products.find(p=>p.id===id);if(prod)prod.status='ว่าง';});
-  closeModal('return-modal');
-  showToast(`คืนสินค้าสำเร็จ!${r.receiverCommission?' (คอมฯรับ ฿'+fmt(r.receiverCommission)+')':''}`);
+  closeReturnModalSafe();
+  showToast(`คืนสินค้าสำเร็จ! (สแกนครบ ${ids.length} ชิ้น)${r.receiverCommission?' คอมฯรับ ฿'+fmt(r.receiverCommission):''}`);
   gsUpdateRental(r);ids.forEach(id=>gsUpdateProductStatus(id,'ว่าง'));
   renderRentals();renderDashboard();renderProducts();
 }
