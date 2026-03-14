@@ -1874,7 +1874,14 @@ function renderPagination(containerId,totalPages,current,onClick){
 
 // ========== INIT ==========
 async function init(){
-  // Don't render yet — wait for role selection + data load
+  // โหลดชื่อพนักงานก่อนแสดงหน้าเลือกบทบาท
+  const data = await gsAPI({action: 'getAll'});
+  if(data && data.staff){
+    salesNames = data.staff.filter(s => s.role === 'sales').map(s => s.name);
+    opsNames = data.staff.filter(s => s.role === 'ops').map(s => s.name);
+  }
+  if (!salesNames.length) salesNames = ['พี่มิ้ง','พี่ป่าน','พี่แก้มใส','พี่แนน'];
+  if (!opsNames.length) opsNames = ['ป่าน','เจ๋ง','ตี๋','ปั้น','หมวย'];
 }
 init();
 
