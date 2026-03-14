@@ -269,7 +269,15 @@ tr:hover{background:#f8fafc}
 .modal-tab{flex:1;padding:10px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;background:#fff;transition:all .2s;color:var(--muted)}
 .modal-tab.active{background:var(--primary);color:#fff}
 .modal-tab.vip-tab.active{background:linear-gradient(135deg,#7c3aed,#6d28d9)}
+/* QR Camera Scanner */
+#qr-reader{width:100%;max-width:360px;margin:0 auto}
+#qr-reader video{border-radius:12px!important}
+.scan-tabs{display:flex;gap:0;margin-bottom:16px;border-radius:8px;overflow:hidden;border:2px solid var(--border)}
+.scan-tab{flex:1;padding:10px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:var(--muted);transition:all .2s}
+.scan-tab.active{background:var(--primary);color:#fff}
+#qr-camera-status{font-size:12px;color:var(--muted);text-align:center;margin:8px 0}
 </style>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
 <div class="role-overlay" id="role-overlay">
@@ -536,10 +544,26 @@ QR Code สินค้า
 
 <!-- QR SCAN OVERLAY -->
 <div class="qr-scan-overlay" id="qr-scan-overlay">
-<div class="qr-scan-card">
-<h3 style="font-size:20px;font-weight:700;margin-bottom:4px">สแกน / พิมพ์รหัสสินค้า</h3>
-<p style="font-size:13px;color:var(--muted)">ใช้เครื่องอ่าน QR หรือพิมพ์รหัสสินค้าเพื่อตรวจสอบ</p>
-<input class="qr-scan-input" id="qr-scan-input" placeholder="รหัสสินค้า..." autofocus oninput="checkScannedQR()">
+<div class="qr-scan-card" style="max-width:520px">
+<h3 style="font-size:20px;font-weight:700;margin-bottom:4px">📷 สแกน QR / พิมพ์รหัส</h3>
+<p style="font-size:13px;color:var(--muted)">เปิดกล้องสแกน QR Code หรือพิมพ์รหัสสินค้า</p>
+
+<div class="scan-tabs" style="margin-top:12px">
+<div class="scan-tab active" id="scan-tab-camera" onclick="switchScanTab('camera')">📷 สแกนกล้อง</div>
+<div class="scan-tab" id="scan-tab-manual" onclick="switchScanTab('manual')">⌨️ พิมพ์รหัส</div>
+</div>
+
+<!-- Camera scan -->
+<div id="scan-camera-area">
+<div id="qr-reader"></div>
+<div id="qr-camera-status">กำลังเปิดกล้อง...</div>
+</div>
+
+<!-- Manual input -->
+<div id="scan-manual-area" style="display:none">
+<input class="qr-scan-input" id="qr-scan-input" placeholder="พิมพ์รหัสสินค้า..." oninput="checkScannedQR()">
+</div>
+
 <div id="qr-scan-result"></div>
 <div style="margin-top:20px;display:flex;gap:10px;justify-content:center">
 <button class="btn btn-outline" onclick="closeScanModal()">ปิด</button>
@@ -1827,24 +1851,117 @@ function showQRDetail(id){
   document.getElementById('qr-detail-modal').classList.add('show');
 }
 
-function openScanModal(){document.getElementById('qr-scan-overlay').classList.add('show');document.getElementById('qr-scan-input').value='';document.getElementById('qr-scan-result').innerHTML='';setTimeout(()=>document.getElementById('qr-scan-input').focus(),100);}
-function closeScanModal(){document.getElementById('qr-scan-overlay').classList.remove('show');}
-function clearScan(){document.getElementById('qr-scan-input').value='';document.getElementById('qr-scan-result').innerHTML='';document.getElementById('qr-scan-input').focus();}
+// ========== QR CAMERA SCANNER ==========
+let html5QrCode = null;
+let scannerRunning = false;
 
-function checkScannedQR(){
-  let val=document.getElementById('qr-scan-input').value.trim();if(!val){document.getElementById('qr-scan-result').innerHTML='';return;}
-  if(val.startsWith('JIARAKSA:'))val=val.replace('JIARAKSA:','');
-  const p=products.find(x=>x.id===val);const result=document.getElementById('qr-scan-result');
-  if(!p){result.innerHTML=`<div class="qr-mismatch"><div style="font-weight:700;font-size:16px;color:#991b1b">ไม่พบสินค้า</div><div style="font-size:13px;margin-top:4px">รหัส "${val}" ไม่มีในระบบ</div></div>`;return;}
-  const activeRental=rentals.find(r=>(r.productIds||[]).includes(p.id)&&(r.status==='กำลังเช่า'||r.status==='จอง'||r.status==='เกินกำหนด'||r.status==='ยืมด่วน'));
-  const isOps=currentRole==='ops';
-  let html=`<div class="qr-match"><div style="font-weight:700;font-size:16px;color:#065f46">พบสินค้า!</div>
+function switchScanTab(tab){
+  document.getElementById('scan-tab-camera').classList.toggle('active', tab==='camera');
+  document.getElementById('scan-tab-manual').classList.toggle('active', tab==='manual');
+  document.getElementById('scan-camera-area').style.display = tab==='camera'?'':'none';
+  document.getElementById('scan-manual-area').style.display = tab==='manual'?'':'none';
+  if(tab==='camera') startCameraScanner();
+  else stopCameraScanner();
+  if(tab==='manual') setTimeout(()=>document.getElementById('qr-scan-input').focus(),100);
+}
+
+function startCameraScanner(){
+  if(scannerRunning) return;
+  const statusEl = document.getElementById('qr-camera-status');
+  statusEl.textContent = 'กำลังเปิดกล้อง...';
+  statusEl.style.color = 'var(--muted)';
+
+  try {
+    html5QrCode = new Html5Qrcode("qr-reader");
+    html5QrCode.start(
+      { facingMode: "environment" }, // กล้องหลัง
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      (decodedText) => {
+        // สแกนสำเร็จ
+        let val = decodedText.trim();
+        if(val.startsWith('JIARAKSA:')) val = val.replace('JIARAKSA:','');
+        processScannedCode(val);
+        // หยุดสแกนชั่วคราวหลังอ่านได้
+        stopCameraScanner();
+        statusEl.innerHTML = `<span style="color:var(--success);font-weight:600">✅ สแกนสำเร็จ: ${val}</span>`;
+      },
+      (errorMessage) => {
+        // ไม่ต้องทำอะไร — กำลังสแกนอยู่
+      }
+    ).then(() => {
+      scannerRunning = true;
+      statusEl.textContent = 'เปิดกล้องแล้ว — เล็งไปที่ QR Code';
+      statusEl.style.color = 'var(--success)';
+    }).catch((err) => {
+      statusEl.innerHTML = `<span style="color:var(--danger)">ไม่สามารถเปิดกล้องได้</span><br><span style="font-size:11px">ลองใช้แท็บ "พิมพ์รหัส" แทน หรืออนุญาตให้เว็บเข้าถึงกล้อง</span>`;
+      console.error('Camera error:', err);
+    });
+  } catch(e) {
+    statusEl.innerHTML = `<span style="color:var(--danger)">เบราว์เซอร์ไม่รองรับกล้อง</span><br><span style="font-size:11px">ลองใช้แท็บ "พิมพ์รหัส" แทน</span>`;
+  }
+}
+
+function stopCameraScanner(){
+  if(html5QrCode && scannerRunning){
+    html5QrCode.stop().then(()=>{
+      scannerRunning = false;
+      html5QrCode.clear();
+    }).catch(()=>{scannerRunning=false;});
+  }
+}
+
+function processScannedCode(val){
+  const p = products.find(x => x.id === val);
+  const result = document.getElementById('qr-scan-result');
+  if(!p){
+    result.innerHTML = `<div class="qr-mismatch"><div style="font-weight:700;font-size:16px;color:#991b1b">ไม่พบสินค้า</div><div style="font-size:13px;margin-top:4px">รหัส "${val}" ไม่มีในระบบ</div></div>`;
+    return;
+  }
+  const activeRental = rentals.find(r=>(r.productIds||[]).includes(p.id)&&(r.status==='กำลังเช่า'||r.status==='จอง'||r.status==='เกินกำหนด'||r.status==='ยืมด่วน'));
+  const isOps = currentRole==='ops';
+  let html = `<div class="qr-match"><div style="font-weight:700;font-size:16px;color:#065f46">✅ พบสินค้า!</div>
     <div class="stat-row"><div class="stat-label">ชื่อ</div><div class="stat-value">${p.name}</div></div>
     <div class="stat-row"><div class="stat-label">Category</div><div class="stat-value">${p.cat}</div></div>
     <div class="stat-row"><div class="stat-label">สถานะ</div><div class="stat-value"><span class="badge ${badgeClass(p.status)}">${p.status}</span></div></div>`;
-  if(!isOps) html+=`<div class="stat-row"><div class="stat-label">ราคา/วัน</div><div class="stat-value price">฿${fmt(p.price)}</div></div>`;
-  if(activeRental){html+=`<div style="margin-top:10px;padding:10px;background:#fef3c7;border-radius:8px"><div style="font-weight:700;color:#92400e">${activeRental.isVIP?'⚡ ':''}จองให้: ${activeRental.customer}</div><div style="font-size:12px;color:#92400e">เลขที่ ${activeRental.id} | กำหนดคืน: ${fmtDate(activeRental.due)}</div></div>`;}
-  html+=`</div>`;result.innerHTML=html;
+  if(!isOps) html += `<div class="stat-row"><div class="stat-label">ราคา/วัน</div><div class="stat-value price">฿${fmt(p.price)}</div></div>`;
+  if(activeRental){
+    html += `<div style="margin-top:10px;padding:10px;background:#fef3c7;border-radius:8px">
+      <div style="font-weight:700;color:#92400e">${activeRental.isVIP?'⚡ ':''}จองให้: ${activeRental.customer}</div>
+      <div style="font-size:12px;color:#92400e">เลขที่ ${activeRental.id} | กำหนดคืน: ${fmtDate(activeRental.due)}</div>
+    </div>`;
+  }
+  html += `</div>`;
+  result.innerHTML = html;
+}
+
+function openScanModal(){
+  document.getElementById('qr-scan-overlay').classList.add('show');
+  document.getElementById('qr-scan-result').innerHTML='';
+  document.getElementById('qr-camera-status').textContent='';
+  // เริ่มที่แท็บกล้องเสมอ
+  switchScanTab('camera');
+}
+function closeScanModal(){
+  stopCameraScanner();
+  document.getElementById('qr-scan-overlay').classList.remove('show');
+}
+function clearScan(){
+  document.getElementById('qr-scan-result').innerHTML='';
+  document.getElementById('qr-scan-input').value='';
+  document.getElementById('qr-camera-status').textContent='';
+  // เปิดกล้องใหม่ถ้าอยู่แท็บกล้อง
+  if(document.getElementById('scan-tab-camera').classList.contains('active')){
+    startCameraScanner();
+  } else {
+    document.getElementById('qr-scan-input').focus();
+  }
+}
+
+function checkScannedQR(){
+  let val=document.getElementById('qr-scan-input').value.trim();
+  if(!val){document.getElementById('qr-scan-result').innerHTML='';return;}
+  if(val.startsWith('JIARAKSA:'))val=val.replace('JIARAKSA:','');
+  processScannedCode(val);
 }
 
 function printSingleQR(id){const p=products.find(x=>x.id===id);if(!p)return;const w=window.open('','','width=400,height=500');w.document.write(`<html><head><title>QR - ${p.id}</title><style>body{font-family:sans-serif;text-align:center;padding:40px}h2{margin:0 0 4px;font-size:18px}p{margin:2px 0;color:#666;font-size:13px}.id{font-size:14px;font-weight:700;margin-top:8px}</style></head><body><h2>${p.name}</h2><p>${p.cat}</p><img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent('JIARAKSA:'+p.id)}" width="250" height="250" style="margin:16px 0"><div class="id">${p.id}</div><p>JIARAKSA ระบบเช่า-ยืม</p><script>setTimeout(()=>{window.print();},500)<\/script></body></html>`);w.document.close();}
