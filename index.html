@@ -1103,6 +1103,15 @@ QR Code สินค้า
 </div>
 </div>
 
+<!-- DAY EVENTS MODAL -->
+<div class="modal-overlay" id="day-events-modal">
+<div class="modal" style="max-width:500px">
+<div class="modal-header" style="background:linear-gradient(135deg,#2563eb,#1d4ed8)"><h3 style="color:#fff" id="day-events-title">รายการทั้งหมด</h3><button class="modal-close" onclick="closeModal('day-events-modal')" style="color:#fff">&times;</button></div>
+<div class="modal-body" id="day-events-body" style="max-height:400px;overflow-y:auto"></div>
+<div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('day-events-modal')">ปิด</button></div>
+</div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1231,13 +1240,15 @@ async function loadFromSheets() {
   showToast('โหลดข้อมูลสำเร็จ! (สินค้า ' + products.length + ' | ลูกค้า ' + customers.length + ' | เช่า ' + rentals.length + ')', 'success');
 }
 
+function dateToSheets(d){if(!d)return '';if(!(d instanceof Date))return d;return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;}
+
 async function gsSaveRental(rentalData) {
   const d = {...rentalData};
-  d.start = d.start ? d.start.toISOString() : '';
-  d.due = d.due ? d.due.toISOString() : '';
-  d.deliverDate = d.deliverDate ? d.deliverDate.toISOString() : '';
-  d.returnDate = d.returnDate ? d.returnDate.toISOString() : '';
-  d.confirmedDate = d.confirmedDate ? d.confirmedDate.toISOString() : '';
+  d.start = dateToSheets(d.start);
+  d.due = dateToSheets(d.due);
+  d.deliverDate = dateToSheets(d.deliverDate);
+  d.returnDate = dateToSheets(d.returnDate);
+  d.confirmedDate = dateToSheets(d.confirmedDate);
   d.productIds = Array.isArray(d.productIds) ? d.productIds.join(',') : d.productIds;
   d.productNames = Array.isArray(d.productNames) ? d.productNames.join(',') : d.productNames;
   const res = await gsAPI({action: 'saveRental', data: d});
@@ -1245,11 +1256,11 @@ async function gsSaveRental(rentalData) {
 }
 async function gsUpdateRental(rentalData) {
   const d = {...rentalData};
-  d.start = d.start instanceof Date ? d.start.toISOString() : (d.start||'');
-  d.due = d.due instanceof Date ? d.due.toISOString() : (d.due||'');
-  d.deliverDate = d.deliverDate instanceof Date ? d.deliverDate.toISOString() : (d.deliverDate||'');
-  d.returnDate = d.returnDate instanceof Date ? d.returnDate.toISOString() : (d.returnDate||'');
-  d.confirmedDate = d.confirmedDate instanceof Date ? d.confirmedDate.toISOString() : (d.confirmedDate||'');
+  d.start = dateToSheets(d.start);
+  d.due = dateToSheets(d.due);
+  d.deliverDate = dateToSheets(d.deliverDate);
+  d.returnDate = dateToSheets(d.returnDate);
+  d.confirmedDate = dateToSheets(d.confirmedDate);
   d.productIds = Array.isArray(d.productIds) ? d.productIds.join(',') : (d.productIds||'');
   d.productNames = Array.isArray(d.productNames) ? d.productNames.join(',') : (d.productNames||'');
   const res = await gsAPI({action: 'updateRental', data: d});
@@ -1729,6 +1740,21 @@ function renderAlerts(){
 
 // ========== CALENDAR ==========
 let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
+let calEvMap={};
+
+function showDayEvents(key){
+  const events=calEvMap[key]||[];
+  if(!events.length)return;
+  const parts=key.split('-');
+  const dayStr=`${parts[2]}/${parseInt(parts[1])+1}/${parts[0]}`;
+  document.getElementById('day-events-title').textContent=`รายการวันที่ ${dayStr} (${events.length} รายการ)`;
+  document.getElementById('day-events-body').innerHTML=events.map(e=>
+    `<div style="padding:8px 12px;margin-bottom:6px;border-radius:8px;cursor:pointer;border-left:4px solid var(--primary);background:#f8fafc" onclick="closeModal('day-events-modal');showReceipt('${e.rentalId}')">
+      <span class="cal-event ${e.cls}" style="display:inline-block;margin-bottom:0;font-size:12px">${e.label}</span>
+    </div>`
+  ).join('');
+  document.getElementById('day-events-modal').classList.add('show');
+}
 const thaiMonths=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const thaiDays=['อา','จ','อ','พ','พฤ','ศ','ส'];
 function calNav(dir){if(dir===0){calYear=new Date().getFullYear();calMonth=new Date().getMonth();}else{calMonth+=dir;if(calMonth<0){calMonth=11;calYear--;}if(calMonth>11){calMonth=0;calYear++;}}renderCalendar();}
@@ -1741,6 +1767,7 @@ function renderCalendar(){
   const prevDays=new Date(calYear,calMonth,0).getDate();
   const today=new Date();const isThisMonth=today.getFullYear()===calYear&&today.getMonth()===calMonth;
   const evMap={};
+  calEvMap=evMap;
   function addEv(d,label,cls,rentalId){if(!d)return;const key=`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;if(!evMap[key])evMap[key]=[];evMap[key].push({label,cls,rentalId});}
   rentals.forEach(r=>{
     // ไม่แสดงรายการยกเลิก
@@ -1759,7 +1786,7 @@ function renderCalendar(){
     const isToday=isThisMonth&&d===today.getDate();const key=`${calYear}-${calMonth}-${d}`;const events=evMap[key]||[];
     html+=`<div class="cal-cell${isToday?' today':''}"><div class="cal-day">${d}</div>`;
     events.slice(0,4).forEach(e=>{html+=`<span class="cal-event ${e.cls}" title="${e.label}" style="cursor:pointer" onclick="showReceipt('${e.rentalId}')">${e.label}</span>`;});
-    if(events.length>4) html+=`<span style="font-size:10px;color:var(--muted)">+${events.length-4} อื่นๆ</span>`;
+    if(events.length>4) html+=`<span style="font-size:10px;color:var(--primary);cursor:pointer;text-decoration:underline" onclick="showDayEvents('${key}')">+${events.length-4} อื่นๆ</span>`;
     html+=`</div>`;
   }
   const filled=firstDay+daysInMonth;for(let d=1;d<=totalCells-filled;d++){html+=`<div class="cal-cell other-month"><div class="cal-day">${d}</div></div>`;}
