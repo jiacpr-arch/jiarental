@@ -365,7 +365,7 @@ Dashboard
 <div class="nav-label">รายงาน</div>
 <div class="nav-item" onclick="showPage('alerts')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-แจ้งเตือน
+แจ้งเตือน <span id="alert-badge" style="display:none;background:var(--danger);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:4px"></span>
 </div>
 <div class="nav-item" onclick="showPage('commission')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
@@ -543,6 +543,10 @@ QR Code สินค้า
 <div id="page-alerts" class="page">
 <div class="page-header">
 <div><h2>แจ้งเตือน</h2><div class="subtitle">รายการที่ต้องดำเนินการ</div></div>
+</div>
+<div class="card">
+<div class="card-header" style="background:linear-gradient(135deg,#fef3c7,#fffbeb)"><h3 style="color:#92400e">⏰ ใกล้ถึงกำหนดคืน (3 วัน)</h3></div>
+<div class="card-body alert-list" id="upcoming-alerts"></div>
 </div>
 <div class="card">
 <div class="card-header"><h3>รายการเกินกำหนดคืน</h3></div>
@@ -1522,7 +1526,7 @@ function renderRentals(){
     return true;
   });
   if(currentRole==='sales') filtered=filtered.filter(r=>r.sales===currentUser);
-  filtered.sort((a,b)=>b.start-a.start);
+  filtered.sort((a,b)=>(b.deliverDate||b.start)-(a.deliverDate||a.start));
   document.getElementById('rental-count').textContent=`${filtered.length} รายการ`;
 
   // FEATURE 4: Ops ก็เห็นปุ่มสร้างจองได้
@@ -1620,6 +1624,11 @@ function renderRentals(){
 function renderCustomers(){
   const q=document.getElementById('cust-search').value.toLowerCase();
   let filtered=customers.filter(c=>!q||c.name.toLowerCase().includes(q)||c.phone.includes(q));
+  // เซลล์เห็นเฉพาะลูกค้าที่ตัวเองเคยจองให้
+  if(currentRole==='sales'){
+    const myCustomerNames=new Set(rentals.filter(r=>r.sales===currentUser).map(r=>r.customer));
+    filtered=filtered.filter(c=>myCustomerNames.has(c.name));
+  }
   document.getElementById('cust-count').textContent=`${filtered.length} ลูกค้า`;
   const isOps=currentRole==='ops';
   document.getElementById('cust-table').innerHTML=filtered.map(c=>{
@@ -1705,6 +1714,33 @@ function openCustomerDetail(custId){
 
 // ========== ALERTS ==========
 function renderAlerts(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const in3Days=new Date(today);in3Days.setDate(in3Days.getDate()+3);
+
+  // ใกล้ถึงกำหนดคืน (ภายใน 3 วัน)
+  const upcoming=rentals.filter(r=>{
+    if(!['กำลังเช่า','ยืมด่วน'].includes(r.status)||!r.due||r.noDueDate) return false;
+    const due=new Date(r.due);due.setHours(0,0,0,0);
+    return due>=today&&due<=in3Days;
+  }).sort((a,b)=>a.due-b.due);
+
+  document.getElementById('upcoming-alerts').innerHTML=upcoming.length?upcoming.map(r=>{
+    const due=new Date(r.due);due.setHours(0,0,0,0);
+    const daysLeft=Math.round((due-today)/86400000);
+    const prodNames=Array.isArray(r.productNames)?r.productNames.join(', '):'';
+    const urgencyColor=daysLeft===0?'var(--danger)':daysLeft===1?'#ea580c':'#d97706';
+    const urgencyText=daysLeft===0?'วันนี้!':daysLeft===1?'พรุ่งนี้':`อีก ${daysLeft} วัน`;
+    return `<div class="alert-item" style="background:#fffbeb;border-left-color:${urgencyColor}">
+      <div class="alert-icon" style="font-size:18px;color:${urgencyColor}">&#9200;</div>
+      <div class="alert-text">
+        <strong>${r.id} — ${prodNames}</strong>
+        ผู้เช่า: ${r.customer} | เซลล์: ${r.sales||'—'} | กำหนดคืน: ${fmtDate(r.due)}
+        <span style="color:${urgencyColor};font-weight:700;margin-left:6px">${urgencyText}</span>
+      </div>
+      <button class="btn btn-sm btn-success" onclick="openReturnModal('${r.id}')">คืน</button>
+    </div>`;
+  }).join(''):'<div class="empty-state"><p>ไม่มีรายการใกล้ถึงกำหนดคืน</p></div>';
+
   const overdue=rentals.filter(r=>r.status==='เกินกำหนด');
   const isOps=currentRole==='ops';
   document.getElementById('overdue-alerts').innerHTML=overdue.length?overdue.map(r=>{
@@ -1736,6 +1772,14 @@ function renderAlerts(){
       <button class="btn btn-sm btn-success" onclick="openReturnModal('${r.id}')">คืน</button>
     </div>`;
   }).join(''):'<div class="empty-state"><p>ไม่มีรายการยืมไม่กำหนดคืน</p></div>';
+
+  // อัปเดต badge แจ้งเตือนที่ sidebar
+  const totalAlerts=upcoming.length+overdue.length;
+  const badge=document.getElementById('alert-badge');
+  if(badge){
+    if(totalAlerts>0){badge.textContent=totalAlerts;badge.style.display='inline';}
+    else{badge.style.display='none';}
+  }
 }
 
 // ========== CALENDAR ==========
@@ -1772,6 +1816,8 @@ function renderCalendar(){
   rentals.forEach(r=>{
     // ไม่แสดงรายการยกเลิก
     if(r.status==='ยกเลิก') return;
+    // เซลล์เห็นเฉพาะรายการของตัวเอง
+    if(currentRole==='sales'&&r.sales!==currentUser) return;
     const stCls=r.isVIP?'st-vip':r.status==='กำลังเช่า'?'st-rent':r.status==='จอง'?'st-book':r.status==='คืนแล้ว'?'st-return':r.status==='เกินกำหนด'?'st-overdue':'st-cancel';
     addEv(r.start,`▶ ${r.customer}`,stCls,r.id);
     addEv(r.due,`◀ กำหนดคืน ${r.customer}`,'st-due',r.id);
@@ -1951,26 +1997,50 @@ function openRentalModal(){
 
 function renderProductCheckboxes(){
   const q=document.getElementById('rm-product-search').value.toLowerCase();
+  const deliverVal=document.getElementById('rm-deliver').value;
   const startVal=document.getElementById('rm-start').value;
-  const startDate=startVal?new Date(startVal):null;
+  const endVal=document.getElementById('rm-end').value;
+  // ใช้วันส่งของเป็นหลัก ถ้าไม่มีใช้วันเช่า
+  const checkDate=deliverVal?new Date(deliverVal):startVal?new Date(startVal):null;
+  const bookStart=startVal?new Date(startVal):null;
+  const bookEnd=endVal?new Date(endVal):null;
 
-  // ฟังก์ชันเช็คว่าสินค้าจะว่างทันวันเช่าหรือไม่
   function getAvailability(p){
     if(p.status==='ว่าง') return {available:true, label:'ว่าง', cls:'badge-green'};
     if(p.status==='ซ่อม') return {available:false, label:'ซ่อม', cls:'badge-gray'};
     if(p.status==='ไม่พร้อมใช้งาน') return {available:false, label:'ไม่พร้อมใช้งาน', cls:'badge-slate'};
     if(p.status==='ออกสอน') return {available:false, label:'ออกสอน', cls:'badge-slate'};
     if(p.status==='ออกบูธ') return {available:false, label:'ออกบูธ', cls:'badge-slate'};
-    // หาว่า rental ปัจจุบันกำหนดคืนเมื่อไหร่
-    if(startDate && (p.status==='ถูกเช่า'||p.status==='จอง')){
-      const activeRental=rentals.find(r=>(r.productIds||[]).includes(p.id)&&(r.status==='กำลังเช่า'||r.status==='จอง'||r.status==='เกินกำหนด'||r.status==='ยืมด่วน'));
-      if(activeRental && activeRental.due){
-        const dueDate=new Date(activeRental.due.getFullYear(),activeRental.due.getMonth(),activeRental.due.getDate());
-        const sDate=new Date(startDate.getFullYear(),startDate.getMonth(),startDate.getDate());
-        if(dueDate < sDate){
-          return {available:true, label:`ว่างทัน (คืน ${fmtDate(activeRental.due)})`, cls:'badge-blue', future:true, dueDate:activeRental.due, customer:activeRental.customer};
+
+    // เช็คการชนกันกับทุกรายการจอง active
+    if(checkDate){
+      const activeRentals=rentals.filter(r=>(r.productIds||[]).includes(p.id)&&['กำลังเช่า','จอง','เกินกำหนด','ยืมด่วน'].includes(r.status));
+      let blocked=false;
+      let earliestDue=null;
+      for(const ar of activeRentals){
+        if(!ar.due) {blocked=true;break;} // ไม่กำหนดคืน → ชนแน่
+        const arStart=ar.deliverDate||ar.start;
+        const arEnd=ar.due;
+        // เช็คช่วงเวลาชนกัน: ถ้า bookStart-bookEnd ทับกับ arStart-arEnd
+        if(bookStart&&bookEnd&&arStart&&arEnd){
+          const s1=new Date(bookStart).setHours(0,0,0,0);
+          const e1=new Date(bookEnd).setHours(0,0,0,0);
+          const s2=new Date(arStart).setHours(0,0,0,0);
+          const e2=new Date(arEnd).setHours(0,0,0,0);
+          if(s1<=e2&&e1>=s2){blocked=true;break;} // ช่วงทับกัน
+        } else if(checkDate){
+          // เช็คแค่วันส่ง ถ้ายังไม่กรอกวันคืน
+          const cDate=new Date(checkDate).setHours(0,0,0,0);
+          const dueDate=new Date(arEnd).setHours(0,0,0,0);
+          if(cDate<=dueDate){blocked=true;break;}
+          if(!earliestDue||arEnd<earliestDue) earliestDue=arEnd;
         }
       }
+      if(!blocked&&activeRentals.length>0){
+        return {available:true, label:`ว่างทัน (คืน ${fmtDate(earliestDue||activeRentals[0].due)})`, cls:'badge-blue', future:true};
+      }
+      if(blocked) return {available:false, label:p.status, cls:badgeClass(p.status)};
+      return {available:true, label:'ว่าง', cls:'badge-green'};
     }
     return {available:false, label:p.status, cls:badgeClass(p.status)};
   }
@@ -1990,7 +2060,7 @@ function renderProductCheckboxes(){
       <span>${p.name}${futureTag}</span>
       <span class="price-tag">฿${fmt(p.price)}/วัน</span>
     </label>`;
-  }).join('')||'<div style="padding:10px;text-align:center;color:var(--muted);font-size:13px">ไม่พบสินค้าที่ว่าง'+(startDate?' (ลองเลื่อนวันเช่าดู)':'')+'</div>';
+  }).join('')||'<div style="padding:10px;text-align:center;color:var(--muted);font-size:13px">ไม่พบสินค้าที่ว่าง'+(checkDate?' (ลองเลื่อนวันส่งของดู)':'')+'</div>';
 }
 function filterProductCheckboxes(){renderProductCheckboxes();}
 function toggleProduct(id,price,checked){
@@ -2111,7 +2181,8 @@ function calcRental(){
   }
 }
 document.getElementById('rm-start').addEventListener('change',()=>{calcRental();renderProductCheckboxes();});
-document.getElementById('rm-end').addEventListener('change',calcRental);
+document.getElementById('rm-end').addEventListener('change',()=>{calcRental();renderProductCheckboxes();});
+document.getElementById('rm-deliver').addEventListener('change',renderProductCheckboxes);
 
 function saveRental(){
   const custId=document.getElementById('rm-customer').value;
