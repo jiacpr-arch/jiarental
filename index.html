@@ -1516,6 +1516,13 @@ function changeStatus(id,status){const p=products.find(x=>x.id===id);if(p){p.sta
 
 // ========== RENTALS ==========
 let rentPage=1;
+let rentSortKey='deliverDate',rentSortDir='desc';
+function sortRentals(key){
+  if(rentSortKey===key){rentSortDir=rentSortDir==='desc'?'asc':'desc';}
+  else{rentSortKey=key;rentSortDir='desc';}
+  rentPage=1;renderRentals();
+}
+function sortArrow(key){return rentSortKey===key?(rentSortDir==='desc'?' ▼':' ▲'):' ⇅';}
 function renderRentals(){
   const q=document.getElementById('rent-search').value.toLowerCase();
   const st=document.getElementById('rent-status-filter').value;
@@ -1526,7 +1533,26 @@ function renderRentals(){
     return true;
   });
   if(currentRole==='sales') filtered=filtered.filter(r=>r.sales===currentUser);
-  filtered.sort((a,b)=>(b.deliverDate||b.start)-(a.deliverDate||a.start));
+  // Sort
+  const sortKey=rentSortKey||'deliverDate';
+  const sortDir=rentSortDir||'desc';
+  filtered.sort((a,b)=>{
+    let va,vb;
+    if(sortKey==='id'){va=a.id;vb=b.id;}
+    else if(sortKey==='start'){va=a.start;vb=b.start;}
+    else if(sortKey==='due'){va=a.due;vb=b.due;}
+    else if(sortKey==='deliverDate'){va=a.deliverDate||a.start;vb=b.deliverDate||b.start;}
+    else if(sortKey==='returnDate'){va=a.returnDate;vb=b.returnDate;}
+    else if(sortKey==='customer'){va=a.customer;vb=b.customer;}
+    else if(sortKey==='sales'){va=a.sales;vb=b.sales;}
+    else if(sortKey==='total'){va=a.total;vb=b.total;}
+    else if(sortKey==='deposit'){va=a.deposit;vb=b.deposit;}
+    else if(sortKey==='status'){va=a.status;vb=b.status;}
+    else {va=a.deliverDate||a.start;vb=b.deliverDate||b.start;}
+    if(va==null)va=0;if(vb==null)vb=0;
+    if(typeof va==='string') return sortDir==='asc'?va.localeCompare(vb):vb.localeCompare(va);
+    return sortDir==='asc'?va-vb:vb-va;
+  });
   document.getElementById('rental-count').textContent=`${filtered.length} รายการ`;
 
   // FEATURE 4: Ops ก็เห็นปุ่มสร้างจองได้
@@ -1541,13 +1567,14 @@ function renderRentals(){
   const isOps=currentRole==='ops';
   const thead=document.querySelector('#page-rentals thead tr');
   if(thead){
-    let hdrHtml='<th>เลขที่</th><th>วันเช่า</th><th>กำหนดคืน</th><th>วันส่งของ</th><th>คืนจริง</th><th>สินค้า</th>';
-    if(!isOps) hdrHtml+='<th class="text-right">ราคา/วัน</th><th class="text-center">วัน</th><th class="text-right">รวม (฿)</th>';
-    hdrHtml+='<th class="text-right">มัดจำ (฿)</th>';
+    const sth=(label,key,cls)=>`<th class="${cls||''}" style="cursor:pointer;white-space:nowrap;user-select:none" onclick="sortRentals('${key}')">${label}${sortArrow(key)}</th>`;
+    let hdrHtml=sth('เลขที่','id')+sth('วันเช่า','start')+sth('กำหนดคืน','due')+sth('วันส่งของ','deliverDate')+sth('คืนจริง','returnDate')+'<th>สินค้า</th>';
+    if(!isOps) hdrHtml+='<th class="text-right">ราคา/วัน</th><th class="text-center">วัน</th>'+sth('รวม (฿)','total','text-right');
+    hdrHtml+=sth('มัดจำ (฿)','deposit','text-right');
     if(!isOps) hdrHtml+='<th>การโอน</th>';
-    hdrHtml+='<th>ผู้เช่า</th><th>เซลล์</th>';
+    hdrHtml+=sth('ผู้เช่า','customer')+sth('เซลล์','sales');
     if(!isSales) hdrHtml+='<th>ผู้ส่งสินค้า</th><th class="text-right">ค่าส่ง</th><th>ผู้จ่าย(ส่ง)</th><th>จัดส่งโดย</th><th>ผู้รับคืน</th><th class="text-right">ค่าส่งกลับ</th><th>ผู้จ่าย(คืน)</th>';
-    hdrHtml+='<th class="text-center">สถานะ</th><th class="text-center">จัดการ</th>';
+    hdrHtml+=sth('สถานะ','status','text-center')+'<th class="text-center">จัดการ</th>';
     thead.innerHTML=hdrHtml;
   }
 
