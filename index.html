@@ -260,7 +260,7 @@ tr:hover{background:#f8fafc}
 .receipt-total .amount{font-size:28px;font-weight:800;color:var(--primary)}
 .receipt-total .desc{font-size:12px;color:var(--muted);margin-top:2px}
 .receipt-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:center;gap:10px}
-.receipt-note{font-size:11px;color:var(--muted);text-align:center;margin-top:12px;padding:8px;background:#fffbeb;border-radius:6px;border:1px dashed #fcd34d}
+.receipt-note{font-size:16px;font-weight:700;color:#dc2626;text-align:center;margin-top:12px;padding:14px;background:linear-gradient(135deg,#fef2f2,#fee2e2);border-radius:10px;border:2px solid #fca5a5}
 
 /* ===== FEATURE 5: VIP Badge ===== */
 .vip-tag{display:inline-flex;align-items:center;gap:3px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;letter-spacing:.5px}
@@ -1494,8 +1494,8 @@ function renderProducts(){
       <td style="font-size:12px;color:var(--muted);max-width:250px">${p.desc}</td>
       <td class="text-center">${p.unit}</td>`;
     if(!isOps) row+=`<td class="text-right price">฿${fmt(p.price)}</td>`;
-    row+=`<td class="text-center"><span class="badge ${badgeClass(p.status)}" ${(p.status==='ถูกเช่า'||p.status==='จอง')?'style="cursor:pointer" onclick="event.stopPropagation();showProductRenter(\''+p.id+'\')" title="คลิกดูผู้เช่า"':''}>${p.status}</span>${p.statusNote?'<div style="font-size:10px;color:var(--danger);margin-top:2px">'+p.statusNote+'</div>':''}</td>`;
-    if(!isSales) row+=`<td class="text-center"><select onchange="onChangeProductStatus('${p.id}',this.value,this)" style="padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px"><option ${p.status==='ว่าง'?'selected':''}>ว่าง</option><option ${p.status==='ถูกเช่า'?'selected':''}>ถูกเช่า</option><option ${p.status==='จอง'?'selected':''}>จอง</option><option ${p.status==='ซ่อม'?'selected':''}>ซ่อม</option><option ${p.status==='ไม่พร้อมใช้งาน'?'selected':''}>ไม่พร้อมใช้งาน</option><option ${p.status==='ออกสอน'?'selected':''}>ออกสอน</option><option ${p.status==='ออกบูธ'?'selected':''}>ออกบูธ</option></select>${p.statusNote?'<div style="font-size:10px;color:var(--danger);margin-top:2px">'+p.statusNote+'</div>':''}</td>`;
+    row+=`<td class="text-center"><span class="badge ${badgeClass(p.status)}" ${(p.status==='ถูกเช่า'||p.status==='จอง')?'style="cursor:pointer" onclick="event.stopPropagation();showProductRenter(\''+p.id+'\')" title="คลิกดูผู้เช่า"':''}>${p.status}</span>${p.statusNote?'<div style="font-size:14px;color:#991b1b;margin-top:6px;font-weight:700;padding:4px 8px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;display:inline-block">⚠ '+p.statusNote+'</div>':''}</td>`;
+    if(!isSales) row+=`<td class="text-center"><select onchange="onChangeProductStatus('${p.id}',this.value,this)" style="padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px"><option ${p.status==='ว่าง'?'selected':''}>ว่าง</option><option ${p.status==='ถูกเช่า'?'selected':''}>ถูกเช่า</option><option ${p.status==='จอง'?'selected':''}>จอง</option><option ${p.status==='ซ่อม'?'selected':''}>ซ่อม</option><option ${p.status==='ไม่พร้อมใช้งาน'?'selected':''}>ไม่พร้อมใช้งาน</option><option ${p.status==='ออกสอน'?'selected':''}>ออกสอน</option><option ${p.status==='ออกบูธ'?'selected':''}>ออกบูธ</option></select>${p.statusNote?'<div style="font-size:14px;color:#991b1b;margin-top:6px;font-weight:700;padding:4px 8px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;display:inline-block">⚠ '+p.statusNote+'</div>':''}</td>`;
     row+=`</tr>`;
     return row;
   }).join('');
@@ -1830,7 +1830,7 @@ function renderAlerts(){
 
   const unavails=products.filter(p=>p.status==='ไม่พร้อมใช้งาน');
   document.getElementById('unavail-alerts').innerHTML=unavails.length?unavails.map(p=>`
-    <div class="alert-item" style="background:#f1f5f9;border-left-color:#334155"><div class="alert-icon" style="font-size:18px">&#9940;</div><div class="alert-text"><strong>${p.id} — ${p.name}</strong><span style="color:#334155">${p.statusNote||'ไม่ระบุเหตุผล'}</span></div><button class="btn btn-sm btn-outline" onclick="changeStatus('${p.id}','ว่าง');products.find(x=>x.id==='${p.id}').statusNote='';renderAlerts();showToast('เปลี่ยนสถานะเป็นว่าง');">พร้อมใช้งานแล้ว</button></div>
+    <div class="alert-item" style="background:#f1f5f9;border-left-color:#334155"><div class="alert-icon" style="font-size:22px">&#9940;</div><div class="alert-text"><strong style="font-size:14px">${p.id} — ${p.name}</strong><div style="color:#334155;font-size:15px;font-weight:700;margin-top:4px;padding:6px 10px;background:#e2e8f0;border-radius:6px">${p.statusNote||'ไม่ระบุเหตุผล'}</div></div><button class="btn btn-sm btn-outline" onclick="changeStatus('${p.id}','ว่าง');products.find(x=>x.id==='${p.id}').statusNote='';renderAlerts();showToast('เปลี่ยนสถานะเป็นว่าง');">พร้อมใช้งานแล้ว</button></div>
   `).join(''):'<div class="empty-state"><p>ไม่มีสินค้าที่ไม่พร้อมใช้งาน</p></div>';
 
   // ยืมไม่กำหนดวันคืน
@@ -2717,7 +2717,7 @@ function printReceipt(){
   .receipt-total{background:#eff6ff;border-radius:8px;padding:14px;text-align:center;margin:10px 0}
   .receipt-total .amount{font-size:26px;font-weight:800;color:#2563eb}
   .receipt-total .desc{font-size:11px;color:#64748b}
-  .receipt-note{font-size:11px;color:#64748b;text-align:center;margin-top:10px;padding:6px;background:#fffbeb;border:1px dashed #fcd34d;border-radius:4px}
+  .receipt-note{font-size:16px;font-weight:700;color:#dc2626;text-align:center;margin-top:10px;padding:14px;background:#fef2f2;border:2px solid #fca5a5;border-radius:8px}
   .vip-tag{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700}
   .price{color:#2563eb;font-weight:700}
   </style></head><body>`);
