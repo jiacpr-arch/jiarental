@@ -234,7 +234,7 @@ tr:hover{background:#f8fafc}
 
 /* ===== FEATURE 2: Smart Category Selector ===== */
 .smart-select-group{border:1.5px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;background:#fafbfc}
-.smart-select-row{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.smart-select-row{display:flex;gap:10px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
 .smart-select-row:last-child{margin-bottom:0}
 .smart-select-row select,.smart-select-row input[type=number]{padding:8px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;outline:none}
 .smart-select-row select{flex:1}
@@ -430,7 +430,7 @@ QR Code สินค้า
 <div class="search-bar">
 <input class="search-input" id="prod-search" placeholder="ค้นหาสินค้า... (รหัส, ชื่อ, รายละเอียด)" oninput="renderProducts()">
 <select class="filter-select" id="prod-cat-filter" onchange="renderProducts()"><option value="">ทุก Category</option></select>
-<select class="filter-select" id="prod-status-filter" onchange="renderProducts()"><option value="">ทุกสถานะ</option><option value="ว่าง">ว่าง</option><option value="ถูกเช่า">ถูกเช่า</option><option value="จอง">จอง</option><option value="ซ่อม">ซ่อม</option><option value="ไม่พร้อมใช้งาน">ไม่พร้อมใช้งาน</option><option value="ออกสอน">ออกสอน</option><option value="ออกบูธ">ออกบูธ</option></select>
+<select class="filter-select" id="prod-status-filter" onchange="renderProducts()"><option value="">ทุกสถานะ</option><option value="ว่าง">ว่าง</option><option value="ถูกเช่า">ถูกเช่า</option><option value="จอง">จอง</option><option value="ซ่อม">ซ่อม</option><option value="ไม่พร้อมใช้งาน">ไม่พร้อมใช้งาน</option><option value="ออกสอน">ออกสอน</option><option value="ออกบูธ">ออกบูธ</option><option value="ทดแทน">ทดแทน</option></select>
 </div>
 <div style="overflow-x:auto">
 <table>
@@ -600,7 +600,7 @@ QR Code สินค้า
 <div class="search-bar" style="margin-bottom:16px">
 <input class="search-input" id="qr-search" placeholder="ค้นหาสินค้า..." oninput="renderQRPage()">
 <select class="filter-select" id="qr-cat-filter" onchange="renderQRPage()"><option value="">ทุก Category</option></select>
-<select class="filter-select" id="qr-status-filter" onchange="renderQRPage()"><option value="">ทุกสถานะ</option><option value="ว่าง">ว่าง</option><option value="ถูกเช่า">ถูกเช่า</option><option value="จอง">จอง</option><option value="ซ่อม">ซ่อม</option><option value="ไม่พร้อมใช้งาน">ไม่พร้อมใช้งาน</option><option value="ออกสอน">ออกสอน</option><option value="ออกบูธ">ออกบูธ</option></select>
+<select class="filter-select" id="qr-status-filter" onchange="renderQRPage()"><option value="">ทุกสถานะ</option><option value="ว่าง">ว่าง</option><option value="ถูกเช่า">ถูกเช่า</option><option value="จอง">จอง</option><option value="ซ่อม">ซ่อม</option><option value="ไม่พร้อมใช้งาน">ไม่พร้อมใช้งาน</option><option value="ออกสอน">ออกสอน</option><option value="ออกบูธ">ออกบูธ</option><option value="ทดแทน">ทดแทน</option></select>
 </div>
 <div class="qr-grid" id="qr-grid"></div>
 </div>
@@ -648,11 +648,12 @@ QR Code สินค้า
 <div id="page-commission" class="page">
 <div class="page-header">
 <div><h2>สรุปเงินรายเดือน</h2><div class="subtitle">คอมมิชชั่นหน้างาน (5% ค่าเช่าต่อเที่ยวส่ง/รับ)</div></div>
-<div style="display:flex;gap:8px;align-items:center">
+<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
 <button class="btn btn-outline" onclick="commNav(-1)">◀ เดือนก่อน</button>
 <span id="comm-month-label" style="font-weight:700;font-size:16px;min-width:160px;text-align:center"></span>
 <button class="btn btn-outline" onclick="commNav(1)">เดือนถัดไป ▶</button>
 <button class="btn btn-outline" onclick="commNav(0)">เดือนนี้</button>
+<button class="btn btn-primary" onclick="exportCommissionPDF()" style="background:linear-gradient(135deg,#dc2626,#b91c1c)">📄 Export PDF</button>
 </div>
 </div>
 <div id="comm-filter-area" style="margin-bottom:16px">
@@ -702,7 +703,7 @@ QR Code สินค้า
 <div class="form-row">
 <div class="form-group"><label>ราคาเช่า/วัน (บาท) <span style="color:var(--danger)">*</span></label><input type="number" id="ap-price" min="0" placeholder="500"></div>
 <div class="form-group"><label>สถานะเริ่มต้น</label>
-<select id="ap-status"><option value="ว่าง">ว่าง</option><option value="ซ่อม">ซ่อม</option><option value="ไม่พร้อมใช้งาน">ไม่พร้อมใช้งาน</option><option value="ออกสอน">ออกสอน</option><option value="ออกบูธ">ออกบูธ</option></select>
+<select id="ap-status"><option value="ว่าง">ว่าง</option><option value="ซ่อม">ซ่อม</option><option value="ไม่พร้อมใช้งาน">ไม่พร้อมใช้งาน</option><option value="ออกสอน">ออกสอน</option><option value="ออกบูธ">ออกบูธ</option><option value="ทดแทน">ทดแทน</option></select>
 </div>
 </div>
 <div class="form-group"><label>รายละเอียด</label><input id="ap-desc" placeholder="คำอธิบายสินค้า"></div>
@@ -1112,6 +1113,12 @@ QR Code สินค้า
 <label>หมายเหตุ / เหตุผล <span style="color:var(--danger)">*</span></label>
 <input id="unavail-note" placeholder="เช่น ชิ้นส่วนหาย, รอซื้อแบตเตอรี่ใหม่, ส่งซ่อมร้านภายนอก..." style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none;font-family:inherit">
 </div>
+<div id="unavail-dates" style="display:none">
+<div class="form-row">
+<div class="form-group"><label>วันที่ไป</label><input type="date" id="unavail-date-start" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none"></div>
+<div class="form-group"><label>วันที่กลับ</label><input type="date" id="unavail-date-end" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none"></div>
+</div>
+</div>
 </div>
 <div class="modal-footer">
 <button class="btn btn-outline" onclick="cancelUnavail()">ยกเลิก</button>
@@ -1335,7 +1342,7 @@ const fmtDate = d => {
   if (!d || !(d instanceof Date) || isNaN(d)) return '—';
   return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
 };
-const badgeClass = s => s==='ว่าง'||s==='คืนแล้ว'?'badge-green':s==='ถูกเช่า'||s==='กำลังเช่า'?'badge-blue':s==='เกินกำหนด'?'badge-red':s==='จอง'?'badge-orange':s==='ยกเลิก'?'badge-gray':s==='ยืมด่วน'?'badge-purple':s==='ไม่พร้อมใช้งาน'||s==='ออกสอน'||s==='ออกบูธ'?'badge-slate':'badge-gray';
+const badgeClass = s => s==='ว่าง'||s==='คืนแล้ว'?'badge-green':s==='ถูกเช่า'||s==='กำลังเช่า'?'badge-blue':s==='เกินกำหนด'?'badge-red':s==='จอง'?'badge-orange':s==='ยกเลิก'?'badge-gray':s==='ยืมด่วน'?'badge-purple':s==='ไม่พร้อมใช้งาน'||s==='ออกสอน'||s==='ออกบูธ'?'badge-slate':s==='ทดแทน'?'badge-purple':'badge-gray';
 
 function showToast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';setTimeout(()=>t.classList.remove('show'),3000);}
 function closeModal(id){document.getElementById(id).classList.remove('show');}
@@ -1494,8 +1501,14 @@ function renderProducts(){
       <td style="font-size:12px;color:var(--muted);max-width:250px">${p.desc}</td>
       <td class="text-center">${p.unit}</td>`;
     if(!isOps) row+=`<td class="text-right price">฿${fmt(p.price)}</td>`;
-    row+=`<td class="text-center"><span class="badge ${badgeClass(p.status)}" ${(p.status==='ถูกเช่า'||p.status==='จอง')?'style="cursor:pointer" onclick="event.stopPropagation();showProductRenter(\''+p.id+'\')" title="คลิกดูผู้เช่า"':''}>${p.status}</span>${p.statusNote?'<div style="font-size:14px;color:#991b1b;margin-top:6px;font-weight:700;padding:4px 8px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;display:inline-block">⚠ '+p.statusNote+'</div>':''}</td>`;
-    if(!isSales) row+=`<td class="text-center"><select onchange="onChangeProductStatus('${p.id}',this.value,this)" style="padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px"><option ${p.status==='ว่าง'?'selected':''}>ว่าง</option><option ${p.status==='ถูกเช่า'?'selected':''}>ถูกเช่า</option><option ${p.status==='จอง'?'selected':''}>จอง</option><option ${p.status==='ซ่อม'?'selected':''}>ซ่อม</option><option ${p.status==='ไม่พร้อมใช้งาน'?'selected':''}>ไม่พร้อมใช้งาน</option><option ${p.status==='ออกสอน'?'selected':''}>ออกสอน</option><option ${p.status==='ออกบูธ'?'selected':''}>ออกบูธ</option></select>${p.statusNote?'<div style="font-size:14px;color:#991b1b;margin-top:6px;font-weight:700;padding:4px 8px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;display:inline-block">⚠ '+p.statusNote+'</div>':''}</td>`;
+    // แสดงวันเช่าใต้ badge ถูกเช่า/จอง + จองล่วงหน้า
+    let rentalDateInfo='';
+    const activeR=rentals.filter(r=>(r.productIds||[]).includes(p.id)&&['กำลังเช่า','จอง','เกินกำหนด','ยืมด่วน'].includes(r.status));
+    if(activeR.length>0){
+      rentalDateInfo=activeR.map(r=>`<div style="font-size:10px;color:${r.status==='จอง'?'var(--warning)':'var(--muted)'};margin-top:2px">${r.status==='จอง'?'📅 ':''}${fmtDate(r.start)} - ${r.noDueDate?'ไม่กำหนด':fmtDate(r.due)}</div>`).join('');
+    }
+    row+=`<td class="text-center"><span class="badge ${badgeClass(p.status)}" ${(p.status==='ถูกเช่า'||p.status==='จอง')?'style="cursor:pointer" onclick="event.stopPropagation();showProductRenter(\''+p.id+'\')" title="คลิกดูผู้เช่า"':''}>${p.status}</span>${rentalDateInfo}${p.statusNote?'<div style="font-size:14px;color:#991b1b;margin-top:6px;font-weight:700;padding:4px 8px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;display:inline-block">⚠ '+p.statusNote+'</div>':''}</td>`;
+    if(!isSales) row+=`<td class="text-center"><select onchange="onChangeProductStatus('${p.id}',this.value,this)" style="padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px"><option ${p.status==='ว่าง'?'selected':''}>ว่าง</option><option ${p.status==='ถูกเช่า'?'selected':''}>ถูกเช่า</option><option ${p.status==='จอง'?'selected':''}>จอง</option><option ${p.status==='ซ่อม'?'selected':''}>ซ่อม</option><option ${p.status==='ไม่พร้อมใช้งาน'?'selected':''}>ไม่พร้อมใช้งาน</option><option ${p.status==='ออกสอน'?'selected':''}>ออกสอน</option><option ${p.status==='ออกบูธ'?'selected':''}>ออกบูธ</option><option ${p.status==='ทดแทน'?'selected':''}>ทดแทน</option></select>${p.statusNote?'<div style="font-size:14px;color:#991b1b;margin-top:6px;font-weight:700;padding:4px 8px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;display:inline-block">⚠ '+p.statusNote+'</div>':''}</td>`;
     row+=`</tr>`;
     return row;
   }).join('');
@@ -1506,14 +1519,22 @@ let unavailPendingSelect = null;
 let unavailPendingStatus = 'ไม่พร้อมใช้งาน';
 
 function onChangeProductStatus(id, status, selectEl){
-  if(status === 'ไม่พร้อมใช้งาน' || status === 'ออกสอน' || status === 'ออกบูธ'){
+  if(status === 'ไม่พร้อมใช้งาน' || status === 'ออกสอน' || status === 'ออกบูธ' || status === 'ทดแทน'){
     unavailPendingId = id;
     unavailPendingSelect = selectEl;
     unavailPendingStatus = status;
     const p = products.find(x=>x.id===id);
     document.getElementById('unavail-product-info').innerHTML = `<strong>${p?p.name:id}</strong> <span style="color:var(--muted);font-size:12px">(${id})</span>`;
     document.getElementById('unavail-note').value = '';
-    document.getElementById('unavail-note').placeholder = status==='ออกสอน'?'ระบุสถานที่/คอร์สที่ไปสอน...':status==='ออกบูธ'?'ระบุงาน/สถานที่ออกบูธ...':'เช่น ชิ้นส่วนหาย, รอซื้อแบตเตอรี่ใหม่...';
+    document.getElementById('unavail-note').placeholder = status==='ออกสอน'?'ระบุสถานที่/คอร์สที่ไปสอน...':status==='ออกบูธ'?'ระบุงาน/สถานที่ออกบูธ...':status==='ทดแทน'?'ระบุทดแทนให้ลูกค้า/เลขที่เช่า...':'เช่น ชิ้นส่วนหาย, รอซื้อแบตเตอรี่ใหม่...';
+    // แสดง/ซ่อนวันที่สำหรับออกสอน/ออกบูธ
+    const showDates=status==='ออกสอน'||status==='ออกบูธ';
+    document.getElementById('unavail-dates').style.display=showDates?'':'none';
+    if(showDates){
+      const today=new Date().toISOString().split('T')[0];
+      document.getElementById('unavail-date-start').value=today;
+      document.getElementById('unavail-date-end').value='';
+    }
     document.querySelector('#unavail-modal .modal-header h3').textContent = status;
     document.getElementById('unavail-modal').classList.add('show');
     setTimeout(()=>document.getElementById('unavail-note').focus(), 200);
@@ -1527,13 +1548,24 @@ function onChangeProductStatus(id, status, selectEl){
 function confirmUnavail(){
   const note = document.getElementById('unavail-note').value.trim();
   if(!note){showToast('กรุณากรอกหมายเหตุ','error');return;}
+  const dateStart=document.getElementById('unavail-date-start').value;
+  const dateEnd=document.getElementById('unavail-date-end').value;
+  const showDates=unavailPendingStatus==='ออกสอน'||unavailPendingStatus==='ออกบูธ';
+  
+  // รวมวันที่เข้าไปใน note
+  let fullNote=note;
+  if(showDates&&dateStart){
+    fullNote+=` | ${fmtDate(new Date(dateStart))}`;
+    if(dateEnd) fullNote+=` - ${fmtDate(new Date(dateEnd))}`;
+  }
+  
   const p = products.find(x=>x.id===unavailPendingId);
   if(p){
     p.status = unavailPendingStatus;
-    p.statusNote = note;
-    localStorage.setItem('statusNote_'+p.id, note);
-    gsUpdateProductStatus(unavailPendingId, unavailPendingStatus, note);
-    showToast(`${p.name} → ${unavailPendingStatus} (${note})`);
+    p.statusNote = fullNote;
+    localStorage.setItem('statusNote_'+p.id, fullNote);
+    gsUpdateProductStatus(unavailPendingId, unavailPendingStatus, fullNote);
+    showToast(`${p.name} → ${unavailPendingStatus}`);
     renderProducts();
   }
   closeModal('unavail-modal');
@@ -1894,9 +1926,10 @@ function renderCalendar(){
     if(currentRole==='sales'&&r.sales!==currentUser) return;
     const stCls=r.isVIP?'st-vip':r.status==='กำลังเช่า'?'st-rent':r.status==='จอง'?'st-book':r.status==='คืนแล้ว'?'st-return':r.status==='เกินกำหนด'?'st-overdue':'st-cancel';
     addEv(r.start,`▶ ${r.customer}`,stCls,r.id);
-    addEv(r.due,`◀ กำหนดคืน ${r.customer}`,'st-due',r.id);
     if(r.deliverDate) addEv(r.deliverDate,`🚚 ส่ง ${r.customer}`,stCls,r.id);
-    if(r.returnDate) addEv(r.returnDate,`✓ คืนจริง ${r.customer}`,'st-return',r.id);
+    // แสดงคืนจริงถ้ามี ถ้าไม่มีแสดงกำหนดคืน (รวมเป็นช่องเดียว)
+    if(r.returnDate) addEv(r.returnDate,`✓ คืน ${r.customer}`,'st-return',r.id);
+    else addEv(r.due,`◀ คืน ${r.customer}`,'st-due',r.id);
   });
   let html='';
   thaiDays.forEach((d,i)=>{html+=`<div class="cal-header" style="${i===0?'color:#fca5a5':''}">${d}</div>`;});
@@ -1961,12 +1994,79 @@ function addSmartRow(){
   const row=document.createElement('div');
   row.className='smart-select-row';
   row.innerHTML=`
-    <select class="smart-cat" onchange="updateSmartAvail(this.parentElement)"><option value="">-- ชนิดอุปกรณ์ --</option>${cats.map(c=>`<option value="${c}">${c}</option>`).join('')}</select>
+    <select class="smart-cat" onchange="onSmartCatChange(this.parentElement)"><option value="">-- ชนิดอุปกรณ์ --</option>${cats.map(c=>`<option value="${c}">${c}</option>`).join('')}</select>
     <input type="number" class="smart-qty" min="1" value="1" onchange="updateSmartAvail(this.parentElement)" oninput="updateSmartAvail(this.parentElement)">
     <span class="avail-badge"></span>
-    <button class="remove-row" onclick="this.parentElement.remove();autoSelectSmartProducts()">&times;</button>
+    <button class="remove-row" onclick="this.parentElement.remove();autoSelectSmartProducts();updateSmartCatOptions()">&times;</button>
+    <div class="smart-monitor-toggle" style="display:none;width:100%;margin-top:6px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;padding:6px 10px;background:#eff6ff;border-radius:6px">
+        <input type="checkbox" class="smart-monitor" checked onchange="updateSmartAvail(this.closest('.smart-select-row'))" style="accent-color:var(--primary);width:16px;height:16px">
+        <span>รวมมอนิเตอร์ <span class="monitor-price" style="font-weight:700;color:var(--primary)">฿500/วัน</span></span>
+      </label>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px;padding-left:10px">ไม่รวมมอนิเตอร์ = ฿200/วัน</div>
+    </div>
   `;
   container.appendChild(row);
+}
+
+function onSmartCatChange(row){
+  const cat=row.querySelector('.smart-cat').value;
+  const toggleDiv=row.querySelector('.smart-monitor-toggle');
+  // แสดง toggle เฉพาะ CPR Man Plus
+  if(cat.toLowerCase().includes('plus')){
+    toggleDiv.style.display='';
+    row.querySelector('.smart-monitor').checked=true;
+    row.querySelector('.monitor-price').textContent='฿500/วัน';
+  } else {
+    toggleDiv.style.display='none';
+  }
+  updateSmartAvail(row);
+  updateSmartCatOptions();
+}
+
+function updateSmartCatOptions(){
+  const rows=document.querySelectorAll('#smart-rows .smart-select-row');
+  const selectedCats=[];
+  rows.forEach(r=>{const v=r.querySelector('.smart-cat').value;if(v)selectedCats.push(v);});
+  rows.forEach(r=>{
+    const sel=r.querySelector('.smart-cat');
+    const currentVal=sel.value;
+    Array.from(sel.options).forEach(opt=>{
+      if(!opt.value)return;
+      opt.style.display=(selectedCats.includes(opt.value)&&opt.value!==currentVal)?'none':'';
+    });
+  });
+}
+
+// เช็คว่าสินค้าว่างในช่วงเวลาที่ต้องการไหม
+function isProductAvailableForDates(p, deliverDate, startDate, endDate, excludeIds){
+  if(excludeIds&&excludeIds.includes(p.id)) return false;
+  // สถานะที่ใช้ไม่ได้เลย
+  if(['ซ่อม','ไม่พร้อมใช้งาน','ออกสอน','ออกบูธ','ทดแทน'].includes(p.status)) return false;
+  // หา rentals ที่ active ของสินค้านี้
+  const activeRentals=rentals.filter(r=>(r.productIds||[]).includes(p.id)&&['กำลังเช่า','จอง','เกินกำหนด','ยืมด่วน'].includes(r.status));
+  if(activeRentals.length===0) return true;
+  // เช็คช่วงเวลาชนกัน
+  const bkStart=deliverDate||startDate;
+  const bkEnd=endDate;
+  for(const ar of activeRentals){
+    if(!ar.due||ar.noDueDate) return false;
+    const arStart=ar.deliverDate||ar.start;
+    const arEnd=ar.due;
+    if(bkStart&&bkEnd&&arStart&&arEnd){
+      const s1=new Date(bkStart).setHours(0,0,0,0);
+      const e1=new Date(bkEnd).setHours(0,0,0,0);
+      const s2=new Date(arStart).setHours(0,0,0,0);
+      const e2=new Date(arEnd).setHours(0,0,0,0);
+      if(s1<=e2&&e1>=s2) return false;
+    } else if(bkStart){
+      const cDate=new Date(bkStart).setHours(0,0,0,0);
+      const arStartD=new Date(arStart).setHours(0,0,0,0);
+      const dueDate=new Date(arEnd).setHours(0,0,0,0);
+      if(cDate>=arStartD&&cDate<=dueDate) return false;
+    }
+  }
+  return true;
 }
 
 function updateSmartAvail(row){
@@ -1974,18 +2074,25 @@ function updateSmartAvail(row){
   const qty=parseInt(row.querySelector('.smart-qty').value)||0;
   const badge=row.querySelector('.avail-badge');
   if(!cat){badge.textContent='';return;}
-  const startVal=document.getElementById('rm-start').value;
-  const startDate=startVal?new Date(startVal):null;
-  // นับทั้งที่ว่างตอนนี้ + ที่จะว่างทันวันเช่า
-  const availCount=products.filter(p=>{
-    if(p.cat!==cat)return false;
-    if(p.status==='ว่าง')return true;
-    if(startDate&&(p.status==='ถูกเช่า'||p.status==='จอง')){
-      const ar=rentals.find(r=>(r.productIds||[]).includes(p.id)&&(r.status==='กำลังเช่า'||r.status==='จอง'||r.status==='เกินกำหนด'||r.status==='ยืมด่วน'));
-      if(ar&&ar.due){const dd=new Date(ar.due);dd.setHours(0,0,0,0);const sd=new Date(startDate);sd.setHours(0,0,0,0);if(dd<sd)return true;}
+  
+  // อัปเดต monitor price label
+  if(cat.toLowerCase().includes('plus')){
+    const monitorEl=row.querySelector('.smart-monitor');
+    const priceEl=row.querySelector('.monitor-price');
+    if(monitorEl&&priceEl){
+      priceEl.textContent=monitorEl.checked?'฿500/วัน':'฿200/วัน';
+      priceEl.style.color=monitorEl.checked?'var(--primary)':'var(--success)';
     }
-    return false;
-  }).length;
+  }
+  
+  const deliverVal=document.getElementById('rm-deliver').value;
+  const startVal=document.getElementById('rm-start').value;
+  const endVal=document.getElementById('rm-end').value;
+  const deliverDate=deliverVal?new Date(deliverVal):null;
+  const startDate=startVal?new Date(startVal):null;
+  const endDate=endVal?new Date(endVal):null;
+
+  const availCount=products.filter(p=>p.cat===cat&&isProductAvailableForDates(p,deliverDate,startDate,endDate,null)).length;
   badge.textContent=`พร้อมใช้ ${availCount} ชิ้น`;
   badge.style.color=availCount>=qty?'var(--success)':'var(--danger)';
   autoSelectSmartProducts();
@@ -1993,31 +2100,39 @@ function updateSmartAvail(row){
 
 function autoSelectSmartProducts(){
   selectedProductIds=[];
+  window.smartPriceOverrides={};
+  window.smartNameOverrides={};
   const rows=document.querySelectorAll('#smart-rows .smart-select-row');
   const display=document.getElementById('smart-auto-selected');
+  const deliverVal=document.getElementById('rm-deliver').value;
   const startVal=document.getElementById('rm-start').value;
+  const endVal=document.getElementById('rm-end').value;
+  const deliverDate=deliverVal?new Date(deliverVal):null;
   const startDate=startVal?new Date(startVal):null;
+  const endDate=endVal?new Date(endVal):null;
   let allOk=true;
   let html='';
   rows.forEach(row=>{
     const cat=row.querySelector('.smart-cat').value;
     const qty=parseInt(row.querySelector('.smart-qty').value)||0;
     if(!cat||!qty)return;
-    // รวมของว่าง + ของที่จะว่างทัน
-    const avail=products.filter(p=>{
-      if(p.cat!==cat||selectedProductIds.includes(p.id))return false;
-      if(p.status==='ว่าง')return true;
-      if(startDate&&(p.status==='ถูกเช่า'||p.status==='จอง')){
-        const ar=rentals.find(r=>(r.productIds||[]).includes(p.id)&&(r.status==='กำลังเช่า'||r.status==='จอง'||r.status==='เกินกำหนด'||r.status==='ยืมด่วน'));
-        if(ar&&ar.due){const dd=new Date(ar.due);dd.setHours(0,0,0,0);const sd=new Date(startDate);sd.setHours(0,0,0,0);if(dd<sd)return true;}
-      }
-      return false;
-    });
+    const monitorEl=row.querySelector('.smart-monitor');
+    const isPlus=cat.toLowerCase().includes('plus');
+    const withMonitor=isPlus?(!monitorEl||monitorEl.checked):true;
+    const overridePrice=isPlus&&!withMonitor?200:null;
+    const displayName=isPlus?(withMonitor?`${cat} + มอนิเตอร์`:`${cat}`):`${cat}`;
+
+    const avail=products.filter(p=>p.cat===cat&&isProductAvailableForDates(p,deliverDate,startDate,endDate,selectedProductIds));
     const pick=avail.slice(0,qty);
-    pick.forEach(p=>selectedProductIds.push(p.id));
+    pick.forEach(p=>{
+      selectedProductIds.push(p.id);
+      if(overridePrice!==null) window.smartPriceOverrides[p.id]=overridePrice;
+      if(isPlus) window.smartNameOverrides[p.id]=withMonitor?`${p.name} + มอนิเตอร์`:p.name;
+    });
     if(pick.length<qty)allOk=false;
+    const priceLabel=` (฿${overridePrice!==null?overridePrice:(products.find(p=>p.cat===cat)?.price||0)}/วัน)`;
     html+=`<div style="margin-bottom:6px;padding:8px 12px;background:#eff6ff;border-radius:8px;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-weight:700;color:var(--primary)">${cat} × ${qty}</span>
+      <span style="font-weight:700;color:var(--primary)">${displayName} × ${qty}${priceLabel}</span>
       <span style="font-size:12px;color:${pick.length>=qty?'var(--success)':'var(--danger)'};font-weight:600">${pick.length>=qty?'✅ พร้อมส่ง':'⚠ ขาด '+(qty-pick.length)}</span>
     </div>`;
   });
@@ -2084,43 +2199,55 @@ function renderProductCheckboxes(){
   const bookEnd=endVal?new Date(endVal):null;
 
   function getAvailability(p){
-    if(p.status==='ว่าง') return {available:true, label:'ว่าง', cls:'badge-green'};
+    // สถานะที่ใช้ไม่ได้เลย
     if(p.status==='ซ่อม') return {available:false, label:'ซ่อม', cls:'badge-gray'};
     if(p.status==='ไม่พร้อมใช้งาน') return {available:false, label:'ไม่พร้อมใช้งาน', cls:'badge-slate'};
     if(p.status==='ออกสอน') return {available:false, label:'ออกสอน', cls:'badge-slate'};
     if(p.status==='ออกบูธ') return {available:false, label:'ออกบูธ', cls:'badge-slate'};
+    if(p.status==='ทดแทน') return {available:false, label:'ทดแทน', cls:'badge-purple'};
 
-    // เช็คการชนกันกับทุกรายการจอง active
-    if(checkDate){
-      const activeRentals=rentals.filter(r=>(r.productIds||[]).includes(p.id)&&['กำลังเช่า','จอง','เกินกำหนด','ยืมด่วน'].includes(r.status));
-      let blocked=false;
-      let earliestDue=null;
-      for(const ar of activeRentals){
-        if(!ar.due) {blocked=true;break;} // ไม่กำหนดคืน → ชนแน่
-        const arStart=ar.deliverDate||ar.start;
-        const arEnd=ar.due;
-        // เช็คช่วงเวลาชนกัน: ถ้า bookStart-bookEnd ทับกับ arStart-arEnd
-        if(bookStart&&bookEnd&&arStart&&arEnd){
-          const s1=new Date(bookStart).setHours(0,0,0,0);
-          const e1=new Date(bookEnd).setHours(0,0,0,0);
-          const s2=new Date(arStart).setHours(0,0,0,0);
-          const e2=new Date(arEnd).setHours(0,0,0,0);
-          if(s1<=e2&&e1>=s2){blocked=true;break;} // ช่วงทับกัน
-        } else if(checkDate){
-          // เช็คแค่วันส่ง ถ้ายังไม่กรอกวันคืน
-          const cDate=new Date(checkDate).setHours(0,0,0,0);
-          const dueDate=new Date(arEnd).setHours(0,0,0,0);
-          if(cDate<=dueDate){blocked=true;break;}
-          if(!earliestDue||arEnd<earliestDue) earliestDue=arEnd;
-        }
-      }
-      if(!blocked&&activeRentals.length>0){
-        return {available:true, label:`ว่างทัน (คืน ${fmtDate(earliestDue||activeRentals[0].due)})`, cls:'badge-blue', future:true};
-      }
-      if(blocked) return {available:false, label:p.status, cls:badgeClass(p.status)};
+    // เช็คจองที่ช่วงเวลาทับกัน (ทุกสถานะ active: จอง, กำลังเช่า, เกินกำหนด, ยืมด่วน)
+    const activeRentals=rentals.filter(r=>(r.productIds||[]).includes(p.id)&&['กำลังเช่า','จอง','เกินกำหนด','ยืมด่วน'].includes(r.status));
+    
+    if(activeRentals.length===0) return {available:true, label:'ว่าง', cls:'badge-green'};
+
+    // ถ้าไม่ได้กรอกวันส่ง/วันเช่า → เช็คว่ามีรายการ active ที่กำลังใช้อยู่ตอนนี้ไหม
+    if(!checkDate && !bookStart){
+      const now=new Date();now.setHours(0,0,0,0);
+      const currentlyRented=activeRentals.some(r=>{
+        if(!r.due||r.noDueDate) return true;
+        const dueDate=new Date(r.due);dueDate.setHours(0,0,0,0);
+        return now<=dueDate;
+      });
+      if(currentlyRented) return {available:false, label:p.status||'ถูกจอง', cls:badgeClass(p.status||'จอง')};
       return {available:true, label:'ว่าง', cls:'badge-green'};
     }
-    return {available:false, label:p.status, cls:badgeClass(p.status)};
+
+    // เช็คช่วงเวลาชนกัน
+    let blocked=false;
+    let earliestDue=null;
+    for(const ar of activeRentals){
+      if(!ar.due||ar.noDueDate) {blocked=true;break;}
+      const arStart=ar.deliverDate||ar.start;
+      const arEnd=ar.due;
+      if(bookStart&&bookEnd&&arStart&&arEnd){
+        const s1=new Date(bookStart).setHours(0,0,0,0);
+        const e1=new Date(bookEnd).setHours(0,0,0,0);
+        const s2=new Date(arStart).setHours(0,0,0,0);
+        const e2=new Date(arEnd).setHours(0,0,0,0);
+        if(s1<=e2&&e1>=s2){blocked=true;break;}
+      } else if(checkDate){
+        const cDate=new Date(checkDate).setHours(0,0,0,0);
+        const arStartDate=new Date(arStart).setHours(0,0,0,0);
+        const dueDate=new Date(arEnd).setHours(0,0,0,0);
+        if(cDate>=arStartDate&&cDate<=dueDate){blocked=true;break;}
+      }
+      if(!earliestDue||arEnd<earliestDue) earliestDue=arEnd;
+    }
+    if(!blocked){
+      return {available:true, label:`ว่างทัน (คืน ${fmtDate(earliestDue||activeRentals[0].due)})`, cls:'badge-blue', future:true};
+    }
+    return {available:false, label:'ถูกจอง', cls:'badge-orange'};
   }
 
   const allProds=products.filter(p=>{
@@ -2242,7 +2369,7 @@ function calcRental(){
 
   if(mode==='daily'){
     const e=document.getElementById('rm-end').value;
-    const totalPricePerDay=selectedProductIds.reduce((sum,id)=>{const p=products.find(x=>x.id===id);return sum+(p?p.price:0);},0);
+    const totalPricePerDay=selectedProductIds.reduce((sum,id)=>{const p=products.find(x=>x.id===id);const override=window.smartPriceOverrides&&window.smartPriceOverrides[id];return sum+(override!==undefined?override:(p?p.price:0));},0);
     if(s&&e){
       const days=Math.max(1,Math.round((new Date(e)-new Date(s))/86400000));
       document.getElementById('rm-days').value=days;
@@ -2260,9 +2387,10 @@ function calcRental(){
     calcUnitTotal();
   }
 }
-document.getElementById('rm-start').addEventListener('change',()=>{calcRental();autoCalcDeliverDate();renderProductCheckboxes();});
-document.getElementById('rm-end').addEventListener('change',()=>{calcRental();renderProductCheckboxes();});
-document.getElementById('rm-deliver').addEventListener('change',renderProductCheckboxes);
+function refreshAllSmartAvail(){document.querySelectorAll('#smart-rows .smart-select-row').forEach(row=>updateSmartAvail(row));}
+document.getElementById('rm-start').addEventListener('change',()=>{calcRental();autoCalcDeliverDate();renderProductCheckboxes();refreshAllSmartAvail();});
+document.getElementById('rm-end').addEventListener('change',()=>{calcRental();renderProductCheckboxes();refreshAllSmartAvail();});
+document.getElementById('rm-deliver').addEventListener('change',()=>{renderProductCheckboxes();refreshAllSmartAvail();});
 document.getElementById('rm-buffer-days').addEventListener('change',autoCalcDeliverDate);
 document.getElementById('rm-buffer-days').addEventListener('input',autoCalcDeliverDate);
 
@@ -2327,7 +2455,7 @@ function saveRental(){
 
   const cust=customers.find(c=>c.id===custId);
   const selProds=selectedProductIds.map(id=>products.find(p=>p.id===id)).filter(Boolean);
-  const totalPricePerDay=selProds.reduce((s,p)=>s+p.price,0);
+  const totalPricePerDay=selProds.reduce((s,p)=>{const override=window.smartPriceOverrides&&window.smartPriceOverrides[p.id];return s+(override!==undefined?override:p.price);},0);
 
   let days, total;
   if(mode==='daily'){
@@ -2346,6 +2474,7 @@ function saveRental(){
 
   rentalCounter++;gsIncCounter();
   const d=new Date(start);
+  const uniqId=Math.random().toString(36).substr(2,3).toUpperCase();
   const modeNote=mode!=='daily'?`[${cfg.label}${installments?' ผ่อน '+installments+' งวด'+(monthlyAmt?' ฿'+fmt(monthlyAmt)+'/ด.':''):''}]`:'';
 
   const bufferDays=parseInt(document.getElementById('rm-buffer-days').value)||0;
@@ -2353,10 +2482,10 @@ function saveRental(){
   const returnByDate=bufferDays>0?new Date(dueDate.getTime()+bufferDays*86400000):null;
 
   const newRental={
-    id:`RN-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}-${String(rentalCounter).padStart(4,'0')}`,
+    id:`RN-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}-${String(rentalCounter).padStart(4,'0')}-${uniqId}`,
     start:new Date(start),due:dueDate,deliverDate:deliver?new Date(deliver):null,returnDate:null,
     returnBy:returnByDate,bufferDays,
-    productIds:selectedProductIds.slice(),productNames:selProds.map(p=>p.name),
+    productIds:selectedProductIds.slice(),productNames:selProds.map(p=>(window.smartNameOverrides&&window.smartNameOverrides[p.id])||p.name),
     totalPricePerDay,price:totalPricePerDay,days,total,
     customer:cust.name,sales:sales||'—',
     deposit:parseFloat(document.getElementById('rm-deposit').value)||0,
@@ -2367,7 +2496,7 @@ function saveRental(){
     rentalMode:mode,installments,monthlyAmount:monthlyAmt
   };
   rentals.push(newRental);
-  selProds.forEach(p=>p.status='จอง');
+  // ไม่ล็อคสินค้าเป็น "จอง" — ให้ล็อคตอนยืนยันส่งจริงเท่านั้น
   cust.rentCount++;cust.total+=total;
   closeModal('rental-modal');
   showToast(`บันทึกจอง ${cfg.label} ${selProds.length} รายการ สำเร็จ!`);
@@ -2804,8 +2933,9 @@ function saveVIP(){
   const due=noDue?null:(dueVal?new Date(dueVal):new Date(now.getTime()+7*86400000));
   const days=due?Math.max(1,Math.round((due-now)/86400000)):0;
   rentalCounter++;gsIncCounter();
+  const uniqIdVip=Math.random().toString(36).substr(2,3).toUpperCase();
   const newRental={
-    id:`VIP-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}-${String(rentalCounter).padStart(4,'0')}`,
+    id:`VIP-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}-${String(rentalCounter).padStart(4,'0')}-${uniqIdVip}`,
     start:now,due:due,deliverDate:now,returnDate:null,confirmedDate:now,
     productIds:vipSelectedIds.slice(),productNames:selProds.map(p=>p.name),
     totalPricePerDay,price:totalPricePerDay,days,total:days?totalPricePerDay*days:0,
@@ -3706,7 +3836,104 @@ function renderCommission(){
   document.getElementById('comm-summary').innerHTML=entries.length?entries.map(([name,d])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)"><div><span style="font-weight:700;font-size:15px">${name}</span><div style="font-size:12px;color:var(--muted)">ส่ง ${d.send} เที่ยว (฿${fmt(d.sendComm)}) | รับ ${d.recv} เที่ยว (฿${fmt(d.recvComm)})</div></div><div style="font-size:20px;font-weight:800;color:var(--primary)">฿${fmt(d.total)}</div></div>`).join(''):'<div class="empty-state"><p>ไม่มีข้อมูล</p></div>';
 }
 
-// ========== ADD PRODUCT ==========
+// ========== EXPORT COMMISSION PDF ==========
+function exportCommissionPDF(){
+  const monthLabel=`${thaiMonths[commMonth]} ${commYear+543}`;
+  const pSel=document.getElementById('comm-person-filter');
+  const filterPerson=pSel.value;
+  const records=[];
+  rentals.forEach(r=>{
+    if(r.sender&&r.confirmedDate){const cd=r.confirmedDate;if(cd.getFullYear()===commYear&&cd.getMonth()===commMonth){const comm=r.senderCommission||Math.round(r.total*0.05);if(!filterPerson||r.sender===filterPerson){records.push({id:r.id,date:cd,type:'ส่งสินค้า',prods:Array.isArray(r.productNames)?r.productNames.join(', '):'',customer:r.customer,person:r.sender,rental:r.total,commission:comm});}}}
+    if(r.receiver&&r.returnDate){const rd=r.returnDate;if(rd.getFullYear()===commYear&&rd.getMonth()===commMonth){const comm=r.receiverCommission||Math.round(r.total*0.05);if(!filterPerson||r.receiver===filterPerson){records.push({id:r.id,date:rd,type:'รับคืน',prods:Array.isArray(r.productNames)?r.productNames.join(', '):'',customer:r.customer,person:r.receiver,rental:r.total,commission:comm});}}}
+  });
+  records.sort((a,b)=>a.date-b.date);
+  
+  if(!records.length){showToast('ไม่มีข้อมูลคอมมิชชั่นในเดือนนี้','error');return;}
+  
+  const totalComm=records.reduce((s,r)=>s+r.commission,0);
+  const sendCount=records.filter(r=>r.type==='ส่งสินค้า').length;
+  const recvCount=records.filter(r=>r.type==='รับคืน').length;
+  const sendComm=records.filter(r=>r.type==='ส่งสินค้า').reduce((s,r)=>s+r.commission,0);
+  const recvComm=records.filter(r=>r.type==='รับคืน').reduce((s,r)=>s+r.commission,0);
+  
+  // สรุปแยกตามคน
+  const byPerson={};records.forEach(r=>{if(!byPerson[r.person])byPerson[r.person]={send:0,recv:0,sendComm:0,recvComm:0,total:0};if(r.type==='ส่งสินค้า'){byPerson[r.person].send++;byPerson[r.person].sendComm+=r.commission;}else{byPerson[r.person].recv++;byPerson[r.person].recvComm+=r.commission;}byPerson[r.person].total+=r.commission;});
+  const entries=Object.entries(byPerson).sort((a,b)=>b[1].total-a[1].total);
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>สรุปคอมมิชชั่น ${monthLabel}</title>
+  <style>
+    @page{size:A4;margin:15mm}
+    body{font-family:'Noto Sans Thai','Sarabun',sans-serif;padding:0;margin:0;color:#1e293b;font-size:12px}
+    h1{font-size:22px;margin:0 0 6px 0;color:#1e293b;text-align:center}
+    h2{font-size:16px;margin:16px 0 8px 0;color:#2563eb;border-bottom:2px solid #2563eb;padding-bottom:4px}
+    .subtitle{text-align:center;color:#64748b;margin-bottom:16px;font-size:13px}
+    .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+    .kpi{padding:10px;border:1px solid #e2e8f0;border-radius:8px;text-align:center}
+    .kpi-label{font-size:11px;color:#64748b;margin-bottom:4px}
+    .kpi-value{font-size:20px;font-weight:800;color:#2563eb}
+    .kpi-sub{font-size:10px;color:#64748b;margin-top:2px}
+    table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:11px}
+    th,td{padding:6px 8px;border:1px solid #e2e8f0;text-align:left}
+    th{background:#f1f5f9;font-weight:700;font-size:11px}
+    .text-right{text-align:right}
+    .text-center{text-align:center}
+    .badge-send{background:#dbeafe;color:#1e40af;padding:2px 6px;border-radius:4px;font-size:10px}
+    .badge-recv{background:#d1fae5;color:#065f46;padding:2px 6px;border-radius:4px;font-size:10px}
+    .person-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0}
+    .person-name{font-weight:700}
+    .person-sub{font-size:11px;color:#64748b}
+    .person-total{font-size:18px;font-weight:800;color:#2563eb}
+    .footer{margin-top:20px;text-align:center;font-size:10px;color:#64748b;border-top:1px solid #e2e8f0;padding-top:10px}
+    @media print{button{display:none}}
+  </style></head><body>
+  <h1>สรุปคอมมิชชั่นรายเดือน</h1>
+  <div class="subtitle">บริษัท โรจน์รุ่ง ธุรกิจ จำกัด — ${monthLabel}${filterPerson?' | '+filterPerson:''}</div>
+  
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-label">คอมมิชชั่นรวม</div><div class="kpi-value">฿${fmt(totalComm)}</div><div class="kpi-sub">${records.length} รายการ</div></div>
+    <div class="kpi"><div class="kpi-label">เที่ยวส่ง</div><div class="kpi-value">${sendCount}</div><div class="kpi-sub">฿${fmt(sendComm)}</div></div>
+    <div class="kpi"><div class="kpi-label">เที่ยวรับ</div><div class="kpi-value">${recvCount}</div><div class="kpi-sub">฿${fmt(recvComm)}</div></div>
+  </div>
+
+  <h2>สรุปแยกตามบุคคล</h2>
+  ${entries.map(([name,d])=>`<div class="person-row">
+    <div><div class="person-name">${name}</div><div class="person-sub">ส่ง ${d.send} เที่ยว (฿${fmt(d.sendComm)}) | รับ ${d.recv} เที่ยว (฿${fmt(d.recvComm)})</div></div>
+    <div class="person-total">฿${fmt(d.total)}</div>
+  </div>`).join('')}
+
+  <h2 style="page-break-before:auto">รายละเอียดทุกรายการ</h2>
+  <table>
+    <thead><tr><th>เลขที่</th><th>วันที่</th><th>ประเภท</th><th>สินค้า</th><th>ผู้เช่า</th><th>ผู้ดำเนินการ</th><th class="text-right">ค่าเช่า</th><th class="text-right">คอมฯ 5%</th></tr></thead>
+    <tbody>
+    ${records.map(r=>`<tr>
+      <td style="font-weight:600">${r.id}</td>
+      <td>${fmtDate(r.date)}</td>
+      <td><span class="${r.type==='ส่งสินค้า'?'badge-send':'badge-recv'}">${r.type}</span></td>
+      <td>${r.prods}</td>
+      <td>${r.customer}</td>
+      <td style="font-weight:600">${r.person}</td>
+      <td class="text-right">฿${fmt(r.rental)}</td>
+      <td class="text-right" style="font-weight:700;color:#2563eb">฿${fmt(r.commission)}</td>
+    </tr>`).join('')}
+    <tr style="background:#f1f5f9;font-weight:700">
+      <td colspan="6" class="text-right">รวมทั้งสิ้น</td>
+      <td class="text-right">฿${fmt(records.reduce((s,r)=>s+r.rental,0))}</td>
+      <td class="text-right" style="color:#2563eb">฿${fmt(totalComm)}</td>
+    </tr>
+    </tbody>
+  </table>
+
+  <div class="footer">JIARAKSA • พิมพ์เมื่อ ${fmtDate(new Date())} • เจี๋ยรักษา</div>
+  
+  <div style="text-align:center;margin:20px 0">
+    <button onclick="window.print()" style="padding:10px 24px;font-size:14px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit">🖨️ พิมพ์ / Save as PDF</button>
+  </div>
+  </body></html>`;
+
+  const w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+}
 let recentlyAdded=[];
 function initAddProductPage(){
   const sel=document.getElementById('ap-cat');const cats=[...new Set(products.map(p=>p.cat))].sort();
