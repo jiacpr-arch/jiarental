@@ -2019,7 +2019,7 @@ function onSmartCatChange(row){
   const cat=row.querySelector('.smart-cat').value;
   const toggleDiv=row.querySelector('.smart-monitor-toggle');
   // แสดง toggle เฉพาะ CPR Man Plus
-  if(cat.toLowerCase().includes('plus')){
+  if(((cat.toLowerCase().includes('cpr man') || cat.toLowerCase().includes('baby')) && cat.toLowerCase().includes('plus'))){
     toggleDiv.style.display='';
     row.querySelector('.smart-monitor').checked=true;
     row.querySelector('.monitor-price').textContent='฿500/วัน';
@@ -2082,7 +2082,7 @@ function updateSmartAvail(row){
   if(!cat){badge.textContent='';return;}
   
   // อัปเดต monitor price label
-  if(cat.toLowerCase().includes('plus')){
+  if(((cat.toLowerCase().includes('cpr man') || cat.toLowerCase().includes('baby')) && cat.toLowerCase().includes('plus'))){
     const monitorEl=row.querySelector('.smart-monitor');
     const priceEl=row.querySelector('.monitor-price');
     if(monitorEl&&priceEl){
@@ -2123,7 +2123,7 @@ function autoSelectSmartProducts(){
     const qty=parseInt(row.querySelector('.smart-qty').value)||0;
     if(!cat||!qty)return;
     const monitorEl=row.querySelector('.smart-monitor');
-    const isPlus=cat.toLowerCase().includes('plus');
+    const isPlus=((cat.toLowerCase().includes('cpr man') || cat.toLowerCase().includes('baby')) && cat.toLowerCase().includes('plus'));
     const withMonitor=isPlus?(!monitorEl||monitorEl.checked):true;
     const overridePrice=isPlus&&!withMonitor?200:null;
     const displayName=isPlus?(withMonitor?`${cat} + มอนิเตอร์`:`${cat}`):`${cat}`;
