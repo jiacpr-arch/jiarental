@@ -430,7 +430,7 @@ QR Code สินค้า
 <div class="search-bar">
 <input class="search-input" id="prod-search" placeholder="ค้นหาสินค้า... (รหัส, ชื่อ, รายละเอียด)" oninput="renderProducts()">
 <select class="filter-select" id="prod-cat-filter" onchange="renderProducts()"><option value="">ทุก Category</option></select>
-<select class="filter-select" id="prod-status-filter" onchange="renderProducts()"><option value="">ทุกสถานะ</option><option value="ว่าง">ว่าง</option><option value="ถูกเช่า">ถูกเช่า</option><option value="จอง">จอง</option><option value="ซ่อม">ซ่อม</option><option value="ไม่พร้อมใช้งาน">ไม่พร้อมใช้งาน</option><option value="ออกสอน">ออกสอน</option><option value="ออกบูธ">ออกบูธ</option><option value="ทดแทน">ทดแทน</option></select>
+<select class="filter-select" id="prod-status-filter" onchange="renderProducts()"><option value="">ทุกสถานะ</option><option value="ว่าง">ว่าง</option><option value="ถูกเช่า">ถูกเช่า</option><option value="จอง">จอง</option><option value="ซ่อม">ซ่อม</option><option value="ไม่พร้อมใช้งาน">ไม่พร้อมใช้งาน</option><option value="ออกสอน">ออกสอน</option><option value="ออกบูธ">ออกบูธ</option><option value="ทดแทน">ทดแทน</option><option value="ใช้งานได้">⚠ ใช้งานได้ (มีหมายเหตุ)</option></select>
 </div>
 <div style="overflow-x:auto">
 <table>
@@ -600,7 +600,7 @@ QR Code สินค้า
 <div class="search-bar" style="margin-bottom:16px">
 <input class="search-input" id="qr-search" placeholder="ค้นหาสินค้า..." oninput="renderQRPage()">
 <select class="filter-select" id="qr-cat-filter" onchange="renderQRPage()"><option value="">ทุก Category</option></select>
-<select class="filter-select" id="qr-status-filter" onchange="renderQRPage()"><option value="">ทุกสถานะ</option><option value="ว่าง">ว่าง</option><option value="ถูกเช่า">ถูกเช่า</option><option value="จอง">จอง</option><option value="ซ่อม">ซ่อม</option><option value="ไม่พร้อมใช้งาน">ไม่พร้อมใช้งาน</option><option value="ออกสอน">ออกสอน</option><option value="ออกบูธ">ออกบูธ</option><option value="ทดแทน">ทดแทน</option></select>
+<select class="filter-select" id="qr-status-filter" onchange="renderQRPage()"><option value="">ทุกสถานะ</option><option value="ว่าง">ว่าง</option><option value="ถูกเช่า">ถูกเช่า</option><option value="จอง">จอง</option><option value="ซ่อม">ซ่อม</option><option value="ไม่พร้อมใช้งาน">ไม่พร้อมใช้งาน</option><option value="ออกสอน">ออกสอน</option><option value="ออกบูธ">ออกบูธ</option><option value="ทดแทน">ทดแทน</option><option value="ใช้งานได้">⚠ ใช้งานได้ (มีหมายเหตุ)</option></select>
 </div>
 <div class="qr-grid" id="qr-grid"></div>
 </div>
@@ -703,7 +703,7 @@ QR Code สินค้า
 <div class="form-row">
 <div class="form-group"><label>ราคาเช่า/วัน (บาท) <span style="color:var(--danger)">*</span></label><input type="number" id="ap-price" min="0" placeholder="500"></div>
 <div class="form-group"><label>สถานะเริ่มต้น</label>
-<select id="ap-status"><option value="ว่าง">ว่าง</option><option value="ซ่อม">ซ่อม</option><option value="ไม่พร้อมใช้งาน">ไม่พร้อมใช้งาน</option><option value="ออกสอน">ออกสอน</option><option value="ออกบูธ">ออกบูธ</option><option value="ทดแทน">ทดแทน</option></select>
+<select id="ap-status"><option value="ว่าง">ว่าง</option><option value="ซ่อม">ซ่อม</option><option value="ไม่พร้อมใช้งาน">ไม่พร้อมใช้งาน</option><option value="ออกสอน">ออกสอน</option><option value="ออกบูธ">ออกบูธ</option><option value="ทดแทน">ทดแทน</option><option value="ใช้งานได้">⚠ ใช้งานได้ (มีหมายเหตุ)</option></select>
 </div>
 </div>
 <div class="form-group"><label>รายละเอียด</label><input id="ap-desc" placeholder="คำอธิบายสินค้า"></div>
@@ -1342,7 +1342,7 @@ const fmtDate = d => {
   if (!d || !(d instanceof Date) || isNaN(d)) return '—';
   return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
 };
-const badgeClass = s => s==='ว่าง'||s==='คืนแล้ว'?'badge-green':s==='ถูกเช่า'||s==='กำลังเช่า'?'badge-blue':s==='เกินกำหนด'?'badge-red':s==='จอง'?'badge-orange':s==='ยกเลิก'?'badge-gray':s==='ยืมด่วน'?'badge-purple':s==='ไม่พร้อมใช้งาน'||s==='ออกสอน'||s==='ออกบูธ'?'badge-slate':s==='ทดแทน'?'badge-purple':'badge-gray';
+const badgeClass = s => s==='ว่าง'||s==='คืนแล้ว'?'badge-green':s==='ถูกเช่า'||s==='กำลังเช่า'?'badge-blue':s==='เกินกำหนด'?'badge-red':s==='จอง'?'badge-orange':s==='ยกเลิก'?'badge-gray':s==='ยืมด่วน'?'badge-purple':s==='ไม่พร้อมใช้งาน'||s==='ออกสอน'||s==='ออกบูธ'?'badge-slate':s==='ทดแทน'?'badge-purple':s==='ใช้งานได้'?'badge-orange':'badge-gray';
 
 function showToast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';setTimeout(()=>t.classList.remove('show'),3000);}
 function closeModal(id){document.getElementById(id).classList.remove('show');}
@@ -1508,7 +1508,7 @@ function renderProducts(){
       rentalDateInfo=activeR.map(r=>`<div style="font-size:10px;color:${r.status==='จอง'?'var(--warning)':'var(--muted)'};margin-top:2px">${r.status==='จอง'?'📅 ':''}${fmtDate(r.start)} - ${r.noDueDate?'ไม่กำหนด':fmtDate(r.due)}</div>`).join('');
     }
     row+=`<td class="text-center"><span class="badge ${badgeClass(p.status)}" ${(p.status==='ถูกเช่า'||p.status==='จอง')?'style="cursor:pointer" onclick="event.stopPropagation();showProductRenter(\''+p.id+'\')" title="คลิกดูผู้เช่า"':''}>${p.status}</span>${rentalDateInfo}${p.statusNote?'<div style="font-size:14px;color:#991b1b;margin-top:6px;font-weight:700;padding:4px 8px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;display:inline-block">⚠ '+p.statusNote+'</div>':''}</td>`;
-    if(!isSales) row+=`<td class="text-center"><select onchange="onChangeProductStatus('${p.id}',this.value,this)" style="padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px"><option ${p.status==='ว่าง'?'selected':''}>ว่าง</option><option ${p.status==='ถูกเช่า'?'selected':''}>ถูกเช่า</option><option ${p.status==='จอง'?'selected':''}>จอง</option><option ${p.status==='ซ่อม'?'selected':''}>ซ่อม</option><option ${p.status==='ไม่พร้อมใช้งาน'?'selected':''}>ไม่พร้อมใช้งาน</option><option ${p.status==='ออกสอน'?'selected':''}>ออกสอน</option><option ${p.status==='ออกบูธ'?'selected':''}>ออกบูธ</option><option ${p.status==='ทดแทน'?'selected':''}>ทดแทน</option></select>${p.statusNote?'<div style="font-size:14px;color:#991b1b;margin-top:6px;font-weight:700;padding:4px 8px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;display:inline-block">⚠ '+p.statusNote+'</div>':''}</td>`;
+    if(!isSales) row+=`<td class="text-center"><select onchange="onChangeProductStatus('${p.id}',this.value,this)" style="padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px"><option ${p.status==='ว่าง'?'selected':''}>ว่าง</option><option ${p.status==='ถูกเช่า'?'selected':''}>ถูกเช่า</option><option ${p.status==='จอง'?'selected':''}>จอง</option><option ${p.status==='ซ่อม'?'selected':''}>ซ่อม</option><option ${p.status==='ไม่พร้อมใช้งาน'?'selected':''}>ไม่พร้อมใช้งาน</option><option ${p.status==='ออกสอน'?'selected':''}>ออกสอน</option><option ${p.status==='ออกบูธ'?'selected':''}>ออกบูธ</option><option ${p.status==='ทดแทน'?'selected':''}>ทดแทน</option><option ${p.status==='ใช้งานได้'?'selected':''}>ใช้งานได้</option></select>${p.statusNote?'<div style="font-size:14px;color:#991b1b;margin-top:6px;font-weight:700;padding:4px 8px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;display:inline-block">⚠ '+p.statusNote+'</div>':''}</td>`;
     row+=`</tr>`;
     return row;
   }).join('');
@@ -1519,14 +1519,14 @@ let unavailPendingSelect = null;
 let unavailPendingStatus = 'ไม่พร้อมใช้งาน';
 
 function onChangeProductStatus(id, status, selectEl){
-  if(status === 'ไม่พร้อมใช้งาน' || status === 'ออกสอน' || status === 'ออกบูธ' || status === 'ทดแทน'){
+  if(status === 'ไม่พร้อมใช้งาน' || status === 'ออกสอน' || status === 'ออกบูธ' || status === 'ทดแทน' || status === 'ใช้งานได้'){
     unavailPendingId = id;
     unavailPendingSelect = selectEl;
     unavailPendingStatus = status;
     const p = products.find(x=>x.id===id);
     document.getElementById('unavail-product-info').innerHTML = `<strong>${p?p.name:id}</strong> <span style="color:var(--muted);font-size:12px">(${id})</span>`;
     document.getElementById('unavail-note').value = '';
-    document.getElementById('unavail-note').placeholder = status==='ออกสอน'?'ระบุสถานที่/คอร์สที่ไปสอน...':status==='ออกบูธ'?'ระบุงาน/สถานที่ออกบูธ...':status==='ทดแทน'?'ระบุทดแทนให้ลูกค้า/เลขที่เช่า...':'เช่น ชิ้นส่วนหาย, รอซื้อแบตเตอรี่ใหม่...';
+    document.getElementById('unavail-note').placeholder = status==='ออกสอน'?'ระบุสถานที่/คอร์สที่ไปสอน...':status==='ออกบูธ'?'ระบุงาน/สถานที่ออกบูธ...':status==='ทดแทน'?'ระบุทดแทนให้ลูกค้า/เลขที่เช่า...':status==='ใช้งานได้'?'เช่น น็อตหาย, รอยขีดข่วน, สีหลุด (ยังใช้งานได้)...':'เช่น ชิ้นส่วนหาย, รอซื้อแบตเตอรี่ใหม่...';
     // แสดง/ซ่อนวันที่สำหรับออกสอน/ออกบูธ
     const showDates=status==='ออกสอน'||status==='ออกบูธ';
     document.getElementById('unavail-dates').style.display=showDates?'':'none';
@@ -1664,7 +1664,13 @@ function renderRentals(){
       <td>${fmtDate(r.due)}${r.noDueDate?'<div style="font-size:10px;color:var(--vip);font-weight:600">ไม่กำหนด</div>':''}</td>
       <td>${fmtDate(r.deliverDate)}</td>
       <td>${fmtDate(r.returnDate)}</td>
-      <td style="font-size:12px">${Array.isArray(r.productNames)?r.productNames.join(', '):r.productName||''}</td>`;
+      <td style="font-size:12px">${r.status==='จอง'?(() => {
+        // สถานะ "จอง" ยังไม่ยืนยัน — แสดงเป็น category summary
+        const ids=r.productIds||[];
+        const catCount={};
+        ids.forEach(pid=>{const p=products.find(x=>x.id===pid);if(p){catCount[p.cat]=(catCount[p.cat]||0)+1;}});
+        return Object.entries(catCount).map(([c,n])=>`${c} × ${n}`).join(', ')||'—';
+      })():(Array.isArray(r.productNames)?r.productNames.join(', '):r.productName||'')}</td>`;
     if(!isOps) rowHtml+=`
       <td class="text-right">฿${fmt(r.totalPricePerDay)}</td>
       <td class="text-center">${r.days}</td>
@@ -2205,6 +2211,8 @@ function renderProductCheckboxes(){
     if(p.status==='ออกสอน') return {available:false, label:'ออกสอน', cls:'badge-slate'};
     if(p.status==='ออกบูธ') return {available:false, label:'ออกบูธ', cls:'badge-slate'};
     if(p.status==='ทดแทน') return {available:false, label:'ทดแทน', cls:'badge-purple'};
+    // ใช้งานได้ = เช่าได้ แต่มีหมายเหตุ
+    // ผ่านไปเช็คช่วงเวลาด้านล่าง
 
     // เช็คจองที่ช่วงเวลาทับกัน (ทุกสถานะ active: จอง, กำลังเช่า, เกินกำหนด, ยืมด่วน)
     const activeRentals=rentals.filter(r=>(r.productIds||[]).includes(p.id)&&['กำลังเช่า','จอง','เกินกำหนด','ยืมด่วน'].includes(r.status));
