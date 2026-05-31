@@ -647,7 +647,7 @@ QR Code สินค้า
 <!-- COMMISSION PAGE -->
 <div id="page-commission" class="page">
 <div class="page-header">
-<div><h2>สรุปเงินรายเดือน</h2><div class="subtitle">คอมมิชชั่นหน้างาน (5% ค่าเช่าต่อเที่ยวส่ง/รับ)</div></div>
+<div><h2>สรุปเงินรายเดือน</h2><div class="subtitle">คอมมิชชั่นหน้างาน (5% ค่าเช่า/วัน ต่อเที่ยวส่ง/รับ)</div></div>
 <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
 <button class="btn btn-outline" onclick="commNav(-1)">◀ เดือนก่อน</button>
 <span id="comm-month-label" style="font-weight:700;font-size:16px;min-width:160px;text-align:center"></span>
@@ -656,10 +656,17 @@ QR Code สินค้า
 <button class="btn btn-primary" onclick="exportCommissionPDF()" style="background:linear-gradient(135deg,#dc2626,#b91c1c)">📄 Export PDF</button>
 </div>
 </div>
-<div id="comm-filter-area" style="margin-bottom:16px">
+<div id="comm-filter-area" style="margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
 <select class="filter-select" id="comm-person-filter" onchange="renderCommission()" style="min-width:200px">
 <option value="">ทุกคน</option>
 </select>
+<div style="display:flex;align-items:center;gap:6px">
+<label style="font-size:13px;font-weight:600;color:var(--muted)">ตั้งแต่</label>
+<input type="date" id="comm-date-from" onchange="renderCommission()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px">
+<label style="font-size:13px;font-weight:600;color:var(--muted)">ถึง</label>
+<input type="date" id="comm-date-to" onchange="renderCommission()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px">
+<button class="btn btn-sm btn-outline" onclick="clearCommDateFilter()" style="font-size:11px">ล้าง</button>
+</div>
 </div>
 <div class="kpi-grid" id="comm-kpi"></div>
 <div class="card">
@@ -769,7 +776,10 @@ QR Code สินค้า
 <div class="form-group">
 <label>เลือกชนิดอุปกรณ์และจำนวน</label>
 <div id="smart-rows"></div>
-<button class="btn btn-outline btn-sm" onclick="addSmartRow()" style="margin-top:8px">+ เพิ่มชนิดอุปกรณ์</button>
+<div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+<button class="btn btn-outline btn-sm" onclick="addSmartRow()">+ เพิ่มชนิดอุปกรณ์</button>
+<span id="smart-total-count" style="font-size:14px;font-weight:700;color:var(--primary)"></span>
+</div>
 </div>
 <div id="smart-auto-selected" style="margin-top:8px"></div>
 </div>
@@ -876,8 +886,9 @@ QR Code สินค้า
 </div>
 <div class="form-row">
 <div class="form-group"><label>วันที่ส่งของ</label><input type="date" id="er-deliver"></div>
-<div class="form-group"><label>ค่ามัดจำ (฿)</label><input type="number" id="er-deposit" min="0"></div>
+<div class="form-group"><label>คืนจริง</label><input type="date" id="er-return-date"></div>
 </div>
+<div class="form-group"><label>ค่ามัดจำ (฿)</label><input type="number" id="er-deposit" min="0"></div>
 <div class="form-row">
 <div class="form-group"><label>ค่าส่งสินค้า (฿)</label><input type="number" id="er-ship-send" min="0" placeholder="0"></div>
 <div class="form-group"><label>ค่าส่งกลับ (฿)</label><input type="number" id="er-ship-return" min="0" placeholder="0"></div>
@@ -887,6 +898,10 @@ QR Code สินค้า
 <div class="form-group"><label>ผู้จ่ายเงิน(คืน)</label><select id="er-payer-return"><option value="">-- เลือก --</option><option>ลูกค้าออกเอง</option><option>หักจากเงินประกัน</option><option>ลูกค้านำมาส่ง</option><option>บริษัทสำรองจ่าย</option></select></div>
 </div>
 <div class="form-group"><label>สถานะการโอน</label><select id="er-payment"><option value="">-- เลือก --</option><option>โอน</option><option>จ่ายหน้างาน</option></select></div>
+<div class="form-row" id="er-sender-receiver-row">
+<div class="form-group"><label>ผู้ส่งสินค้า</label><select id="er-sender"><option value="">-- เลือก --</option></select></div>
+<div class="form-group"><label>ผู้รับสินค้า</label><select id="er-receiver"><option value="">-- เลือก --</option></select></div>
+</div>
 <div class="form-group"><label>หมายเหตุ</label><input id="er-note" placeholder="หมายเหตุ"></div>
 <div id="er-status-warning" style="display:none;padding:10px;background:#fef3c7;border-radius:8px;font-size:12px;color:#92400e;margin-top:8px"></div>
 </div>
@@ -1683,6 +1698,7 @@ function renderRentals(){
       <td style="font-size:12px">${r.sales||'—'}</td>`;
     // สถานะ: แสดงเป็น dropdown เปลี่ยนได้ (ยกเว้นคืนแล้ว/ยกเลิก)
     const isActive = ['จอง','กำลังเช่า','เกินกำหนด','ยืมด่วน'].includes(r.status);
+    const isLocked = ['คืนแล้ว','ยกเลิก'].includes(r.status);
     if(isActive && !isSales){
       const statusOpts = ['จอง','กำลังเช่า','เกินกำหนด','ยืมด่วน','คืนแล้ว','ยกเลิก'];
       rowHtml+=`<td class="text-center"><select onchange="onChangeRentalStatus('${r.id}',this.value)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-weight:600">`;
@@ -1693,8 +1709,8 @@ function renderRentals(){
     }
     rowHtml+=`<td class="text-center" style="white-space:nowrap">`;
 
-    // ปุ่มแก้ไข — ทุกสถานะ active
-    if(isActive){
+    // ปุ่มแก้ไข — active + คืนแล้ว (ยกเลิกไม่ให้แก้)
+    if(isActive || r.status==='คืนแล้ว'){
       rowHtml+=`<button class="btn btn-sm btn-outline" onclick="openEditRentalModal('${r.id}')" style="font-size:11px;margin:1px" title="แก้ไข">✏️</button>`;
     }
     // ปุ่มใบยืนยัน
@@ -2143,6 +2159,11 @@ function autoSelectSmartProducts(){
     </div>`;
   });
   display.innerHTML=html||'<div style="color:var(--muted);font-size:13px">เลือกชนิดและจำนวนด้านบน</div>';
+  // อัปเดตจำนวนรวม
+  let totalQty=0;
+  rows.forEach(row=>{const q=parseInt(row.querySelector('.smart-qty').value)||0;const c=row.querySelector('.smart-cat').value;if(c)totalQty+=q;});
+  const totalEl=document.getElementById('smart-total-count');
+  if(totalEl)totalEl.textContent=totalQty>0?`📦 รวมทั้งหมด ${totalQty} ชิ้น`:'';
   calcRental();
 }
 
@@ -2517,7 +2538,7 @@ function saveRental(){
 function openEditRentalModal(id){
   const r=rentals.find(x=>x.id===id);
   if(!r){showToast('ไม่พบรายการ','error');return;}
-  const activeStatuses=['จอง','กำลังเช่า','เกินกำหนด','ยืมด่วน'];
+  const activeStatuses=['จอง','กำลังเช่า','เกินกำหนด','ยืมด่วน','คืนแล้ว'];
   if(!activeStatuses.includes(r.status)){showToast('แก้ไขได้เฉพาะรายการที่ยัง active','error');return;}
   editingRentalId=id;
   const prodNames=(r.productNames||[]).join(', ');
@@ -2540,12 +2561,19 @@ function openEditRentalModal(id){
   document.getElementById('er-start').value=r.start?r.start.toISOString().split('T')[0]:'';
   document.getElementById('er-end').value=r.due?r.due.toISOString().split('T')[0]:'';
   document.getElementById('er-deliver').value=r.deliverDate?r.deliverDate.toISOString().split('T')[0]:'';
+  document.getElementById('er-return-date').value=r.returnDate?r.returnDate.toISOString().split('T')[0]:'';
   document.getElementById('er-deposit').value=r.deposit||'';
   document.getElementById('er-ship-send').value=r.deliveryShippingCost||'';
   document.getElementById('er-ship-return').value=r.shippingCost||'';
   document.getElementById('er-payer-send').value=r.deliveryPayer||'';
   document.getElementById('er-payer-return').value=r.payer||'';
   document.getElementById('er-payment').value=r.paymentStatus||'';
+  // ผู้ส่ง / ผู้รับสินค้า
+  const erOpsOpts='<option value="">-- เลือก --</option>'+opsNames.map(n=>`<option value="${n}">${n}</option>`).join('');
+  document.getElementById('er-sender').innerHTML=erOpsOpts;
+  document.getElementById('er-sender').value=r.sender||'';
+  document.getElementById('er-receiver').innerHTML=erOpsOpts;
+  document.getElementById('er-receiver').value=r.receiver||'';
   document.getElementById('er-note').value=r.note||'';
   document.getElementById('er-status-warning').style.display='none';
 
@@ -2682,7 +2710,7 @@ function onChangeRentalStatus(id, newStatus){
     }
     ids.forEach(pid=>{const p=products.find(x=>x.id===pid);if(p)p.status='ว่าง';gsUpdateProductStatus(pid,'ว่าง');});
     r.status=newStatus;
-    if(newStatus==='คืนแล้ว'){r.returnDate=new Date();}
+    if(newStatus==='คืนแล้ว'){r.returnDate=r.returnDate||r.due||new Date();}
   } else if(newStatus==='กำลังเช่า'&&oldStatus==='จอง'){
     ids.forEach(pid=>{const p=products.find(x=>x.id===pid);if(p)p.status='ถูกเช่า';gsUpdateProductStatus(pid,'ถูกเช่า');});
     r.status=newStatus;r.confirmedDate=new Date();
@@ -2708,12 +2736,26 @@ function saveEditRental(){
   if(newEnd)r.due=new Date(newEnd);
   const deliver=document.getElementById('er-deliver').value;
   r.deliverDate=deliver?new Date(deliver):r.deliverDate;
+  const retDateVal=document.getElementById('er-return-date').value;
+  r.returnDate=retDateVal?new Date(retDateVal):r.returnDate;
   r.deposit=parseFloat(document.getElementById('er-deposit').value)||r.deposit;
   r.deliveryShippingCost=parseFloat(document.getElementById('er-ship-send').value)||0;
   r.shippingCost=parseFloat(document.getElementById('er-ship-return').value)||0;
   r.deliveryPayer=document.getElementById('er-payer-send').value||r.deliveryPayer||'';
   r.payer=document.getElementById('er-payer-return').value||r.payer||'';
   r.paymentStatus=document.getElementById('er-payment').value||r.paymentStatus;
+  // ผู้ส่ง / ผู้รับ + auto-fill commission
+  const newSender=document.getElementById('er-sender').value||'';
+  const newReceiver=document.getElementById('er-receiver').value||'';
+  r.sender=newSender;
+  r.receiver=newReceiver;
+  // ถ้ามีผู้ส่งแต่ยังไม่มี confirmedDate → ใช้ deliverDate หรือ start
+  if(r.sender&&!r.confirmedDate){r.confirmedDate=r.deliverDate||r.start||new Date();}
+  // ถ้ามีผู้รับแต่ยังไม่มี returnDate → ใช้ due หรือวันนี้
+  if(r.receiver&&!r.returnDate){r.returnDate=r.due||new Date();}
+  // คำนวณคอมฯ ถ้ายังไม่มี
+  if(r.sender&&!r.senderCommission&&r.total){r.senderCommission=Math.round((r.totalPricePerDay||0)*0.05);}
+  if(r.receiver&&!r.receiverCommission&&r.total){r.receiverCommission=r.isVIP?0:Math.round((r.totalPricePerDay||0)*0.05);}
   r.note=document.getElementById('er-note').value.trim();
 
   // Handle product changes
@@ -2768,7 +2810,7 @@ function saveEditRental(){
     if(newStatus!==oldStatus){
       if(newStatus==='คืนแล้ว'||newStatus==='ยกเลิก'){
         ids.forEach(pid=>{const p=products.find(x=>x.id===pid);if(p)p.status='ว่าง';gsUpdateProductStatus(pid,'ว่าง');});
-        if(newStatus==='คืนแล้ว')r.returnDate=new Date();
+        if(newStatus==='คืนแล้ว'&&!r.returnDate)r.returnDate=r.due||new Date();
       } else if(newStatus==='กำลังเช่า'&&(oldStatus==='จอง'||oldStatus==='เกินกำหนด')){
         ids.forEach(pid=>{const p=products.find(x=>x.id===pid);if(p)p.status='ถูกเช่า';gsUpdateProductStatus(pid,'ถูกเช่า');});
         r.confirmedDate=r.confirmedDate||new Date();
@@ -2985,10 +3027,15 @@ function openConfirmBookingModal(id){
   
   // สร้าง category requirements จาก productIds
   const reqIds = r.productIds || [r.productId];
+  const pNames = r.productNames || [];
   cbCatRequirements = [];
-  reqIds.forEach(pid=>{
+  reqIds.forEach((pid,i)=>{
     const p=products.find(x=>x.id===pid);
-    if(p) cbCatRequirements.push({cat:p.cat, assignedId:null, assignedName:null});
+    if(p){
+      const nm=pNames[i]||p.name;
+      const hasMonitor=nm.includes('มอนิเตอร์');
+      cbCatRequirements.push({cat:p.cat, assignedId:null, assignedName:null, withMonitor:hasMonitor});
+    }
   });
   cbScannedIds = [];
   
@@ -3030,18 +3077,21 @@ function renderCBScanChecklist(){
   // จัดกลุ่มตาม category
   const catGroups={};
   cbCatRequirements.forEach((req,idx)=>{
-    if(!catGroups[req.cat]) catGroups[req.cat]={total:0,done:0,items:[]};
+    if(!catGroups[req.cat]) catGroups[req.cat]={total:0,done:0,items:[],withMonitor:false};
     catGroups[req.cat].total++;
     if(req.assignedId) catGroups[req.cat].done++;
+    if(req.withMonitor) catGroups[req.cat].withMonitor=true;
     catGroups[req.cat].items.push({...req,idx});
   });
 
   let html='';
   for(const [cat,g] of Object.entries(catGroups)){
     const allDone=g.done===g.total;
+    const isPlus=((cat.toLowerCase().includes('cpr man') || cat.toLowerCase().includes('baby')) && cat.toLowerCase().includes('plus'));
+    const monitorLabel=isPlus?(g.withMonitor?'<span style="font-size:11px;color:#059669;font-weight:600;margin-left:6px">✅ รวมมอนิเตอร์</span>':'<span style="font-size:11px;color:#dc2626;font-weight:600;margin-left:6px">❌ ไม่รวมมอนิเตอร์</span>'):'';
     html+=`<div style="margin-bottom:8px;padding:8px 12px;border-radius:8px;background:${allDone?'#d1fae5':'#f8fafc'};border:1px solid ${allDone?'#6ee7b7':'#e2e8f0'}">`;
     html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-      <span style="font-weight:700;font-size:13px">${allDone?'✅':'📦'} ${cat} <span style="color:var(--primary);font-size:12px">×${g.total}</span></span>
+      <span style="font-weight:700;font-size:13px">${allDone?'✅':'📦'} ${cat} <span style="color:var(--primary);font-size:12px">×${g.total}</span>${monitorLabel}</span>
       <span style="font-size:12px;font-weight:700;color:${allDone?'var(--success)':'var(--primary)'}">สแกนแล้ว ${g.done}/${g.total}</span>
     </div>`;
     g.items.forEach(item=>{
@@ -3168,7 +3218,7 @@ function doConfirmBooking(){
   r.deliveryPayer=document.getElementById('cb-payer').value;
   r.deliveryBy=document.getElementById('cb-delivery-by').value;
   r.status='กำลังเช่า';
-  r.senderCommission=Math.round(r.total*0.05);
+  r.senderCommission=Math.round((r.totalPricePerDay||0)*0.05);
   r.confirmedDate=new Date();
   
   // ล็อคสินค้าจริงเป็นถูกเช่า
@@ -3336,7 +3386,7 @@ function confirmReturn(){
   r.shippingCost=parseFloat(document.getElementById('ret-shipping').value)||0;
   r.payer=document.getElementById('ret-payer').value;
   r.status='คืนแล้ว';
-  r.receiverCommission=r.isVIP?0:Math.round(r.total*0.05);
+  r.receiverCommission=r.isVIP?0:Math.round((r.totalPricePerDay||0)*0.05);
   r.returnCondition=condition;
   r.returnDamageNote=condition==='damaged'?damageNote:'';
   r.returnNote=retNote;
@@ -3816,16 +3866,30 @@ function printAllQR(){const q=(document.getElementById('qr-search').value||'').t
 
 // ========== COMMISSION ==========
 let commYear=new Date().getFullYear(), commMonth=new Date().getMonth();
-function commNav(dir){if(dir===0){commYear=new Date().getFullYear();commMonth=new Date().getMonth();}else{commMonth+=dir;if(commMonth<0){commMonth=11;commYear--;}if(commMonth>11){commMonth=0;commYear++;}}renderCommission();}
+function commNav(dir){if(dir===0){commYear=new Date().getFullYear();commMonth=new Date().getMonth();}else{commMonth+=dir;if(commMonth<0){commMonth=11;commYear--;}if(commMonth>11){commMonth=0;commYear++;}}document.getElementById('comm-date-from').value='';document.getElementById('comm-date-to').value='';renderCommission();}
+function clearCommDateFilter(){document.getElementById('comm-date-from').value='';document.getElementById('comm-date-to').value='';renderCommission();}
 function renderCommission(){
-  document.getElementById('comm-month-label').textContent=`${thaiMonths[commMonth]} ${commYear+543}`;
+  const dateFrom=document.getElementById('comm-date-from').value;
+  const dateTo=document.getElementById('comm-date-to').value;
+  const useRange=!!(dateFrom||dateTo);
+  const rangeFrom=dateFrom?new Date(dateFrom):null;
+  const rangeTo=dateTo?new Date(dateTo+'T23:59:59'):null;
+  if(useRange){
+    const parts=[];
+    if(dateFrom)parts.push(fmtDate(rangeFrom));
+    if(dateTo)parts.push(fmtDate(rangeTo));
+    document.getElementById('comm-month-label').textContent=parts.join(' — ');
+  } else {
+    document.getElementById('comm-month-label').textContent=`${thaiMonths[commMonth]} ${commYear+543}`;
+  }
   const pSel=document.getElementById('comm-person-filter');
   if(pSel.options.length<=1){opsNames.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;pSel.appendChild(o);});}
   const filterPerson=pSel.value;
+  function inRange(d){if(!d)return false;if(useRange){if(rangeFrom&&d<rangeFrom)return false;if(rangeTo&&d>rangeTo)return false;return true;}return d.getFullYear()===commYear&&d.getMonth()===commMonth;}
   const records=[];
   rentals.forEach(r=>{
-    if(r.sender&&r.confirmedDate){const cd=r.confirmedDate;if(cd.getFullYear()===commYear&&cd.getMonth()===commMonth){const comm=r.senderCommission||Math.round(r.total*0.05);if(!filterPerson||r.sender===filterPerson){records.push({id:r.id,date:cd,type:'ส่งสินค้า',prods:Array.isArray(r.productNames)?r.productNames.join(', '):'',customer:r.customer,person:r.sender,rental:r.total,commission:comm});}}}
-    if(r.receiver&&r.returnDate){const rd=r.returnDate;if(rd.getFullYear()===commYear&&rd.getMonth()===commMonth){const comm=r.receiverCommission||Math.round(r.total*0.05);if(!filterPerson||r.receiver===filterPerson){records.push({id:r.id,date:rd,type:'รับคืน',prods:Array.isArray(r.productNames)?r.productNames.join(', '):'',customer:r.customer,person:r.receiver,rental:r.total,commission:comm});}}}
+    if(r.sender&&r.confirmedDate){const cd=r.confirmedDate;if(inRange(cd)){const comm=Math.round((r.totalPricePerDay||0)*0.05);if(!filterPerson||r.sender===filterPerson){records.push({id:r.id,date:cd,type:'ส่งสินค้า',prods:Array.isArray(r.productNames)?r.productNames.join(', '):'',customer:r.customer,person:r.sender,rental:r.totalPricePerDay||0,commission:comm});}}}
+    if(r.receiver&&r.returnDate){const rd=r.returnDate;if(inRange(rd)){const comm=Math.round((r.totalPricePerDay||0)*0.05);if(!filterPerson||r.receiver===filterPerson){records.push({id:r.id,date:rd,type:'รับคืน',prods:Array.isArray(r.productNames)?r.productNames.join(', '):'',customer:r.customer,person:r.receiver,rental:r.totalPricePerDay||0,commission:comm});}}}
   });
   records.sort((a,b)=>a.date-b.date);
   const totalComm=records.reduce((s,r)=>s+r.commission,0);
@@ -3837,7 +3901,7 @@ function renderCommission(){
     <div class="kpi-card green"><div class="kpi-label">เที่ยวรับ</div><div class="kpi-value">${recvCount}</div><div style="font-size:12px;color:var(--muted)">฿${fmt(records.filter(r=>r.type==='รับคืน').reduce((s,r)=>s+r.commission,0))}</div></div>
   `;
   const isOps=currentRole==='ops';
-  document.getElementById('comm-thead').innerHTML=isOps?'<tr><th>เลขที่</th><th>วันที่</th><th>ประเภท</th><th>สินค้า</th><th>ผู้เช่า</th><th>ผู้ดำเนินการ</th><th class="text-right">คอมฯ 5%</th></tr>':'<tr><th>เลขที่</th><th>วันที่</th><th>ประเภท</th><th>สินค้า</th><th>ผู้เช่า</th><th>ผู้ดำเนินการ</th><th class="text-right">ค่าเช่ารวม</th><th class="text-right">คอมฯ 5%</th></tr>';
+  document.getElementById('comm-thead').innerHTML=isOps?'<tr><th>เลขที่</th><th>วันที่</th><th>ประเภท</th><th>สินค้า</th><th>ผู้เช่า</th><th>ผู้ดำเนินการ</th><th class="text-right">คอมฯ 5%</th></tr>':'<tr><th>เลขที่</th><th>วันที่</th><th>ประเภท</th><th>สินค้า</th><th>ผู้เช่า</th><th>ผู้ดำเนินการ</th><th class="text-right">ค่าเช่า/วัน</th><th class="text-right">คอมฯ 5%</th></tr>';
   document.getElementById('comm-table').innerHTML=records.length?records.map(r=>{let row=`<tr><td style="font-weight:600;font-size:12px">${r.id}</td><td>${fmtDate(r.date)}</td><td><span class="badge ${r.type==='ส่งสินค้า'?'badge-blue':'badge-green'}">${r.type}</span></td><td style="font-size:12px">${r.prods}</td><td style="font-size:12px">${r.customer}</td><td style="font-weight:600">${r.person}</td>`;if(!isOps)row+=`<td class="text-right">฿${fmt(r.rental)}</td>`;row+=`<td class="text-right price" style="font-weight:700">฿${fmt(r.commission)}</td></tr>`;return row;}).join(''):`<tr><td colspan="${isOps?7:8}" class="text-center" style="padding:30px;color:var(--muted)">ไม่มีข้อมูลคอมมิชชั่นในเดือนนี้</td></tr>`;
   const byPerson={};records.forEach(r=>{if(!byPerson[r.person])byPerson[r.person]={send:0,recv:0,sendComm:0,recvComm:0,total:0};if(r.type==='ส่งสินค้า'){byPerson[r.person].send++;byPerson[r.person].sendComm+=r.commission;}else{byPerson[r.person].recv++;byPerson[r.person].recvComm+=r.commission;}byPerson[r.person].total+=r.commission;});
   const entries=Object.entries(byPerson).sort((a,b)=>b[1].total-a[1].total);
@@ -3846,13 +3910,19 @@ function renderCommission(){
 
 // ========== EXPORT COMMISSION PDF ==========
 function exportCommissionPDF(){
-  const monthLabel=`${thaiMonths[commMonth]} ${commYear+543}`;
+  const dateFrom=document.getElementById('comm-date-from').value;
+  const dateTo=document.getElementById('comm-date-to').value;
+  const useRange=!!(dateFrom||dateTo);
+  const rangeFrom=dateFrom?new Date(dateFrom):null;
+  const rangeTo=dateTo?new Date(dateTo+'T23:59:59'):null;
+  const monthLabel=useRange?document.getElementById('comm-month-label').textContent:`${thaiMonths[commMonth]} ${commYear+543}`;
   const pSel=document.getElementById('comm-person-filter');
   const filterPerson=pSel.value;
+  function inRange(d){if(!d)return false;if(useRange){if(rangeFrom&&d<rangeFrom)return false;if(rangeTo&&d>rangeTo)return false;return true;}return d.getFullYear()===commYear&&d.getMonth()===commMonth;}
   const records=[];
   rentals.forEach(r=>{
-    if(r.sender&&r.confirmedDate){const cd=r.confirmedDate;if(cd.getFullYear()===commYear&&cd.getMonth()===commMonth){const comm=r.senderCommission||Math.round(r.total*0.05);if(!filterPerson||r.sender===filterPerson){records.push({id:r.id,date:cd,type:'ส่งสินค้า',prods:Array.isArray(r.productNames)?r.productNames.join(', '):'',customer:r.customer,person:r.sender,rental:r.total,commission:comm});}}}
-    if(r.receiver&&r.returnDate){const rd=r.returnDate;if(rd.getFullYear()===commYear&&rd.getMonth()===commMonth){const comm=r.receiverCommission||Math.round(r.total*0.05);if(!filterPerson||r.receiver===filterPerson){records.push({id:r.id,date:rd,type:'รับคืน',prods:Array.isArray(r.productNames)?r.productNames.join(', '):'',customer:r.customer,person:r.receiver,rental:r.total,commission:comm});}}}
+    if(r.sender&&r.confirmedDate){const cd=r.confirmedDate;if(inRange(cd)){const comm=Math.round((r.totalPricePerDay||0)*0.05);if(!filterPerson||r.sender===filterPerson){records.push({id:r.id,date:cd,type:'ส่งสินค้า',prods:Array.isArray(r.productNames)?r.productNames.join(', '):'',customer:r.customer,person:r.sender,rental:r.totalPricePerDay||0,commission:comm});}}}
+    if(r.receiver&&r.returnDate){const rd=r.returnDate;if(inRange(rd)){const comm=Math.round((r.totalPricePerDay||0)*0.05);if(!filterPerson||r.receiver===filterPerson){records.push({id:r.id,date:rd,type:'รับคืน',prods:Array.isArray(r.productNames)?r.productNames.join(', '):'',customer:r.customer,person:r.receiver,rental:r.totalPricePerDay||0,commission:comm});}}}
   });
   records.sort((a,b)=>a.date-b.date);
   
