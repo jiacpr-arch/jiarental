@@ -212,6 +212,7 @@ tr:hover{background:#f8fafc}
 .cal-event.st-cancel{background:#94a3b8}
 .cal-event.st-due{background:#8b5cf6}
 .cal-event.st-vip{background:#7c3aed}
+.cal-event.st-product-status{background:#0d9488;font-style:italic}
 .view-toggle.active{background:var(--primary)!important;color:#fff!important;border-color:var(--primary)!important}
 .gantt-table{border-collapse:collapse;font-size:12px;width:max-content;min-width:100%}
 .gantt-table th,.gantt-table td{border:1px solid #e2e8f0;text-align:center;padding:0}
@@ -231,6 +232,7 @@ tr:hover{background:#f8fafc}
 .gantt-bar.gb-return{background:#10b981}
 .gantt-bar.gb-overdue{background:#ef4444}
 .gantt-bar.gb-vip{background:#7c3aed}
+.gantt-bar.gb-status{background:#0d9488}
 
 /* ===== FEATURE 2: Smart Category Selector ===== */
 .smart-select-group{border:1.5px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;background:#fafbfc}
@@ -462,6 +464,7 @@ QR Code สินค้า
 <div style="display:flex;align-items:center;gap:4px;font-size:11px"><span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#10b981"></span>คืนแล้ว</div>
 <div style="display:flex;align-items:center;gap:4px;font-size:11px"><span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#ef4444"></span>เกินกำหนด</div>
 <div style="display:flex;align-items:center;gap:4px;font-size:11px"><span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#7c3aed"></span>ยืมด่วน/VIP</div>
+<div style="display:flex;align-items:center;gap:4px;font-size:11px"><span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#0d9488"></span>ออกสอน/ออกบูธ</div>
 </div>
 <div id="gantt-container" style="overflow-x:auto"></div>
 </div>
@@ -582,6 +585,7 @@ QR Code สินค้า
 <div style="display:flex;align-items:center;gap:5px;font-size:13px"><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#10b981"></span> คืนแล้ว</div>
 <div style="display:flex;align-items:center;gap:5px;font-size:13px"><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#ef4444"></span> เกินกำหนด</div>
 <div style="display:flex;align-items:center;gap:5px;font-size:13px"><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#7c3aed"></span> ยืมด่วน/VIP</div>
+<div style="display:flex;align-items:center;gap:5px;font-size:13px"><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#0d9488"></span> ออกสอน/ออกบูธ</div>
 </div>
 <div class="card" style="overflow:hidden">
 <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);font-size:13px"></div>
@@ -1269,6 +1273,18 @@ async function loadFromSheets() {
       const saved = localStorage.getItem('statusNote_'+prod.id);
       if(saved) prod.statusNote = saved;
     }
+    // โหลดวันที่ออกสอน/ออกบูธ
+    const sdf=localStorage.getItem('statusDateFrom_'+prod.id);
+    const sdt=localStorage.getItem('statusDateTo_'+prod.id);
+    prod.statusDateFrom=sdf?new Date(sdf):null;
+    prod.statusDateTo=sdt?new Date(sdt):null;
+    // Fallback: parse จาก statusNote เช่น "พี่ต้อง | 03/06/2026 - 27/07/2026"
+    if(!prod.statusDateFrom&&(prod.status==='ออกสอน'||prod.status==='ออกบูธ')&&prod.statusNote){
+      const dm=prod.statusNote.match(/(\d{2})\/(\d{2})\/(\d{4})/g);
+      if(dm&&dm.length>=1){const p1=dm[0].split('/');prod.statusDateFrom=new Date(p1[2],p1[1]-1,p1[0]);}
+      if(dm&&dm.length>=2){const p2=dm[1].split('/');prod.statusDateTo=new Date(p2[2],p2[1]-1,p2[0]);}
+      if(prod.statusDateFrom&&!prod.statusDateTo)prod.statusDateTo=prod.statusDateFrom;
+    }
     return prod;
   });
   customers = (data.customers || []).map(c => ({...c, rentCount: parseInt(c.rentCount)||0, total: parseFloat(c.total)||0, sales: c.sales||'', province: c.province||'', billingAddress: c.billingAddress||''}));
@@ -1578,7 +1594,12 @@ function confirmUnavail(){
   if(p){
     p.status = unavailPendingStatus;
     p.statusNote = fullNote;
+    // เก็บวันที่แยกสำหรับปฏิทิน
+    if(showDates&&dateStart){p.statusDateFrom=new Date(dateStart);p.statusDateTo=dateEnd?new Date(dateEnd):new Date(dateStart);}
+    else{p.statusDateFrom=null;p.statusDateTo=null;}
     localStorage.setItem('statusNote_'+p.id, fullNote);
+    if(p.statusDateFrom)localStorage.setItem('statusDateFrom_'+p.id, p.statusDateFrom.toISOString());
+    if(p.statusDateTo)localStorage.setItem('statusDateTo_'+p.id, p.statusDateTo.toISOString());
     gsUpdateProductStatus(unavailPendingId, unavailPendingStatus, fullNote);
     showToast(`${p.name} → ${unavailPendingStatus}`);
     renderProducts();
@@ -1600,7 +1621,7 @@ function cancelUnavail(){
   unavailPendingSelect = null;
 }
 
-function changeStatus(id,status){const p=products.find(x=>x.id===id);if(p){p.status=status;p.statusNote='';localStorage.removeItem('statusNote_'+id);gsUpdateProductStatus(id,status,'');renderProducts();showToast(`เปลี่ยนสถานะ ${p.name} เป็น "${status}"`);}}
+function changeStatus(id,status){const p=products.find(x=>x.id===id);if(p){p.status=status;p.statusNote='';p.statusDateFrom=null;p.statusDateTo=null;localStorage.removeItem('statusNote_'+id);localStorage.removeItem('statusDateFrom_'+id);localStorage.removeItem('statusDateTo_'+id);gsUpdateProductStatus(id,status,'');renderProducts();showToast(`เปลี่ยนสถานะ ${p.name} เป็น "${status}"`);}}
 
 function showProductRenter(productId){
   const p=products.find(x=>x.id===productId);if(!p)return;
@@ -1921,7 +1942,7 @@ function showDayEvents(key){
   const dayStr=`${parts[2]}/${parseInt(parts[1])+1}/${parts[0]}`;
   document.getElementById('day-events-title').textContent=`รายการวันที่ ${dayStr} (${events.length} รายการ)`;
   document.getElementById('day-events-body').innerHTML=events.map(e=>
-    `<div style="padding:8px 12px;margin-bottom:6px;border-radius:8px;cursor:pointer;border-left:4px solid var(--primary);background:#f8fafc" onclick="closeModal('day-events-modal');showReceipt('${e.rentalId}')">
+    `<div style="padding:8px 12px;margin-bottom:6px;border-radius:8px;cursor:pointer;border-left:4px solid var(--primary);background:#f8fafc" ${e.rentalId?'onclick="closeModal(\'day-events-modal\');showReceipt(\''+e.rentalId+'\')"':''}>
       <span class="cal-event ${e.cls}" style="display:inline-block;margin-bottom:0;font-size:12px">${e.label}</span>
     </div>`
   ).join('');
@@ -1953,6 +1974,21 @@ function renderCalendar(){
     if(r.returnDate) addEv(r.returnDate,`✓ คืน ${r.customer}`,'st-return',r.id);
     else addEv(r.due,`◀ คืน ${r.customer}`,'st-due',r.id);
   });
+  // สินค้าออกสอน/ออกบูธ — แสดงในปฏิทิน
+  products.forEach(p=>{
+    if((p.status==='ออกสอน'||p.status==='ออกบูธ')&&p.statusDateFrom){
+      const label=p.status==='ออกสอน'?'📚':'🎪';
+      const note=(p.statusNote||'').split('|')[0].trim();
+      const from=p.statusDateFrom;
+      const to=p.statusDateTo||from;
+      // เพิ่ม event ทุกวันในช่วง
+      const d=new Date(from);
+      while(d<=to){
+        addEv(new Date(d),`${label} ${p.cat} — ${note}`,'st-product-status',null);
+        d.setDate(d.getDate()+1);
+      }
+    }
+  });
   let html='';
   thaiDays.forEach((d,i)=>{html+=`<div class="cal-header" style="${i===0?'color:#fca5a5':''}">${d}</div>`;});
   const totalCells=42;
@@ -1960,7 +1996,7 @@ function renderCalendar(){
   for(let d=1;d<=daysInMonth;d++){
     const isToday=isThisMonth&&d===today.getDate();const key=`${calYear}-${calMonth}-${d}`;const events=evMap[key]||[];
     html+=`<div class="cal-cell${isToday?' today':''}"><div class="cal-day">${d}</div>`;
-    events.slice(0,4).forEach(e=>{html+=`<span class="cal-event ${e.cls}" title="${e.label}" style="cursor:pointer" onclick="showReceipt('${e.rentalId}')">${e.label}</span>`;});
+    events.slice(0,4).forEach(e=>{html+=`<span class="cal-event ${e.cls}" title="${e.label}" style="cursor:pointer" ${e.rentalId?`onclick="showReceipt('${e.rentalId}')"`:''}>${e.label}</span>`;});
     if(events.length>4) html+=`<span style="font-size:10px;color:var(--primary);cursor:pointer;text-decoration:underline" onclick="showDayEvents('${key}')">+${events.length-4} อื่นๆ</span>`;
     html+=`</div>`;
   }
@@ -1986,6 +2022,8 @@ function renderGantt(){
   let prods=products.filter(p=>{if(cat&&p.cat!==cat)return false;if(q&&!p.id.toLowerCase().includes(q)&&!p.name.toLowerCase().includes(q))return false;return true;});
   const rentalMap={};
   rentals.forEach(r=>{if(r.status==='ยกเลิก')return;const ids=r.productIds||[r.productId];const stClass=r.isVIP?'gb-vip':r.status==='กำลังเช่า'?'gb-rent':r.status==='จอง'?'gb-book':r.status==='คืนแล้ว'?'gb-return':r.status==='เกินกำหนด'?'gb-overdue':'';ids.forEach(pid=>{if(!rentalMap[pid])rentalMap[pid]=[];rentalMap[pid].push({start:r.start,end:r.returnDate||r.due,cls:stClass,customer:r.customer,id:r.id});});});
+  // เพิ่มสถานะ ออกสอน/ออกบูธ เข้า Gantt
+  products.forEach(p=>{if((p.status==='ออกสอน'||p.status==='ออกบูธ')&&p.statusDateFrom){if(!rentalMap[p.id])rentalMap[p.id]=[];const note=(p.statusNote||'').split('|')[0].trim();rentalMap[p.id].push({start:p.statusDateFrom,end:p.statusDateTo||p.statusDateFrom,cls:'gb-status',customer:p.status+' — '+note,id:''});}});
   let html='<table class="gantt-table"><thead>';
   html+=`<tr><th class="gantt-prod" style="background:var(--primary);color:#fff">สินค้า (${prods.length})</th><th colspan="${daysInMonth}" class="gantt-hdr-month">${thaiMonths[ganttMonth]} ${ganttYear+543}</th></tr>`;
   html+=`<tr><th class="gantt-prod" style="font-size:10px;color:var(--muted)">รหัส / ชื่อ</th>`;
@@ -2541,11 +2579,13 @@ function openEditRentalModal(id){
   const activeStatuses=['จอง','กำลังเช่า','เกินกำหนด','ยืมด่วน','คืนแล้ว'];
   if(!activeStatuses.includes(r.status)){showToast('แก้ไขได้เฉพาะรายการที่ยัง active','error');return;}
   editingRentalId=id;
-  const prodNames=(r.productNames||[]).join(', ');
+  const prods=(r.productIds||[]).map(id=>products.find(p=>p.id===id)).filter(Boolean);
+  const catMap={};prods.forEach(p=>{const c=p.cat||p.name;if(!catMap[c])catMap[c]=0;catMap[c]++;});
+  const prodSummary=Object.entries(catMap).map(([c,n])=>`${c} ×${n}`).join(', ');
   document.getElementById('edit-rental-info').innerHTML=`
     <div style="display:flex;justify-content:space-between;align-items:center">
       <div><div style="font-weight:700;font-size:15px">${r.id} ${r.isVIP?'<span class="vip-tag">VIP</span>':''}</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:2px">สินค้า: ${prodNames}</div></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">สินค้า: ${prodSummary}</div></div>
       <span class="badge ${badgeClass(r.status)}" style="font-size:12px">${r.status}</span>
     </div>
   `;
@@ -2612,9 +2652,9 @@ function toggleEditProducts(){
 
 function renderEditProductDisplay(){
   const prods=erSelectedProductIds.map(id=>products.find(p=>p.id===id)).filter(Boolean);
-  document.getElementById('er-product-display').innerHTML=prods.length?
-    prods.map(p=>`<span class="selected-item">${p.name} <span style="font-size:10px;color:var(--muted)">(${p.id})</span></span>`).join(' ')
-    :'<span style="color:var(--muted);font-size:13px">ไม่มีสินค้า</span>';
+  if(!prods.length){document.getElementById('er-product-display').innerHTML='<span style="color:var(--muted);font-size:13px">ไม่มีสินค้า</span>';return;}
+  const catMap={};prods.forEach(p=>{const c=p.cat||p.name;if(!catMap[c])catMap[c]=0;catMap[c]++;});
+  document.getElementById('er-product-display').innerHTML=Object.entries(catMap).map(([c,n])=>`<span class="selected-item">${c} ×${n}</span>`).join(' ');
 }
 
 function filterEditProducts(){
@@ -2632,7 +2672,7 @@ function filterEditProducts(){
     const isInCurrent=currentIds.includes(p.id)&&!erSelectedProductIds.includes(p.id);
     return `<label style="${p.status!=='ว่าง'&&!currentIds.includes(p.id)?'opacity:.5':''}">
       <input type="checkbox" value="${p.id}" ${erSelectedProductIds.includes(p.id)?'checked':''} onchange="toggleEditProduct('${p.id}',this.checked)">
-      <span>${p.name} <span style="font-size:10px;color:var(--muted)">(${p.id})</span></span>
+      <span>${p.cat} <span style="font-size:10px;color:var(--muted)">(${p.id})</span></span>
       <span class="price-tag">฿${fmt(p.price)}/วัน</span>
     </label>`;
   }).join('')||'<div style="padding:10px;text-align:center;color:var(--muted);font-size:13px">ไม่พบสินค้า</div>';
@@ -2652,7 +2692,7 @@ function renderEditSelectedDisplay(){
   if(!erSelectedProductIds.length){el.innerHTML='<span style="color:var(--danger);font-size:12px">กรุณาเลือกสินค้าอย่างน้อย 1 รายการ</span>';return;}
   el.innerHTML=erSelectedProductIds.map(id=>{
     const p=products.find(x=>x.id===id);
-    return `<span class="selected-item">${p?p.name:id} <span class="remove" onclick="toggleEditProduct('${id}',false);filterEditProducts()">&times;</span></span>`;
+    return `<span class="selected-item">${p?p.cat:id} <span class="remove" onclick="toggleEditProduct('${id}',false);filterEditProducts()">&times;</span></span>`;
   }).join('');
 }
 
@@ -2850,7 +2890,7 @@ function showReceipt(id){
     ${r.isVIP?'<div class="receipt-row"><div class="label">ประเภท</div><div class="value"><span class="vip-tag">⚡ '+r.vipReason+'</span></div></div>':''}
     <div style="font-weight:700;font-size:14px;margin:12px 0 6px;color:var(--text)">รายการอุปกรณ์</div>
     <div class="receipt-items">
-      ${(()=>{const catMap={};prods.forEach(p=>{const c=p.cat||p.name;if(!catMap[c])catMap[c]={count:0,price:p.price};catMap[c].count++;});return Object.entries(catMap).map(([c,v])=>`<div class="item"><span>${c}${v.count>1?' × '+v.count:''}</span>${!isOps?`<span class="price">฿${fmt(v.price)}/วัน</span>`:''}</div>`).join('');})()}
+      ${(()=>{const catMap={};prods.forEach(p=>{const c=p.cat||p.name;if(!catMap[c])catMap[c]={count:0,price:p.price};catMap[c].count++;});return Object.entries(catMap).map(([c,v])=>`<div class="item"><span>${c} ×${v.count}</span>${!isOps?`<span class="price">฿${fmt(v.price)}/วัน</span>`:''}</div>`).join('');})()}
     </div>
     <div class="receipt-row"><div class="label">วันเช่า</div><div class="value">${fmtDate(r.start)}</div></div>
     <div class="receipt-row"><div class="label">กำหนดคืน</div><div class="value">${fmtDate(r.due)}${r.noDueDate?' <span style="color:var(--vip);font-size:11px">(ไม่กำหนด)</span>':''}</div></div>
