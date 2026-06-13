@@ -835,7 +835,7 @@ QR Code สินค้า
 </div>
 <div class="modal-footer">
 <button class="btn btn-outline" onclick="closeModal('rental-modal')">ยกเลิก</button>
-<button class="btn btn-primary" id="rm-save-btn" onclick="saveRental()">บันทึก</button>
+<button class="btn btn-primary" id="rm-save-btn" onclick="previewBeforeSave()">บันทึก</button>
 </div>
 </div>
 </div>
@@ -1078,6 +1078,21 @@ QR Code สินค้า
 <div class="modal-footer">
 <button class="btn btn-outline" onclick="closeModal('vip-modal')">ยกเลิก</button>
 <button class="btn btn-vip" onclick="saveVIP()">⚡ ล็อคสินค้าทันที</button>
+</div>
+</div>
+</div>
+
+<!-- BOOKING CONFIRM PREVIEW -->
+<div class="modal-overlay" id="booking-preview-modal" style="z-index:1100">
+<div class="modal" style="max-width:440px">
+<div class="modal-header" style="background:linear-gradient(135deg,#059669,#047857)">
+<h3 id="bp-title">✅ ยืนยันการจอง?</h3>
+<button class="close-btn" onclick="closeModal('booking-preview-modal')">&times;</button>
+</div>
+<div class="modal-body" id="bp-body" style="padding:20px"></div>
+<div style="display:flex;gap:10px;padding:16px 20px;border-top:1px solid var(--border)">
+<button class="btn btn-outline" onclick="closeModal('booking-preview-modal')" style="flex:1">ยกเลิก</button>
+<button class="btn btn-primary" id="bp-confirm-btn" onclick="closeModal('booking-preview-modal');saveRental()" style="flex:1;background:linear-gradient(135deg,#059669,#047857)">✅ ยืนยันจอง</button>
 </div>
 </div>
 </div>
@@ -1526,7 +1541,7 @@ function renderProducts(){
   }
   document.getElementById('prod-table').innerHTML=slice.map(p=>{
     let row=`<tr>
-      <td style="font-weight:600;font-size:12px">${p.id}</td>
+      <td style="font-weight:600;font-size:12px;cursor:pointer;color:var(--primary);text-decoration:underline" onclick="showProductHistory('${p.id}')" title="ดูประวัติ">${p.id}</td>
       <td><span class="badge badge-gray">${p.cat}</span></td>
       <td>${p.name}</td>
       <td style="font-size:12px;color:var(--muted);max-width:250px">${p.desc}</td>
@@ -1941,11 +1956,14 @@ function showDayEvents(key){
   const parts=key.split('-');
   const dayStr=`${parts[2]}/${parseInt(parts[1])+1}/${parts[0]}`;
   document.getElementById('day-events-title').textContent=`รายการวันที่ ${dayStr} (${events.length} รายการ)`;
-  document.getElementById('day-events-body').innerHTML=events.map(e=>
-    `<div style="padding:8px 12px;margin-bottom:6px;border-radius:8px;cursor:pointer;border-left:4px solid var(--primary);background:#f8fafc" ${e.rentalId?'onclick="closeModal(\'day-events-modal\');showReceipt(\''+e.rentalId+'\')"':''}>
+  document.getElementById('day-events-body').innerHTML=events.map(e=>{
+    let oc='';
+    if(e.statusIdx!=null) oc=`onclick="closeModal('day-events-modal');showStatusGroup(${e.statusIdx})"`;
+    else if(e.rentalId) oc='onclick="closeModal(\'day-events-modal\');showReceipt(\''+e.rentalId+'\')"';
+    return `<div style="padding:8px 12px;margin-bottom:6px;border-radius:8px;cursor:pointer;border-left:4px solid var(--primary);background:#f8fafc" ${oc}>
       <span class="cal-event ${e.cls}" style="display:inline-block;margin-bottom:0;font-size:12px">${e.label}</span>
-    </div>`
-  ).join('');
+    </div>`;
+  }).join('');
   document.getElementById('day-events-modal').classList.add('show');
 }
 const thaiMonths=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
@@ -1961,7 +1979,7 @@ function renderCalendar(){
   const today=new Date();const isThisMonth=today.getFullYear()===calYear&&today.getMonth()===calMonth;
   const evMap={};
   calEvMap=evMap;
-  function addEv(d,label,cls,rentalId){if(!d)return;const key=`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;if(!evMap[key])evMap[key]=[];evMap[key].push({label,cls,rentalId});}
+  function addEv(d,label,cls,rentalId,statusIdx){if(!d)return;const key=`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;if(!evMap[key])evMap[key]=[];evMap[key].push({label,cls,rentalId,statusIdx});}
   rentals.forEach(r=>{
     // ไม่แสดงรายการยกเลิก
     if(r.status==='ยกเลิก') return;
@@ -1974,19 +1992,28 @@ function renderCalendar(){
     if(r.returnDate) addEv(r.returnDate,`✓ คืน ${r.customer}`,'st-return',r.id);
     else addEv(r.due,`◀ คืน ${r.customer}`,'st-due',r.id);
   });
-  // สินค้าออกสอน/ออกบูธ — แสดงในปฏิทิน
+  // สินค้าออกสอน/ออกบูธ — รวมกลุ่มแสดงในปฏิทิน
+  const statusGroups={};
   products.forEach(p=>{
     if((p.status==='ออกสอน'||p.status==='ออกบูธ')&&p.statusDateFrom){
-      const label=p.status==='ออกสอน'?'📚':'🎪';
       const note=(p.statusNote||'').split('|')[0].trim();
-      const from=p.statusDateFrom;
-      const to=p.statusDateTo||from;
-      // เพิ่ม event ทุกวันในช่วง
-      const d=new Date(from);
-      while(d<=to){
-        addEv(new Date(d),`${label} ${p.cat} — ${note}`,'st-product-status',null);
-        d.setDate(d.getDate()+1);
-      }
+      const key=p.status+'::'+note;
+      if(!statusGroups[key])statusGroups[key]={status:p.status,note:note,from:p.statusDateFrom,to:p.statusDateTo||p.statusDateFrom,count:0,products:[]};
+      statusGroups[key].count++;
+      // ขยาย range ถ้าสินค้าตัวอื่นมีช่วงกว้างกว่า
+      if(p.statusDateFrom<statusGroups[key].from)statusGroups[key].from=p.statusDateFrom;
+      const pTo=p.statusDateTo||p.statusDateFrom;
+      if(pTo>statusGroups[key].to)statusGroups[key].to=pTo;
+      statusGroups[key].products.push({id:p.id,cat:p.cat,name:p.name});
+    }
+  });
+  window._statusGroups=Object.values(statusGroups);
+  window._statusGroups.forEach((g,idx)=>{
+    const label=g.status==='ออกสอน'?'📚':'🎪';
+    const d=new Date(g.from);
+    while(d<=g.to){
+      addEv(new Date(d),`${label} ${g.status} ×${g.count}`,'st-product-status',null,idx);
+      d.setDate(d.getDate()+1);
     }
   });
   let html='';
@@ -1996,7 +2023,7 @@ function renderCalendar(){
   for(let d=1;d<=daysInMonth;d++){
     const isToday=isThisMonth&&d===today.getDate();const key=`${calYear}-${calMonth}-${d}`;const events=evMap[key]||[];
     html+=`<div class="cal-cell${isToday?' today':''}"><div class="cal-day">${d}</div>`;
-    events.slice(0,4).forEach(e=>{html+=`<span class="cal-event ${e.cls}" title="${e.label}" style="cursor:pointer" ${e.rentalId?`onclick="showReceipt('${e.rentalId}')"`:''}>${e.label}</span>`;});
+    events.slice(0,4).forEach(e=>{const oc=e.statusIdx!=null?`onclick="showStatusGroup(${e.statusIdx})"`:e.rentalId?`onclick="showReceipt('${e.rentalId}')"`:'';html+=`<span class="cal-event ${e.cls}" title="${e.label}" style="cursor:pointer" ${oc}>${e.label}</span>`;});
     if(events.length>4) html+=`<span style="font-size:10px;color:var(--primary);cursor:pointer;text-decoration:underline" onclick="showDayEvents('${key}')">+${events.length-4} อื่นๆ</span>`;
     html+=`</div>`;
   }
@@ -2211,7 +2238,7 @@ function openRentalModal(){
   currentRentalTab='smart';
   document.getElementById('rental-modal-title').textContent='สร้างรายการจอง';
   document.getElementById('rm-save-btn').textContent='บันทึก';
-  document.getElementById('rm-save-btn').onclick=saveRental;
+  document.getElementById('rm-save-btn').onclick=previewBeforeSave;
   // Reset tabs
   switchRentalTab('smart');
   document.getElementById('smart-rows').innerHTML='';
@@ -2506,6 +2533,66 @@ function autoCalcDeliverDate(){
     deliverDate.setDate(deliverDate.getDate()-buffer-1);
     document.getElementById('rm-deliver').value=deliverDate.toISOString().split('T')[0];
   }
+}
+
+function previewBeforeSave(){
+  // ดึงข้อมูลจากฟอร์ม
+  const custId=document.getElementById('rm-customer').value;
+  const sales=document.getElementById('rm-sales').value;
+  const start=document.getElementById('rm-start').value;
+  const end=document.getElementById('rm-end').value;
+  const mode=currentRentalMode;
+  const cfg=RENTAL_MODES[mode];
+  // Validate
+  if(!custId){showToast('กรุณาเลือกลูกค้า','error');return;}
+  if(!selectedProductIds.length){showToast('กรุณาเลือกสินค้า','error');return;}
+  if(!start||!end){showToast('กรุณาเลือกวันเช่าและกำหนดคืน','error');return;}
+  const cust=customers.find(c=>c.id===custId);
+  // สรุป category
+  const catMap={};
+  selectedProductIds.map(id=>products.find(p=>p.id===id)).filter(Boolean).forEach(p=>{
+    const c=p.cat||p.name;if(!catMap[c])catMap[c]={count:0,price:0};catMap[c].count++;
+    const override=window.smartPriceOverrides&&window.smartPriceOverrides[p.id];
+    catMap[c].price=override!==undefined?override:p.price;
+  });
+  const totalItems=Object.values(catMap).reduce((s,v)=>s+v.count,0);
+  const totalPricePerDay=Object.values(catMap).reduce((s,v)=>s+v.price*v.count,0);
+  let days,total;
+  if(mode==='daily'){
+    days=parseInt(document.getElementById('rm-days').value)||1;
+    total=totalPricePerDay*days;
+  } else {
+    const qty=parseInt(document.getElementById('rm-qty').value)||1;
+    days=cfg.days*qty;
+    const unitPrice=parseFloat(document.getElementById('rm-unit-price').value)||0;
+    total=(mode==='2year'||mode==='4year')?unitPrice:unitPrice*qty;
+  }
+  const bufferDays=parseInt(document.getElementById('rm-buffer-days').value)||0;
+  const deliver=document.getElementById('rm-deliver').value;
+  // สร้าง HTML
+  let itemsHtml=Object.entries(catMap).map(([c,v])=>
+    `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px"><span>${c} ×${v.count}</span><span style="color:var(--primary);font-weight:600">฿${fmt(v.price)}/วัน</span></div>`
+  ).join('');
+  const html=`
+    <div style="margin-bottom:14px;padding:12px 16px;background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span style="color:var(--muted)">ผู้เช่า</span><span style="font-weight:700">${cust?cust.name:'—'}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span style="color:var(--muted)">เซลล์</span><span style="font-weight:600">${sales||'—'}</span></div>
+      ${cust&&cust.address?`<div style="font-size:12px;margin-top:4px;padding-top:6px;border-top:1px dashed #bbf7d0"><span style="color:var(--muted)">ที่อยู่:</span> <span style="color:var(--text)">${cust.address}</span></div>`:''}
+    </div>
+    <div style="font-weight:700;font-size:13px;margin-bottom:6px">📦 สินค้า (${totalItems} ชิ้น)</div>
+    <div style="padding:10px 14px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;margin-bottom:14px">${itemsHtml}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;font-size:13px">
+      <div style="padding:8px 12px;background:#eff6ff;border-radius:8px"><div style="color:var(--muted);font-size:11px">วันเช่า</div><div style="font-weight:700">${fmtDate(new Date(start))}</div></div>
+      <div style="padding:8px 12px;background:#eff6ff;border-radius:8px"><div style="color:var(--muted);font-size:11px">กำหนดคืน</div><div style="font-weight:700">${fmtDate(new Date(end))}</div></div>
+      ${deliver?`<div style="padding:8px 12px;background:#fef3c7;border-radius:8px"><div style="color:var(--muted);font-size:11px">วันส่งของ</div><div style="font-weight:700">${fmtDate(new Date(deliver))}</div></div>`:''}
+      <div style="padding:8px 12px;background:#fce7f3;border-radius:8px"><div style="color:var(--muted);font-size:11px">จำนวน</div><div style="font-weight:700">${days} วัน${mode!=='daily'?' ('+cfg.label+')':''}</div></div>
+    </div>
+    <div style="text-align:center;padding:14px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:10px">
+      <div style="font-size:12px;color:var(--muted)">${totalItems} รายการ × ${days} วัน</div>
+      <div style="font-size:28px;font-weight:800;color:var(--primary)">฿${fmt(total)}</div>
+    </div>`;
+  document.getElementById('bp-body').innerHTML=html;
+  document.getElementById('booking-preview-modal').classList.add('show');
 }
 
 function saveRental(){
@@ -2870,7 +2957,82 @@ function saveEditRental(){
   renderRentals();renderDashboard();renderProducts();
 }
 
+// ========== PRODUCT HISTORY ==========
+function showProductHistory(pid){
+  const p=products.find(x=>x.id===pid);
+  if(!p)return;
+  const history=rentals.filter(r=>(r.productIds||[r.productId]).includes(pid)).sort((a,b)=>(b.start||0)-(a.start||0));
+  const totalRentals=history.length;
+  const active=history.filter(r=>['จอง','กำลังเช่า','เกินกำหนด','ยืมด่วน'].includes(r.status));
+  let totalDays=0;history.forEach(r=>{if(r.days)totalDays+=r.days;});
+  const custSet=new Set(history.map(r=>r.customer));
+  let totalRevenue=0;history.forEach(r=>{if(r.days&&p.price)totalRevenue+=p.price*r.days;});
+  let html=`<div style="padding:20px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px">📦</div>
+      <div><div style="font-weight:700;font-size:17px;color:var(--primary)">${p.name}</div>
+      <div style="font-size:12px;color:var(--muted)">${p.id} | ${p.cat} | ฿${fmt(p.price)}/วัน</div></div></div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px">
+      <div style="padding:12px;background:#eff6ff;border-radius:10px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:var(--primary)">${totalRentals}</div>
+        <div style="font-size:11px;color:var(--muted)">เช่าทั้งหมด (ครั้ง)</div></div>
+      <div style="padding:12px;background:#f0fdf4;border-radius:10px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:#059669">${totalDays}</div>
+        <div style="font-size:11px;color:var(--muted)">ใช้งานรวม (วัน)</div></div>
+      <div style="padding:12px;background:#fef3c7;border-radius:10px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:#d97706">${custSet.size}</div>
+        <div style="font-size:11px;color:var(--muted)">ลูกค้า (ราย)</div></div>
+      <div style="padding:12px;background:#fce7f3;border-radius:10px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:#db2777">฿${fmt(totalRevenue)}</div>
+        <div style="font-size:11px;color:var(--muted)">รายได้รวม</div></div></div>
+    <div style="margin-bottom:14px;padding:10px 14px;border-radius:8px;background:#f8fafc;border:1px solid var(--border)">
+      <span style="font-size:12px;color:var(--muted)">สถานะปัจจุบัน:</span>
+      <span class="badge ${badgeClass(p.status)}" style="margin-left:8px">${p.status}</span>
+      ${p.statusNote?'<div style="font-size:11px;color:#991b1b;margin-top:4px">⚠ '+p.statusNote+'</div>':''}
+      ${active.length?'<div style="font-size:11px;color:var(--primary);margin-top:4px">กำลังเช่าอยู่ '+active.length+' รายการ</div>':''}</div>`;
+  if(history.length){
+    html+=`<div style="font-weight:700;font-size:14px;margin-bottom:8px">ประวัติการเช่า</div><div style="max-height:250px;overflow-y:auto">`;
+    history.forEach(r=>{
+      html+=`<div style="padding:10px 14px;margin-bottom:6px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;cursor:pointer;border-left:4px solid ${r.status==='คืนแล้ว'?'#10b981':r.status==='ยกเลิก'?'#94a3b8':'#3b82f6'}" onclick="closeReceipt();setTimeout(()=>showReceipt('${r.id}'),200)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-weight:700;font-size:12px;color:var(--primary)">${r.id}</span>
+          <span class="badge ${badgeClass(r.status)}" style="font-size:10px">${r.status}</span></div>
+        <div style="font-size:12px;margin-top:4px">${r.customer}</div>
+        <div style="font-size:11px;color:var(--muted)">${fmtDate(r.start)} — ${r.noDueDate?'ไม่กำหนด':fmtDate(r.due)} (${r.days||'?'} วัน)</div></div>`;
+    });
+    html+=`</div>`;
+  } else { html+=`<div style="text-align:center;padding:20px;color:var(--muted)">ยังไม่มีประวัติการเช่า</div>`; }
+  html+=`<button class="btn btn-outline" onclick="closeReceipt()" style="margin-top:14px;width:100%">ปิด</button></div>`;
+  document.getElementById('receipt-body').innerHTML=html;
+  document.getElementById('receipt-card').querySelector('.receipt-header h2').textContent=p.name;
+  document.getElementById('receipt-card').querySelector('.receipt-header p').textContent='ประวัติสินค้า — '+p.cat;
+  document.getElementById('receipt-overlay').classList.add('show');
+}
+
 // ========== FEATURE 3: RECEIPT ==========
+function showStatusGroup(idx){
+  const g=window._statusGroups&&window._statusGroups[idx];
+  if(!g)return;
+  const icon=g.status==='ออกสอน'?'📚':'🎪';
+  const catMap={};g.products.forEach(p=>{if(!catMap[p.cat])catMap[p.cat]=[];catMap[p.cat].push(p);});
+  let items='';
+  Object.entries(catMap).forEach(([cat,ps])=>{
+    items+=`<div style="margin-bottom:10px;padding:10px 14px;background:#f0fdfa;border:1px solid #99f6e4;border-radius:8px">
+      <div style="font-weight:700;font-size:13px;color:#0d9488;margin-bottom:4px">${cat} ×${ps.length}</div>
+      <div style="font-size:12px;color:var(--muted)">${ps.map(p=>p.id).join(', ')}</div></div>`;
+  });
+  document.getElementById('receipt-body').innerHTML=`<div style="padding:20px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <span style="font-size:28px">${icon}</span>
+      <div><div style="font-weight:700;font-size:18px;color:var(--primary)">${g.status}</div>
+      <div style="font-size:13px;color:var(--muted)">${g.note} | ${fmtDate(g.from)} — ${fmtDate(g.to)}</div></div></div>
+    <div style="font-weight:700;font-size:14px;margin-bottom:8px">สินค้าทั้งหมด ${g.count} ชิ้น</div>
+    ${items}
+    <button class="btn btn-outline" onclick="closeReceipt()" style="margin-top:12px;width:100%">ปิด</button></div>`;
+  document.getElementById('receipt-card').querySelector('.receipt-header p').textContent=g.status+' — รายละเอียด';
+  document.getElementById('receipt-overlay').classList.add('show');
+}
+
 function showReceipt(id){
   const r=rentals.find(x=>x.id===id);if(!r)return;
   const prods=(r.productIds||[]).map(pid=>products.find(p=>p.id===pid)).filter(Boolean);
