@@ -213,6 +213,8 @@ tr:hover{background:#f8fafc}
 .cal-event.st-due{background:#8b5cf6}
 .cal-event.st-vip{background:#7c3aed}
 .cal-event.st-product-status{background:#0d9488;font-style:italic}
+.cal-event.st-student{background:#8b5cf6}
+.cal-event.st-student-done{background:#22c55e}
 .view-toggle.active{background:var(--primary)!important;color:#fff!important;border-color:var(--primary)!important}
 .gantt-table{border-collapse:collapse;font-size:12px;width:max-content;min-width:100%}
 .gantt-table th,.gantt-table td{border:1px solid #e2e8f0;text-align:center;padding:0}
@@ -354,6 +356,10 @@ Dashboard
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
 บันทึกเช่า-ยืม
 </div>
+<div class="nav-item" onclick="showPage('students')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+จองผู้เรียน
+</div>
 <div class="nav-item" onclick="showPage('customers')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
 ลูกค้า
@@ -477,6 +483,7 @@ QR Code สินค้า
 <div><h2>บันทึกการเช่า-ยืม</h2><div class="subtitle" id="rental-count"></div></div>
 <div style="display:flex;gap:8px" id="rental-action-btns">
 <button class="btn btn-primary" onclick="openRentalModal()">+ สร้างรายการจอง</button>
+<button class="btn" onclick="openBatchStatusModal()" style="padding:8px 16px;background:#0d9488;color:#fff">📚 ออกสอน/ออกบูธ</button>
 <button class="btn btn-vip" onclick="openVIPModal()">⚡ ยืมด่วน/VIP</button>
 </div>
 </div>
@@ -493,6 +500,52 @@ QR Code สินค้า
 </table>
 </div>
 <div class="pagination" id="rent-pagination"></div>
+</div>
+</div>
+</div>
+
+<!-- STUDENT BOOKINGS -->
+<div id="page-students" class="page">
+<div class="page-header">
+<div><h2>จองผู้เรียน</h2><div class="subtitle" id="student-count"></div></div>
+<button class="btn btn-primary" onclick="openStudentModal()">+ สร้างจองผู้เรียน</button>
+</div>
+<div class="card"><div class="card-body">
+<div class="search-bar">
+<input class="search-input" id="stu-search" placeholder="ค้นหา... (เลขที่, ชื่อ, เบอร์)" oninput="renderStudents()">
+<select class="filter-select" id="stu-course-filter" onchange="renderStudents()"><option value="">ทุกคอร์ส</option><option>Full Course</option><option>Mini Course</option><option>Join Course</option><option>Private Course</option><option>อื่นๆ</option></select>
+<select class="filter-select" id="stu-status-filter" onchange="renderStudents()"><option value="">ทุกสถานะ</option><option>จอง</option><option>เรียนแล้ว</option><option>ยกเลิก</option></select>
+</div>
+<div class="table-responsive"><table><thead><tr>
+<th>เลขที่</th><th>วันที่จอง</th><th>ชื่อผู้เรียน</th><th>เบอร์โทร</th><th>คอร์ส</th><th>วันเรียน</th><th>รอบเวลา</th><th>จำนวน</th><th>ผู้สอน</th><th>เซลล์</th><th>สถานะ</th><th>จัดการ</th>
+</tr></thead><tbody id="stu-tbody"></tbody></table></div>
+</div></div>
+</div>
+
+<!-- STUDENT BOOKING MODAL -->
+<div class="modal-overlay" id="student-modal">
+<div class="modal" style="max-width:500px">
+<div class="modal-header"><h3>สร้างจองผู้เรียน</h3><button class="modal-close" onclick="closeModal('student-modal')">&times;</button></div>
+<div class="modal-body" style="padding:20px">
+<div class="form-group"><label>ชื่อผู้เรียน / บริษัท <span style="color:var(--danger)">*</span></label><input type="text" id="sm-name" placeholder="ชื่อ-นามสกุล หรือชื่อบริษัท"></div>
+<div class="form-row">
+<div class="form-group"><label>เบอร์โทร</label><input type="tel" id="sm-phone" placeholder="08X-XXX-XXXX"></div>
+<div class="form-group"><label>เซลล์</label><select id="sm-sales"><option value="">-- เลือก --</option></select></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>คอร์ส <span style="color:var(--danger)">*</span></label><select id="sm-course" onchange="updateSmTimeSlot()"><option value="">-- เลือก --</option><option>Full Course</option><option>Mini Course</option><option>Join Course</option><option>Private Course</option><option>อื่นๆ</option></select></div>
+<div class="form-group"><label>จำนวนผู้เรียน (คน)</label><input type="number" id="sm-qty" value="1" min="1"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>วันที่เรียน <span style="color:var(--danger)">*</span></label><input type="date" id="sm-date" onchange="updateSmTimeSlot()"></div>
+<div class="form-group"><label>ผู้สอน</label><select id="sm-instructor"><option value="">-- เลือก --</option><option>ครูเจ๋ง</option><option>ครูป่าน</option><option>ครูโบว์</option><option>ครูพลอย</option><option>ครูเจน</option></select></div>
+</div>
+<div class="form-group" id="sm-timeslot-area" style="display:none"><label>รอบเวลาเรียน</label><select id="sm-timeslot"><option value="">-- เลือก --</option></select></div>
+<div class="form-group"><label>หมายเหตุ</label><input type="text" id="sm-note" placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"></div>
+</div>
+<div class="modal-footer" style="display:flex;gap:8px">
+<button class="btn btn-outline" onclick="closeModal('student-modal')">ยกเลิก</button>
+<button class="btn btn-primary" onclick="saveStudentBooking()">บันทึก</button>
 </div>
 </div>
 </div>
@@ -586,6 +639,7 @@ QR Code สินค้า
 <div style="display:flex;align-items:center;gap:5px;font-size:13px"><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#ef4444"></span> เกินกำหนด</div>
 <div style="display:flex;align-items:center;gap:5px;font-size:13px"><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#7c3aed"></span> ยืมด่วน/VIP</div>
 <div style="display:flex;align-items:center;gap:5px;font-size:13px"><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#0d9488"></span> ออกสอน/ออกบูธ</div>
+<div style="display:flex;align-items:center;gap:5px;font-size:13px"><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#8b5cf6"></span> จองผู้เรียน</div>
 </div>
 <div class="card" style="overflow:hidden">
 <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);font-size:13px"></div>
@@ -806,6 +860,9 @@ QR Code สินค้า
 
 <!-- ค่าเช่ารวม: รายวัน=auto -->
 <div class="form-group" id="rm-total-auto"><label>ค่าเช่ารวม (฿)</label><input type="text" id="rm-total" readonly style="font-weight:700;color:var(--primary);font-size:18px;background:#f0f8ff"></div>
+<div class="form-group" id="rm-custom-price-area"><label>ค่าเช่ากำหนดเอง (฿) <span style="font-weight:400;font-size:11px;color:var(--muted)">— เว้นว่างใช้ราคาอัตโนมัติ</span></label>
+<div style="position:relative"><input type="number" id="rm-custom-price" min="0" placeholder="กรอกจำนวนเงินเอง" oninput="updateCustomPrice()" style="font-weight:700;color:#059669;font-size:16px;border-color:#86efac;padding-right:40px">
+<button type="button" id="rm-custom-clear" onclick="clearCustomPrice()" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);background:#fee2e2;border:none;color:#dc2626;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;font-weight:700" title="ล้างค่า">✕</button></div></div>
 
 <!-- ค่าเช่าต่อหน่วย + คำนวณรวม: สัปดาห์/เดือน/ปี -->
 <div id="rm-unit-price-area" style="display:none">
@@ -833,8 +890,9 @@ QR Code สินค้า
 <div class="form-group"><label>สถานะการโอนเงิน</label><select id="rm-payment-status"><option value="">-- เลือก --</option><option>โอน</option><option>จ่ายหน้างาน</option><option>ผ่อนรายเดือน</option></select></div>
 <div class="form-group" id="rm-note-group"><label>หมายเหตุ</label><input id="rm-note" placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"></div>
 </div>
-<div class="modal-footer">
+<div class="modal-footer" style="display:flex;gap:8px">
 <button class="btn btn-outline" onclick="closeModal('rental-modal')">ยกเลิก</button>
+<button class="btn btn-outline" onclick="clearRentalForm()" style="color:#dc2626;border-color:#fca5a5">🗑️ ล้างค่า</button>
 <button class="btn btn-primary" id="rm-save-btn" onclick="previewBeforeSave()">บันทึก</button>
 </div>
 </div>
@@ -1078,6 +1136,43 @@ QR Code สินค้า
 <div class="modal-footer">
 <button class="btn btn-outline" onclick="closeModal('vip-modal')">ยกเลิก</button>
 <button class="btn btn-vip" onclick="saveVIP()">⚡ ล็อคสินค้าทันที</button>
+</div>
+</div>
+</div>
+
+<!-- BATCH STATUS MODAL -->
+<div class="modal-overlay" id="batch-status-modal">
+<div class="modal" style="max-width:560px">
+<div class="modal-header" style="background:linear-gradient(135deg,#0d9488,#047857)">
+<h3>📚 เปลี่ยนสถานะสินค้า (หลายตัว)</h3>
+<button class="modal-close" onclick="closeModal('batch-status-modal')">&times;</button>
+</div>
+<div class="modal-body" style="padding:20px">
+<div class="form-group">
+<label>สถานะ</label>
+<div style="display:flex;gap:8px" id="bs-status-btns">
+<button class="btn btn-outline" onclick="setBatchStatus('ออกสอน')" id="bs-btn-teach" style="flex:1">📚 ออกสอน</button>
+<button class="btn btn-outline" onclick="setBatchStatus('ออกบูธ')" id="bs-btn-booth" style="flex:1">🎪 ออกบูธ</button>
+</div>
+</div>
+<div class="form-row" id="bs-date-row">
+<div class="form-group"><label>วันที่ไป</label><input type="date" id="bs-date-from"></div>
+<div class="form-group"><label>วันที่กลับ</label><input type="date" id="bs-date-to"></div>
+</div>
+<div class="form-group"><label>หมายเหตุ <span style="color:var(--danger)">*</span></label><input type="text" id="bs-note" placeholder="สถานที่ / รายละเอียด"></div>
+<div class="form-group">
+<label>เลือกชนิดอุปกรณ์และจำนวน</label>
+<div id="bs-smart-rows"></div>
+<div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+<button class="btn btn-outline btn-sm" onclick="addBsSmartRow()">+ เพิ่มชนิดอุปกรณ์</button>
+<span id="bs-total-count" style="font-size:14px;font-weight:700;color:#0d9488"></span>
+</div>
+<div id="bs-auto-selected" style="margin-top:8px"></div>
+</div>
+</div>
+<div class="modal-footer" style="display:flex;gap:8px;padding:16px 20px">
+<button class="btn btn-outline" onclick="closeModal('batch-status-modal')" style="flex:1">ยกเลิก</button>
+<button class="btn btn-primary" onclick="confirmBatchStatus()" style="flex:1;background:linear-gradient(135deg,#0d9488,#047857)">✅ ยืนยัน</button>
 </div>
 </div>
 </div>
@@ -1333,8 +1428,13 @@ async function loadFromSheets() {
   opsNames = staff.filter(s => s.role === 'ops').map(s => s.name);
   if (!salesNames.length) salesNames = ['พี่มิ้ง','พี่ป่าน','พี่แก้มใส','พี่แนน'];
   if (!opsNames.length) opsNames = ['ป่าน','เจ๋ง','ตี๋','ปั้น','หมวย'];
+  // โหลดจองผู้เรียน
+  if(data.students&&data.students.length){
+    studentBookings=data.students.map(b=>({...b}));
+    localStorage.setItem('jia_student_bookings',JSON.stringify(studentBookings));
+  }
   isLoading = false;
-  showToast('โหลดข้อมูลสำเร็จ! (สินค้า ' + products.length + ' | ลูกค้า ' + customers.length + ' | เช่า ' + rentals.length + ')', 'success');
+  showToast('โหลดข้อมูลสำเร็จ! (สินค้า ' + products.length + ' | ลูกค้า ' + customers.length + ' | เช่า ' + rentals.length + ' | ผู้เรียน ' + studentBookings.length + ')', 'success');
 }
 
 function dateToSheets(d){if(!d)return '';if(!(d instanceof Date))return d;return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;}
@@ -1381,6 +1481,14 @@ async function gsIncCounter() {
   if (res && res.value) rentalCounter = res.value;
   return rentalCounter;
 }
+async function gsSaveStudentBooking(data) {
+  const res = await gsAPI({action: 'saveStudent', data});
+  if (!res || res.error) showToast('บันทึกจองผู้เรียนลง Sheets ไม่สำเร็จ', 'error');
+}
+async function gsUpdateStudentBooking(data) {
+  const res = await gsAPI({action: 'updateStudent', data});
+  if (!res || res.error) showToast('อัพเดตจองผู้เรียนไม่สำเร็จ', 'error');
+}
 
 // ========== UTILITY ==========
 const fmt = n => (parseFloat(n)||0).toLocaleString('th-TH');
@@ -1412,6 +1520,7 @@ function showPage(page){
   if(page==='rentals')renderRentals();
   if(page==='customers')renderCustomers();
   if(page==='calendar')renderCalendar();
+  if(page==='students')renderStudents();
   if(page==='alerts')renderAlerts();
   if(page==='commission')renderCommission();
   if(page==='qrcode')renderQRPage();
@@ -2016,6 +2125,15 @@ function renderCalendar(){
       d.setDate(d.getDate()+1);
     }
   });
+  // จองผู้เรียน — แสดงในปฏิทิน
+  studentBookings.forEach(b=>{
+    if(b.status==='ยกเลิก')return;
+    const d=new Date(b.date);
+    const cls=b.status==='เรียนแล้ว'?'st-student-done':'st-student';
+    const icon=b.status==='เรียนแล้ว'?'✅':'🎓';
+    addEv(d,`${icon} ${b.course} ${b.qty}คน — ${b.name}`,cls,b.id);
+    if(b.dateTo){const d2=new Date(b.dateTo);if(d2>d)addEv(d2,`${icon} ${b.course} ${b.qty}คน — ${b.name}`,cls,b.id);}
+  });
   let html='';
   thaiDays.forEach((d,i)=>{html+=`<div class="cal-header" style="${i===0?'color:#fca5a5':''}">${d}</div>`;});
   const totalCells=42;
@@ -2264,6 +2382,8 @@ function openRentalModal(){
   document.getElementById('rm-deliver').value='';
   document.getElementById('rm-days').value='';
   document.getElementById('rm-total').value='';
+  document.getElementById('rm-custom-price').value='';
+  document.getElementById('rm-total').style.color='var(--primary)';
   document.getElementById('rm-deposit').value='';
   document.getElementById('rm-payment-status').value='';
   document.getElementById('rm-note').value='';
@@ -2397,6 +2517,7 @@ function setRentalMode(mode){
   const totalAuto=document.getElementById('rm-total-auto');
   const unitPriceArea=document.getElementById('rm-unit-price-area');
   const installArea=document.getElementById('rm-installment-area');
+  const customPriceArea=document.getElementById('rm-custom-price-area');
   const endInput=document.getElementById('rm-end');
 
   if(mode==='daily'){
@@ -2405,6 +2526,7 @@ function setRentalMode(mode){
     totalAuto.style.display='';
     unitPriceArea.style.display='none';
     installArea.style.display='none';
+    customPriceArea.style.display='';
     endInput.disabled=false;
     endInput.style.opacity='1';
   } else {
@@ -2412,6 +2534,7 @@ function setRentalMode(mode){
     totalAuto.style.display='none';
     unitPriceArea.style.display='';
     installArea.style.display=cfg.installments>0?'':'none';
+    customPriceArea.style.display='none';
 
     // Label ค่าเช่าต่อหน่วย
     const unitLabels={weekly:'ค่าเช่า/สัปดาห์ (฿)',monthly:'ค่าเช่า/เดือน (฿)',yearly:'ค่าเช่า/ปี (฿)','2year':'ค่าเช่ารวม 2 ปี (฿)','4year':'ค่าเช่ารวม 4 ปี (฿)'};
@@ -2456,6 +2579,317 @@ function calcUnitTotal(){
   document.getElementById('rm-unit-total').value=total?`฿${fmt(total)}`:'';
 }
 
+// ========== BATCH STATUS (ออกสอน/ออกบูธ/ทดแทน) ==========
+let batchSelectedIds=[];
+let batchCurrentStatus='ออกสอน';
+
+function openBatchStatusModal(){
+  batchSelectedIds=[];
+  batchCurrentStatus='ออกสอน';
+  document.getElementById('bs-date-from').value='';
+  document.getElementById('bs-date-to').value='';
+  document.getElementById('bs-note').value='';
+  document.getElementById('bs-smart-rows').innerHTML='';
+  document.getElementById('bs-auto-selected').innerHTML='<div style="color:var(--muted);font-size:13px">เลือกชนิดและจำนวนด้านบน</div>';
+  document.getElementById('bs-total-count').textContent='';
+  setBatchStatus('ออกสอน');
+  addBsSmartRow();
+  document.getElementById('batch-status-modal').classList.add('show');
+}
+
+function addBsSmartRow(){
+  const cats=[...new Set(products.filter(p=>p.status==='ว่าง'||p.status==='ใช้งานได้').map(p=>p.cat))].sort();
+  const row=document.createElement('div');
+  row.className='smart-select-row';
+  row.style.cssText='display:flex;gap:10px;align-items:center;margin-bottom:8px;flex-wrap:wrap';
+  row.innerHTML=`
+    <select class="bs-smart-cat" onchange="autoSelectBsProducts();updateBsSmartCatOptions()" style="flex:2;padding:8px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px">
+      <option value="">-- เลือก Category --</option>
+      ${cats.map(c=>`<option value="${c}">${c}</option>`).join('')}
+    </select>
+    <input type="number" class="bs-smart-qty" value="1" min="1" onchange="autoSelectBsProducts()" style="width:60px;padding:8px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;text-align:center">
+    <button style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px" onclick="this.parentElement.remove();autoSelectBsProducts();updateBsSmartCatOptions()">&times;</button>`;
+  document.getElementById('bs-smart-rows').appendChild(row);
+  updateBsSmartCatOptions();
+}
+
+function updateBsSmartCatOptions(){
+  const rows=document.querySelectorAll('#bs-smart-rows .bs-smart-cat');
+  const selected=[];
+  rows.forEach(s=>{if(s.value)selected.push(s.value);});
+  rows.forEach(s=>{
+    const current=s.value;
+    Array.from(s.options).forEach(opt=>{
+      if(opt.value&&opt.value!==current)opt.style.display=selected.includes(opt.value)?'none':'';
+    });
+  });
+}
+
+function autoSelectBsProducts(){
+  batchSelectedIds=[];
+  const rows=document.querySelectorAll('#bs-smart-rows .smart-select-row');
+  const display=document.getElementById('bs-auto-selected');
+  let html='';
+  let totalQty=0;
+  rows.forEach(row=>{
+    const cat=row.querySelector('.bs-smart-cat').value;
+    const qty=parseInt(row.querySelector('.bs-smart-qty').value)||0;
+    if(!cat||!qty)return;
+    const avail=products.filter(p=>p.cat===cat&&(p.status==='ว่าง'||p.status==='ใช้งานได้')&&!batchSelectedIds.includes(p.id));
+    const pick=avail.slice(0,qty);
+    pick.forEach(p=>batchSelectedIds.push(p.id));
+    totalQty+=qty;
+    const ok=pick.length>=qty;
+    html+=`<div style="padding:8px 12px;margin-bottom:4px;border-radius:8px;background:${ok?'#f0fdfa':'#fef2f2'};border:1px solid ${ok?'#99f6e4':'#fca5a5'};display:flex;justify-content:space-between;align-items:center">
+      <span style="font-weight:700;font-size:13px;color:var(--primary)">${cat} × ${qty}</span>
+      <span style="font-size:12px;font-weight:600;color:${ok?'#059669':'#dc2626'}">${ok?'✅ พร้อม':'❌ ไม่พอ '+pick.length+'/'+qty}</span>
+    </div>`;
+  });
+  display.innerHTML=html||'<div style="color:var(--muted);font-size:13px">เลือกชนิดและจำนวนด้านบน</div>';
+  document.getElementById('bs-total-count').textContent=totalQty>0?`📦 รวมทั้งหมด ${totalQty} ชิ้น`:'';
+}
+
+function setBatchStatus(st){
+  batchCurrentStatus=st;
+  document.querySelectorAll('#bs-status-btns button').forEach(b=>{b.classList.remove('btn-primary');b.classList.add('btn-outline');b.style.background='';b.style.color='';});
+  const map={'ออกสอน':'bs-btn-teach','ออกบูธ':'bs-btn-booth'};
+  const btn=document.getElementById(map[st]);
+  if(btn){btn.classList.remove('btn-outline');btn.classList.add('btn-primary');btn.style.background='#0d9488';btn.style.color='#fff';}
+  document.getElementById('bs-date-row').style.display='';
+}
+
+function confirmBatchStatus(){
+  if(!batchSelectedIds.length){showToast('กรุณาเลือกสินค้าอย่างน้อย 1 ชิ้น','error');return;}
+  const note=document.getElementById('bs-note').value.trim();
+  const dateFrom=document.getElementById('bs-date-from').value;
+  const dateTo=document.getElementById('bs-date-to').value;
+  if(batchCurrentStatus!=='ทดแทน'&&!note){showToast('กรุณากรอกหมายเหตุ','error');return;}
+  if(batchCurrentStatus==='ทดแทน'&&!note){showToast('กรุณากรอกหมายเหตุ','error');return;}
+  // สร้าง fullNote
+  let fullNote=note;
+  if(dateFrom){
+    const fmtD=d=>{const dt=new Date(d);return `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${dt.getFullYear()}`;};
+    fullNote+=` | ${fmtD(dateFrom)}`;
+    if(dateTo) fullNote+=` - ${fmtD(dateTo)}`;
+  }
+  if(!confirm(`ยืนยันเปลี่ยนสถานะ ${batchSelectedIds.length} ชิ้น เป็น "${batchCurrentStatus}"?`))return;
+  // เปลี่ยนสถานะทุกตัว
+  batchSelectedIds.forEach(pid=>{
+    const p=products.find(x=>x.id===pid);
+    if(p){
+      p.status=batchCurrentStatus;
+      p.statusNote=fullNote;
+      if(dateFrom){p.statusDateFrom=new Date(dateFrom);p.statusDateTo=dateTo?new Date(dateTo):new Date(dateFrom);}
+      else{p.statusDateFrom=null;p.statusDateTo=null;}
+      localStorage.setItem('statusNote_'+p.id,fullNote);
+      if(p.statusDateFrom)localStorage.setItem('statusDateFrom_'+p.id,p.statusDateFrom.toISOString());
+      if(p.statusDateTo)localStorage.setItem('statusDateTo_'+p.id,p.statusDateTo.toISOString());
+      gsUpdateProductStatus(pid,batchCurrentStatus,fullNote);
+    }
+  });
+  closeModal('batch-status-modal');
+  showToast(`เปลี่ยนสถานะ ${batchSelectedIds.length} ชิ้น เป็น "${batchCurrentStatus}" สำเร็จ!`);
+  renderProducts();renderCalendar();
+}
+
+// ========== STUDENT BOOKINGS ==========
+let studentBookings=JSON.parse(localStorage.getItem('jia_student_bookings')||'[]');
+let studentCounter=parseInt(localStorage.getItem('jia_student_counter')||'0');
+
+function openStudentModal(){
+  document.getElementById('sm-name').value='';
+  document.getElementById('sm-phone').value='';
+  document.getElementById('sm-course').value='';
+  document.getElementById('sm-qty').value='1';
+  document.getElementById('sm-date').value='';
+  document.getElementById('sm-instructor').value='';
+  document.getElementById('sm-timeslot').value='';
+  document.getElementById('sm-timeslot-area').style.display='none';
+  document.getElementById('sm-note').value='';
+  const salesSel=document.getElementById('sm-sales');
+  salesSel.innerHTML='<option value="">-- เลือก --</option>'+salesNames.map(n=>`<option value="${n}">${n}</option>`).join('');
+  if(currentRole==='sales'&&currentUser){salesSel.value=currentUser;salesSel.disabled=true;}
+  else{salesSel.disabled=false;}
+  document.getElementById('student-modal').classList.add('show');
+}
+
+function updateSmTimeSlot(){
+  const course=document.getElementById('sm-course').value;
+  const dateVal=document.getElementById('sm-date').value;
+  const area=document.getElementById('sm-timeslot-area');
+  const sel=document.getElementById('sm-timeslot');
+  const showSlot=course==='Join Course'||course==='Private Course';
+  area.style.display=showSlot?'':'none';
+  if(!showSlot){sel.value='';return;}
+  // Weekday = จ-ศ → 17.00-19.00 น. / Saturday = ส → 11.00-13.00, 14.00-16.00
+  let opts='<option value="">-- เลือก --</option>';
+  if(dateVal){
+    const day=new Date(dateVal).getDay(); // 0=อา, 6=ส
+    if(day===6||day===0){
+      opts+='<option>11.00-13.00 น.</option><option>14.00-16.00 น.</option>';
+    } else {
+      opts+='<option>17.00-19.00 น.</option>';
+    }
+  } else {
+    opts+='<option>11.00-13.00 น.</option><option>14.00-16.00 น.</option><option>17.00-19.00 น.</option>';
+  }
+  sel.innerHTML=opts;
+}
+
+function saveStudentBooking(){
+  const name=document.getElementById('sm-name').value.trim();
+  const phone=document.getElementById('sm-phone').value.trim();
+  const sales=document.getElementById('sm-sales').value;
+  const course=document.getElementById('sm-course').value;
+  const qty=parseInt(document.getElementById('sm-qty').value)||1;
+  const date=document.getElementById('sm-date').value;
+  const instructor=document.getElementById('sm-instructor').value;
+  const timeslot=document.getElementById('sm-timeslot').value;
+  const note=document.getElementById('sm-note').value.trim();
+  if(!name){showToast('กรุณากรอกชื่อผู้เรียน','error');return;}
+  if(!course){showToast('กรุณาเลือกคอร์ส','error');return;}
+  if(!date){showToast('กรุณาเลือกวันที่เรียน','error');return;}
+  studentCounter++;
+  localStorage.setItem('jia_student_counter',studentCounter);
+  const now=new Date();
+  const mm=String(now.getFullYear()).slice(-2)+String(now.getMonth()+1).padStart(2,'0');
+  const id=`STU-${mm}-${String(studentCounter).padStart(4,'0')}`;
+  const booking={
+    id,name,phone,sales,course,qty,
+    date:date,dateTo:'',
+    instructor,timeslot,
+    note,status:'จอง',
+    createdAt:now.toISOString(),
+    createdDate:fmtDate(now)
+  };
+  studentBookings.unshift(booking);
+  localStorage.setItem('jia_student_bookings',JSON.stringify(studentBookings));
+  gsSaveStudentBooking(booking);
+  closeModal('student-modal');
+  showToast(`จองผู้เรียน ${id} สำเร็จ!`);
+  renderStudents();
+  showStudentReceipt(id);
+}
+
+function renderStudents(){
+  const search=document.getElementById('stu-search').value.toLowerCase();
+  const courseF=document.getElementById('stu-course-filter').value;
+  const statusF=document.getElementById('stu-status-filter').value;
+  let filtered=studentBookings.filter(b=>{
+    if(courseF&&b.course!==courseF)return false;
+    if(statusF&&b.status!==statusF)return false;
+    if(search&&!b.id.toLowerCase().includes(search)&&!b.name.toLowerCase().includes(search)&&!(b.phone||'').includes(search))return false;
+    return true;
+  });
+  document.getElementById('student-count').textContent=`${filtered.length} รายการ จาก ${studentBookings.length} ทั้งหมด`;
+  let html='';
+  filtered.forEach(b=>{
+    const stCls=b.status==='จอง'?'badge-orange':b.status==='เรียนแล้ว'?'badge-green':'badge-gray';
+    html+=`<tr>
+      <td style="font-weight:700;font-size:12px;cursor:pointer;color:var(--primary);text-decoration:underline" onclick="showStudentReceipt('${b.id}')">${b.id}</td>
+      <td>${b.createdDate||'—'}</td>
+      <td style="font-weight:600">${b.name}</td>
+      <td>${b.phone||'—'}</td>
+      <td><span style="font-weight:600">${b.course}</span></td>
+      <td>${fmtDate(new Date(b.date))}</td>
+      <td>${b.timeslot||'—'}</td>
+      <td class="text-center">${b.qty} คน</td>
+      <td>${b.instructor||'—'}</td>
+      <td>${b.sales||'—'}</td>
+      <td><span class="badge ${stCls}">${b.status}</span></td>
+      <td style="white-space:nowrap">
+        ${b.status==='จอง'?`<button class="btn btn-sm btn-outline" onclick="changeStudentStatus('${b.id}','เรียนแล้ว')" style="font-size:11px;margin:1px" title="เรียนแล้ว">✅</button>`:''}
+        ${b.status!=='ยกเลิก'?`<button class="btn btn-sm btn-outline" onclick="changeStudentStatus('${b.id}','ยกเลิก')" style="font-size:11px;margin:1px;color:var(--danger)" title="ยกเลิก">✕</button>`:''}
+        <button class="btn btn-sm btn-outline" onclick="showStudentReceipt('${b.id}')" style="font-size:11px;margin:1px" title="ใบจอง">📄</button>
+      </td></tr>`;
+  });
+  document.getElementById('stu-tbody').innerHTML=html||'<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--muted)">ยังไม่มีรายการจองผู้เรียน</td></tr>';
+}
+
+function changeStudentStatus(id,status){
+  const b=studentBookings.find(x=>x.id===id);
+  if(!b)return;
+  if(!confirm(`เปลี่ยนสถานะ ${b.id} "${b.name}" เป็น "${status}"?`))return;
+  b.status=status;
+  localStorage.setItem('jia_student_bookings',JSON.stringify(studentBookings));
+  gsUpdateStudentBooking(b);
+  showToast(`${b.id}: ${status}`);
+  renderStudents();
+}
+
+function showStudentReceipt(id){
+  const b=studentBookings.find(x=>x.id===id);
+  if(!b)return;
+  const html=`
+    <div class="receipt-row"><div class="label">เลขที่</div><div class="value" style="font-weight:800;font-size:16px">${b.id}</div></div>
+    <div class="receipt-row"><div class="label">วันที่จอง</div><div class="value">${b.createdDate||'—'}</div></div>
+    <div class="receipt-row"><div class="label">ชื่อผู้เรียน</div><div class="value" style="font-weight:700">${b.name}</div></div>
+    <div class="receipt-row"><div class="label">เบอร์โทร</div><div class="value">${b.phone||'—'}</div></div>
+    <div class="receipt-row"><div class="label">เซลล์</div><div class="value">${b.sales||'—'}</div></div>
+    <div style="font-weight:700;font-size:14px;margin:12px 0 6px;color:var(--text)">รายละเอียดคอร์ส</div>
+    <div class="receipt-row"><div class="label">คอร์ส</div><div class="value" style="font-weight:700;color:var(--primary)">${b.course}</div></div>
+    <div class="receipt-row"><div class="label">จำนวนผู้เรียน</div><div class="value">${b.qty} คน</div></div>
+    <div class="receipt-row"><div class="label">วันที่เรียน</div><div class="value" style="font-weight:700">${fmtDate(new Date(b.date))}</div></div>
+    ${b.timeslot?`<div class="receipt-row"><div class="label">รอบเวลาเรียน</div><div class="value" style="font-weight:700">${b.timeslot}</div></div>`:''}
+    ${b.instructor?`<div class="receipt-row"><div class="label">ผู้สอน</div><div class="value">${b.instructor}</div></div>`:''}
+    ${b.note?`<div class="receipt-row"><div class="label">หมายเหตุ</div><div class="value">${b.note}</div></div>`:''}
+    <div class="receipt-row"><div class="label">สถานะ</div><div class="value"><span class="badge ${b.status==='จอง'?'badge-orange':b.status==='เรียนแล้ว'?'badge-green':'badge-gray'}">${b.status}</span></div></div>`;
+  document.getElementById('receipt-body').innerHTML=html;
+  document.getElementById('receipt-card').querySelector('.receipt-header h2').textContent='JIARAKSA';
+  document.getElementById('receipt-card').querySelector('.receipt-header p').textContent='ใบยืนยันจองผู้เรียน — บริษัท โรจน์รุ่ง ธุรกิจ จำกัด';
+  document.getElementById('receipt-overlay').classList.add('show');
+}
+
+function clearRentalForm(){
+  if(!confirm('ล้างข้อมูลทั้งหมดในฟอร์ม?'))return;
+  document.getElementById('rm-customer').value='';
+  document.getElementById('rm-sales').value='';
+  document.getElementById('rm-start').value='';
+  document.getElementById('rm-end').value='';
+  document.getElementById('rm-deliver').value='';
+  document.getElementById('rm-days').value='';
+  document.getElementById('rm-total').value='';
+  document.getElementById('rm-total').style.color='var(--primary)';
+  document.getElementById('rm-custom-price').value='';
+  document.getElementById('rm-custom-clear').style.display='none';
+  document.getElementById('rm-deposit').value='0';
+  document.getElementById('rm-buffer-days').value='0';
+  document.getElementById('rm-payment').value='';
+  document.getElementById('rm-note').value='';
+  // ล้างสินค้า
+  selectedProductIds=[];
+  window.smartPriceOverrides={};
+  window.smartNameOverrides={};
+  document.getElementById('smart-rows').innerHTML='';
+  document.getElementById('smart-auto-selected').innerHTML='<div style="color:var(--muted);font-size:13px">เลือกชนิดและจำนวนด้านบน</div>';
+  const totalEl=document.getElementById('smart-total-count');
+  if(totalEl)totalEl.textContent='';
+  addSmartRow();
+  renderSelectedProducts();
+  showToast('ล้างข้อมูลฟอร์มทั้งหมดแล้ว');
+}
+
+function updateCustomPrice(){
+  const v=document.getElementById('rm-custom-price').value;
+  const el=document.getElementById('rm-total');
+  const clearBtn=document.getElementById('rm-custom-clear');
+  if(v&&parseFloat(v)>0){
+    el.value=`฿${fmt(parseFloat(v))}  (กำหนดเอง)`;
+    el.style.color='#059669';
+    clearBtn.style.display='block';
+  } else {
+    el.style.color='var(--primary)';
+    clearBtn.style.display='none';
+    calcRental();
+  }
+}
+function clearCustomPrice(){
+  document.getElementById('rm-custom-price').value='';
+  document.getElementById('rm-custom-clear').style.display='none';
+  document.getElementById('rm-total').style.color='var(--primary)';
+  calcRental();
+  showToast('ล้างราคากำหนดเอง — ใช้ราคาอัตโนมัติ');
+}
 function calcRental(){
   const s=document.getElementById('rm-start').value;
   const mode=currentRentalMode;
@@ -2561,6 +2995,8 @@ function previewBeforeSave(){
   if(mode==='daily'){
     days=parseInt(document.getElementById('rm-days').value)||1;
     total=totalPricePerDay*days;
+    const customPrice=parseFloat(document.getElementById('rm-custom-price').value);
+    if(customPrice>0) total=customPrice;
   } else {
     const qty=parseInt(document.getElementById('rm-qty').value)||1;
     days=cfg.days*qty;
@@ -2588,8 +3024,8 @@ function previewBeforeSave(){
       <div style="padding:8px 12px;background:#fce7f3;border-radius:8px"><div style="color:var(--muted);font-size:11px">จำนวน</div><div style="font-weight:700">${days} วัน${mode!=='daily'?' ('+cfg.label+')':''}</div></div>
     </div>
     <div style="text-align:center;padding:14px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:10px">
-      <div style="font-size:12px;color:var(--muted)">${totalItems} รายการ × ${days} วัน</div>
-      <div style="font-size:28px;font-weight:800;color:var(--primary)">฿${fmt(total)}</div>
+      <div style="font-size:12px;color:var(--muted)">${customPrice>0?'กำหนดเอง':totalItems+' รายการ × '+days+' วัน'}</div>
+      <div style="font-size:28px;font-weight:800;color:${customPrice>0?'#059669':'var(--primary)'}">฿${fmt(total)}</div>
     </div>`;
   document.getElementById('bp-body').innerHTML=html;
   document.getElementById('booking-preview-modal').classList.add('show');
@@ -2615,6 +3051,8 @@ function saveRental(){
   if(mode==='daily'){
     days=parseInt(document.getElementById('rm-days').value);
     total=totalPricePerDay*days;
+    const customPrice=parseFloat(document.getElementById('rm-custom-price').value);
+    if(customPrice>0) total=customPrice;
   } else {
     const qty=parseInt(document.getElementById('rm-qty').value)||1;
     days=cfg.days*qty;
@@ -3034,6 +3472,7 @@ function showStatusGroup(idx){
 }
 
 function showReceipt(id){
+  if(id&&id.startsWith('STU-')){showStudentReceipt(id);return;}
   const r=rentals.find(x=>x.id===id);if(!r)return;
   const prods=(r.productIds||[]).map(pid=>products.find(p=>p.id===pid)).filter(Boolean);
   const isOps=currentRole==='ops';
