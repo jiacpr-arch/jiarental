@@ -538,9 +538,10 @@ QR Code สินค้า
 </div>
 <div class="form-row">
 <div class="form-group"><label>วันที่เรียน <span style="color:var(--danger)">*</span></label><input type="date" id="sm-date" onchange="updateSmTimeSlot()"></div>
-<div class="form-group"><label>ผู้สอน</label><select id="sm-instructor"><option value="">-- เลือก --</option><option>ครูเจ๋ง</option><option>ครูป่าน</option><option>ครูโบว์</option><option>ครูพลอย</option><option>ครูเจน</option></select></div>
+<div class="form-group"><label>ผู้สอน</label><select id="sm-instructor"><option value="">-- เลือก --</option><option>ครูเจ๋ง</option><option>ครูป่าน</option><option>ครูโบว์</option><option>ครูพลอย</option><option>ครูจิ๋ว</option></select></div>
 </div>
 <div class="form-group" id="sm-timeslot-area" style="display:none"><label>รอบเวลาเรียน</label><select id="sm-timeslot"><option value="">-- เลือก --</option></select></div>
+<div class="form-group"><label>สถานะการจ่ายเงิน</label><select id="sm-payment"><option value="">-- เลือก --</option><option>โอนแล้ว</option><option>จ่ายหน้างาน</option></select></div>
 <div class="form-group"><label>หมายเหตุ</label><input type="text" id="sm-note" placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"></div>
 </div>
 <div class="modal-footer" style="display:flex;gap:8px">
@@ -1504,7 +1505,7 @@ function toggleSidebar(){document.getElementById('sidebar').classList.toggle('op
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('mobile-overlay').classList.remove('show');}
 
 // ========== NAVIGATION ==========
-const pageList=['dashboard','products','rentals','customers','calendar','alerts','commission','qrcode','addproduct'];
+const pageList=['dashboard','products','rentals','students','customers','calendar','alerts','commission','qrcode','addproduct'];
 function showPage(page){
   if(currentRole==='sales'&&page==='alerts'){page='dashboard';}
   if(currentRole==='sales'&&page==='commission'){page='dashboard';}
@@ -2706,6 +2707,7 @@ function openStudentModal(){
   document.getElementById('sm-timeslot').value='';
   document.getElementById('sm-timeslot-area').style.display='none';
   document.getElementById('sm-note').value='';
+  document.getElementById('sm-payment').value='';
   const salesSel=document.getElementById('sm-sales');
   salesSel.innerHTML='<option value="">-- เลือก --</option>'+salesNames.map(n=>`<option value="${n}">${n}</option>`).join('');
   if(currentRole==='sales'&&currentUser){salesSel.value=currentUser;salesSel.disabled=true;}
@@ -2745,6 +2747,7 @@ function saveStudentBooking(){
   const date=document.getElementById('sm-date').value;
   const instructor=document.getElementById('sm-instructor').value;
   const timeslot=document.getElementById('sm-timeslot').value;
+  const payment=document.getElementById('sm-payment').value;
   const note=document.getElementById('sm-note').value.trim();
   if(!name){showToast('กรุณากรอกชื่อผู้เรียน','error');return;}
   if(!course){showToast('กรุณาเลือกคอร์ส','error');return;}
@@ -2757,7 +2760,7 @@ function saveStudentBooking(){
   const booking={
     id,name,phone,sales,course,qty,
     date:date,dateTo:'',
-    instructor,timeslot,
+    instructor,timeslot,payment,
     note,status:'จอง',
     createdAt:now.toISOString(),
     createdDate:fmtDate(now)
@@ -2832,6 +2835,7 @@ function showStudentReceipt(id){
     <div class="receipt-row"><div class="label">วันที่เรียน</div><div class="value" style="font-weight:700">${fmtDate(new Date(b.date))}</div></div>
     ${b.timeslot?`<div class="receipt-row"><div class="label">รอบเวลาเรียน</div><div class="value" style="font-weight:700">${b.timeslot}</div></div>`:''}
     ${b.instructor?`<div class="receipt-row"><div class="label">ผู้สอน</div><div class="value">${b.instructor}</div></div>`:''}
+    ${b.payment?`<div class="receipt-row"><div class="label">สถานะการจ่ายเงิน</div><div class="value" style="font-weight:700;color:${b.payment==='โอนแล้ว'?'#059669':'#d97706'}">${b.payment}</div></div>`:''}
     ${b.note?`<div class="receipt-row"><div class="label">หมายเหตุ</div><div class="value">${b.note}</div></div>`:''}
     <div class="receipt-row"><div class="label">สถานะ</div><div class="value"><span class="badge ${b.status==='จอง'?'badge-orange':b.status==='เรียนแล้ว'?'badge-green':'badge-gray'}">${b.status}</span></div></div>`;
   document.getElementById('receipt-body').innerHTML=html;
