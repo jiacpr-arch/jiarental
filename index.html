@@ -2996,10 +2996,11 @@ function previewBeforeSave(){
   const totalItems=Object.values(catMap).reduce((s,v)=>s+v.count,0);
   const totalPricePerDay=Object.values(catMap).reduce((s,v)=>s+v.price*v.count,0);
   let days,total;
+  let customPrice=0;
   if(mode==='daily'){
     days=parseInt(document.getElementById('rm-days').value)||1;
     total=totalPricePerDay*days;
-    const customPrice=parseFloat(document.getElementById('rm-custom-price').value);
+    customPrice=parseFloat(document.getElementById('rm-custom-price').value)||0;
     if(customPrice>0) total=customPrice;
   } else {
     const qty=parseInt(document.getElementById('rm-qty').value)||1;
