@@ -548,6 +548,18 @@ QR Code สินค้า
 <div class="form-group"><label>ผู้สอน</label><select id="sm-instructor"><option value="">-- เลือก --</option><option>ครูเจ๋ง</option><option>ครูป่าน</option><option>ครูโบว์</option><option>ครูพลอย</option><option>ครูจิ๋ว</option></select></div>
 </div>
 <div class="form-group" id="sm-timeslot-area" style="display:none"><label>รอบเวลาเรียน</label><select id="sm-timeslot"><option value="">-- เลือก --</option><option>11.00-13.00 น.</option><option>14.00-16.00 น.</option><option>17.00-19.00 น.</option></select></div>
+<div class="form-group" id="sm-custom-time-area" style="display:none"><label>กำหนดเวลาเรียนเอง</label><input type="text" id="sm-custom-time" placeholder="เช่น 09.00-12.00 น."></div>
+<div id="sm-price-area" style="display:none">
+<div class="form-row">
+<div class="form-group"><label>ราคา/คน (฿)</label><input type="number" id="sm-price" min="0" placeholder="0" oninput="calcStudentTotal()"></div>
+<div class="form-group" id="sm-code-area" style="display:none"><label>ส่วนลด (฿)</label><input type="number" id="sm-code" min="0" placeholder="0" value="0" oninput="calcStudentTotal()"></div>
+</div>
+<div class="form-group" id="sm-travel-area" style="display:none"><label>ค่าเดินทาง (฿)</label><input type="number" id="sm-travel" min="0" placeholder="0" value="0" oninput="calcStudentTotal()"></div>
+<div id="sm-total-display" style="display:none;padding:12px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:10px;text-align:center;margin-bottom:8px">
+<div style="font-size:12px;color:var(--muted)" id="sm-total-label"></div>
+<div style="font-size:24px;font-weight:800;color:var(--primary)" id="sm-total-value"></div>
+</div>
+</div>
 <div class="form-group">
 <label>รายชื่อผู้เรียน <span id="sm-student-count" style="font-weight:700;color:var(--primary)"></span></label>
 <div id="sm-students-list"></div>
@@ -1489,6 +1501,12 @@ async function loadFromSheets() {
       return b;
     });
     localStorage.setItem('jia_student_bookings',JSON.stringify(studentBookings));
+  } else {
+    // Sheets ว่าง → ล้าง localStorage ด้วย
+    studentBookings=[];
+    localStorage.removeItem('jia_student_bookings');
+    localStorage.removeItem('jia_student_counter');
+    studentCounter=0;
   }
   isLoading = false;
   showToast('โหลดข้อมูลสำเร็จ! (สินค้า ' + products.length + ' | ลูกค้า ' + customers.length + ' | เช่า ' + rentals.length + ' | ผู้เรียน ' + studentBookings.length + ')', 'success');
@@ -1689,7 +1707,7 @@ function renderDashboard(){
   const now=new Date();const thisM=now.getMonth();const thisY=now.getFullYear();
   const stuThisMonth=studentBookings.filter(b=>b.status!=='ยกเลิก'&&b.date&&new Date(b.date).getMonth()===thisM&&new Date(b.date).getFullYear()===thisY);
   const stuTotal=stuThisMonth.reduce((s,b)=>s+(b.qty||1),0);
-  const stuRev=stuThisMonth.reduce((s,b)=>s+(COURSE_PRICES[b.course]||0)*(b.qty||1),0);
+  const stuRev=stuThisMonth.reduce((s,b)=>s+Math.max(((b.customPrice||COURSE_PRICES[b.course]||0)*(b.qty||1))+(b.travelCost||0)-(b.priceCode||0),0),0);
   const stuPaid=stuThisMonth.filter(b=>b.payment==='โอนแล้ว'||b.payment==='คูปอง');
   const stuUnpaid=stuThisMonth.filter(b=>!b.payment||b.payment==='จ่ายหน้างาน');
   document.getElementById('student-kpi').innerHTML=`
@@ -2812,7 +2830,7 @@ function confirmBatchStatus(){
 // ========== STUDENT BOOKINGS ==========
 let studentBookings=JSON.parse(localStorage.getItem('jia_student_bookings')||'[]');
 let studentCounter=parseInt(localStorage.getItem('jia_student_counter')||'0');
-const COURSE_PRICES={'Full Course':0,'Mini Course':0,'Join Course':500,'Private Course':1000,'อื่นๆ':0};
+const COURSE_PRICES={'Full Course':0,'Mini Course':0,'Join Course':1000,'Private Course':1000,'อื่นๆ':0};
 
 function openStudentModal(){
   document.getElementById('sm-course').value='';
@@ -2820,6 +2838,14 @@ function openStudentModal(){
   document.getElementById('sm-instructor').value='';
   document.getElementById('sm-timeslot').value='';
   document.getElementById('sm-timeslot-area').style.display='none';
+  document.getElementById('sm-custom-time-area').style.display='none';
+  document.getElementById('sm-price-area').style.display='none';
+  document.getElementById('sm-travel-area').style.display='none';
+  document.getElementById('sm-custom-time').value='';
+  document.getElementById('sm-price').value='';
+  document.getElementById('sm-travel').value='0';
+  document.getElementById('sm-code').value='';
+  document.getElementById('sm-total-display').style.display='none';
   document.getElementById('sm-note').value='';
   document.getElementById('sm-payment').value='';
   document.getElementById('sm-students-list').innerHTML='';
@@ -2858,42 +2884,95 @@ function updateStudentCount(){
   const count=document.getElementById('sm-students-list').children.length;
   document.getElementById('sm-student-count').textContent=`(${count} คน)`;
   updateSmTimeSlot();
+  calcStudentTotal();
 }
 
 function updateSmTimeSlot(){
   const course=document.getElementById('sm-course').value;
-  const area=document.getElementById('sm-timeslot-area');
+  const slotArea=document.getElementById('sm-timeslot-area');
+  const customTimeArea=document.getElementById('sm-custom-time-area');
+  const priceArea=document.getElementById('sm-price-area');
+  const travelArea=document.getElementById('sm-travel-area');
+  const codeArea=document.getElementById('sm-code-area');
   const sel=document.getElementById('sm-timeslot');
   const currentVal=sel.value;
-  const showSlot=course!==''&&course!=='Full Course';
-  area.style.display=showSlot?'':'none';
-  if(!showSlot){sel.value='';return;}
-  const date=document.getElementById('sm-date').value;
-  const hasLimit=['Mini Course','Join Course','Private Course'].includes(course);
-  const adding=document.getElementById('sm-students-list')?.children.length||1;
-  const slots=['11.00-13.00 น.','14.00-16.00 น.','17.00-19.00 น.'];
-  let opts='<option value="">-- เลือก --</option>';
-  slots.forEach(slot=>{
-    let booked=0;
-    if(hasLimit&&date){
-      booked=studentBookings.filter(b=>b.status!=='ยกเลิก'&&b.date===date&&b.timeslot===slot&&b.id!==editingStudentId&&['Mini Course','Join Course','Private Course'].includes(b.course)).reduce((s,b)=>s+(b.qty||1),0);
-    }
-    const remain=7-booked;
-    const full=hasLimit&&date&&remain<=0;
-    const notEnough=hasLimit&&date&&adding>remain&&remain>0;
-    if(full){
-      opts+=`<option value="${slot}" disabled style="color:#999">🔴 ${slot} (เต็ม ${booked}/7)</option>`;
-    } else if(notEnough){
-      opts+=`<option value="${slot}" style="color:#dc2626">⚠️ ${slot} (เหลือ ${remain} — ไม่พอ)</option>`;
-    } else if(hasLimit&&date){
-      opts+=`<option value="${slot}">✅ ${slot} (เหลือ ${remain} คน)</option>`;
-    } else {
-      opts+=`<option value="${slot}">${slot}</option>`;
-    }
-  });
-  sel.innerHTML=opts;
-  if(currentVal){sel.value=currentVal;}
+  const priceInput=document.getElementById('sm-price');
+  // ซ่อนทั้งหมดก่อน
+  slotArea.style.display='none';
+  customTimeArea.style.display='none';
+  priceArea.style.display='none';
+  travelArea.style.display='none';
+  codeArea.style.display='none';
+  if(!course){sel.value='';document.getElementById('sm-custom-time').value='';calcStudentTotal();return;}
+  if(course==='Full Course'){
+    customTimeArea.style.display='';
+    priceArea.style.display='';
+    travelArea.style.display='';
+    if(!priceInput.value)priceInput.value='';
+    priceInput.placeholder='กำหนดราคา/คน';
+  } else if(course==='Mini Course'){
+    customTimeArea.style.display='';
+    priceArea.style.display='';
+    travelArea.style.display='';
+    if(!priceInput.value)priceInput.value='0';
+    priceInput.placeholder='ราคา/คน (default 0)';
+  } else if(course==='Join Course'){
+    slotArea.style.display='';
+    priceArea.style.display='';
+    codeArea.style.display='';
+    if(!priceInput.value)priceInput.value='1000';
+    priceInput.placeholder='ราคา/คน (default 1,000)';
+  } else if(course==='Private Course'){
+    customTimeArea.style.display='';
+    priceArea.style.display='';
+    if(!priceInput.value)priceInput.value='1000';
+    priceInput.placeholder='ราคา/คน (default 1,000)';
+  } else {
+    slotArea.style.display='';
+    priceArea.style.display='';
+    priceInput.placeholder='ราคา/คน';
+  }
+  // สร้าง dropdown รอบเวลา (Join/อื่นๆ)
+  if(slotArea.style.display!=='none'){
+    const date=document.getElementById('sm-date').value;
+    const hasLimit=['Mini Course','Join Course'].includes(course);
+    const adding=document.getElementById('sm-students-list')?.children.length||1;
+    const slots=['11.00-13.00 น.','14.00-16.00 น.','17.00-19.00 น.'];
+    let opts='<option value="">-- เลือก --</option>';
+    slots.forEach(slot=>{
+      let booked=0;
+      if(hasLimit&&date){booked=studentBookings.filter(b=>b.status!=='ยกเลิก'&&b.date===date&&b.timeslot===slot&&b.id!==editingStudentId&&['Mini Course','Join Course','Private Course'].includes(b.course)).reduce((s,b)=>s+(b.qty||1),0);}
+      const remain=7-booked;const full=hasLimit&&date&&remain<=0;const notEnough=hasLimit&&date&&adding>remain&&remain>0;
+      if(full){opts+=`<option value="${slot}" disabled style="color:#999">🔴 ${slot} (เต็ม ${booked}/7)</option>`;}
+      else if(notEnough){opts+=`<option value="${slot}" style="color:#dc2626">⚠️ ${slot} (เหลือ ${remain} — ไม่พอ)</option>`;}
+      else if(hasLimit&&date){opts+=`<option value="${slot}">✅ ${slot} (เหลือ ${remain} คน)</option>`;}
+      else{opts+=`<option value="${slot}">${slot}</option>`;}
+    });
+    sel.innerHTML=opts;if(currentVal){sel.value=currentVal;}
+  }
+  calcStudentTotal();
 }
+
+function calcStudentTotal(){
+  const course=document.getElementById('sm-course').value;
+  const price=parseFloat(document.getElementById('sm-price').value)||0;
+  const qty=document.getElementById('sm-students-list')?.children.length||1;
+  const travel=parseFloat(document.getElementById('sm-travel').value)||0;
+  const discount=parseFloat(document.getElementById('sm-code').value)||0;
+  const totalEl=document.getElementById('sm-total-display');
+  const labelEl=document.getElementById('sm-total-label');
+  const valueEl=document.getElementById('sm-total-value');
+  if(!course||(!price&&!travel)){totalEl.style.display='none';return;}
+  const total=Math.max(price*qty+travel-discount,0);
+  totalEl.style.display='';
+  let label=`${qty} คน × ฿${fmt(price)}`;
+  if(travel)label+=` + ค่าเดินทาง ฿${fmt(travel)}`;
+  if(discount)label+=` - ส่วนลด ฿${fmt(discount)}`;
+  labelEl.textContent=label;
+  valueEl.textContent=`฿${fmt(total)}`;
+}
+
+
 
 
 function saveStudentBooking(){
@@ -2901,7 +2980,10 @@ function saveStudentBooking(){
   const sales=document.getElementById('sm-sales').value;
   const date=document.getElementById('sm-date').value;
   const instructor=document.getElementById('sm-instructor').value;
-  const timeslot=document.getElementById('sm-timeslot').value;
+  const timeslot=document.getElementById('sm-timeslot').value||document.getElementById('sm-custom-time').value;
+  const customPrice=parseFloat(document.getElementById('sm-price').value)||0;
+  const travelCost=parseFloat(document.getElementById('sm-travel').value)||0;
+  const priceCode=parseFloat(document.getElementById('sm-code').value)||0;
   const payment=document.getElementById('sm-payment').value;
   const note=document.getElementById('sm-note').value.trim();
   if(!course){showToast('กรุณาเลือกคอร์ส','error');return;}
@@ -2918,7 +3000,7 @@ function saveStudentBooking(){
   studentCounter++;localStorage.setItem('jia_student_counter',studentCounter);
   const now=new Date();const mm=String(now.getFullYear()).slice(-2)+String(now.getMonth()+1).padStart(2,'0');
   const id=`STU-${mm}-${String(studentCounter).padStart(4,'0')}`;
-  const booking={id,name:students.map(s=>s.name).join(', '),phone:students.map(s=>s.phone).filter(Boolean).join(', '),students:JSON.stringify(students),sales,course,qty:students.length,date:date,dateTo:'',instructor,timeslot,payment,note,status:'จอง',createdAt:now.toISOString(),createdDate:fmtDate(now)};
+  const booking={id,name:students.map(s=>s.name).join(', '),phone:students.map(s=>s.phone).filter(Boolean).join(', '),students:JSON.stringify(students),sales,course,qty:students.length,date:date,dateTo:'',instructor,timeslot,payment,customPrice,travelCost,priceCode,note,status:'จอง',createdAt:now.toISOString(),createdDate:fmtDate(now)};
   studentBookings.unshift(booking);localStorage.setItem('jia_student_bookings',JSON.stringify(studentBookings));
   gsSaveStudentBooking(booking);closeModal('student-modal');
   showToast(`จองผู้เรียน ${id} (${students.length} คน) สำเร็จ!`);renderStudents();showStudentReceipt(id);
@@ -2982,6 +3064,12 @@ function editStudentBooking(id){
   if(currentRole==='sales'&&currentUser){salesSel.value=currentUser;salesSel.disabled=true;}
   updateSmTimeSlot();
   document.getElementById('sm-timeslot').value=b.timeslot||'';
+  document.getElementById('sm-custom-time').value=(b.course==='Full Course'||b.course==='Mini Course'||b.course==='Private Course')?(b.timeslot||''):'';
+  document.getElementById('sm-price').value=b.customPrice||'';
+  document.getElementById('sm-travel').value=b.travelCost||'0';
+
+  document.getElementById('sm-code').value=b.priceCode||'';
+  calcStudentTotal();
   // โหลดรายชื่อผู้เรียน
   const list=document.getElementById('sm-students-list');
   list.innerHTML='';
@@ -3010,8 +3098,11 @@ function saveEditStudent(){
   b.date=date;
   b.sales=document.getElementById('sm-sales').value;
   b.instructor=document.getElementById('sm-instructor').value;
-  b.timeslot=document.getElementById('sm-timeslot').value;
+  b.timeslot=document.getElementById('sm-timeslot').value||document.getElementById('sm-custom-time').value;
   b.payment=document.getElementById('sm-payment').value;
+  b.customPrice=parseFloat(document.getElementById('sm-price').value)||0;
+  b.travelCost=parseFloat(document.getElementById('sm-travel').value)||0;
+  b.priceCode=parseFloat(document.getElementById('sm-code').value)||0;
   b.note=document.getElementById('sm-note').value.trim();
   b.name=students.map(s=>s.name).join(', ');
   b.phone=students.map(s=>s.phone).filter(Boolean).join(', ');
@@ -3040,9 +3131,12 @@ function showStudentReceipt(id){
     <div style="font-weight:700;font-size:14px;margin:12px 0 6px;color:var(--text)">รายชื่อผู้เรียน (${b.qty} คน)</div>
     <div style="padding:8px 12px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;margin-bottom:12px">${stuList}</div>
     <div style="font-weight:700;font-size:14px;margin:12px 0 6px;color:var(--text)">รายละเอียดคอร์ส</div>
-    <div class="receipt-row"><div class="label">คอร์ส</div><div class="value" style="font-weight:700;color:var(--primary)">${b.course}${COURSE_PRICES[b.course]?' (฿'+fmt(COURSE_PRICES[b.course])+'/คน)':''}</div></div>
+    <div class="receipt-row"><div class="label">คอร์ส</div><div class="value" style="font-weight:700;color:var(--primary)">${b.course}</div></div>
     <div class="receipt-row"><div class="label">จำนวนผู้เรียน</div><div class="value">${b.qty} คน</div></div>
-    ${COURSE_PRICES[b.course]?`<div class="receipt-row"><div class="label" style="font-weight:700">รวมค่าคอร์ส</div><div class="value" style="font-weight:800;font-size:18px;color:var(--primary)">฿${fmt(COURSE_PRICES[b.course]*b.qty)}</div></div>`:''}
+    ${(b.customPrice||COURSE_PRICES[b.course])?`<div class="receipt-row"><div class="label">ราคา/คน</div><div class="value">฿${fmt(b.customPrice||COURSE_PRICES[b.course])}</div></div>`:''}
+    ${b.priceCode?`<div class="receipt-row"><div class="label">ส่วนลด</div><div class="value" style="font-weight:700;color:#dc2626">-฿${fmt(b.priceCode)}</div></div>`:''}
+    ${b.travelCost?`<div class="receipt-row"><div class="label">ค่าเดินทาง</div><div class="value">฿${fmt(b.travelCost)}</div></div>`:''}
+    ${(b.customPrice||COURSE_PRICES[b.course]||b.travelCost)?`<div class="receipt-row"><div class="label" style="font-weight:700">รวมทั้งหมด</div><div class="value" style="font-weight:800;font-size:18px;color:var(--primary)">฿${fmt(Math.max((b.customPrice||COURSE_PRICES[b.course]||0)*b.qty+(b.travelCost||0)-(b.priceCode||0),0))}</div></div>`:''}
     <div class="receipt-row"><div class="label">วันที่เรียน</div><div class="value" style="font-weight:700">${fmtDate(new Date(b.date))}</div></div>
     ${b.timeslot?`<div class="receipt-row"><div class="label">รอบเวลาเรียน</div><div class="value" style="font-weight:700">${b.timeslot}</div></div>`:''}
     ${b.instructor?`<div class="receipt-row"><div class="label">ผู้สอน</div><div class="value">${b.instructor}</div></div>`:''}
