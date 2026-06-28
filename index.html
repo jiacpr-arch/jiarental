@@ -3022,7 +3022,7 @@ function renderStudents(){
     const stCls=b.status==='จอง'?'badge-orange':b.status==='เรียนแล้ว'?'badge-green':'badge-gray';
     html+=`<tr>
       <td style="font-weight:700;font-size:12px;cursor:pointer;color:var(--primary);text-decoration:underline" onclick="showStudentReceipt('${b.id}')">${b.id}</td>
-      <td>${b.createdDate||'—'}</td>
+      <td>${b.createdDate&&!b.createdDate.includes('T')?b.createdDate:b.createdAt?fmtDate(new Date(b.createdAt)):'—'}</td>
       <td style="font-weight:600">${(()=>{try{const arr=JSON.parse(b.students||'[]');if(arr.length>1)return arr.map((s,i)=>`<div style="font-size:12px;line-height:1.6">${i+1}. ${s.name}</div>`).join('');return b.name;}catch(e){return b.name;}})()}</td>
       <td style="font-size:12px">${(()=>{try{const arr=JSON.parse(b.students||'[]');if(arr.length>1)return arr.map(s=>`<div style="line-height:1.6">${s.phone||'—'}</div>`).join('');return b.phone||'—';}catch(e){return b.phone||'—';}})()}</td>
       <td><span style="font-weight:600">${b.course}</span></td>
@@ -3126,7 +3126,7 @@ function showStudentReceipt(id){
   if(!stuList)stuList=`<div style="font-size:13px">${b.name}</div>`;
   const html=`
     <div class="receipt-row"><div class="label">เลขที่</div><div class="value" style="font-weight:800;font-size:16px">${b.id}</div></div>
-    <div class="receipt-row"><div class="label">วันที่จอง</div><div class="value">${b.createdDate||'—'}</div></div>
+    <div class="receipt-row"><div class="label">วันที่จอง</div><div class="value">${b.createdDate&&!b.createdDate.includes('T')?b.createdDate:b.createdAt?fmtDate(new Date(b.createdAt)):'—'}</div></div>
     <div class="receipt-row"><div class="label">เซลล์</div><div class="value">${b.sales||'—'}</div></div>
     <div style="font-weight:700;font-size:14px;margin:12px 0 6px;color:var(--text)">รายชื่อผู้เรียน (${b.qty} คน)</div>
     <div style="padding:8px 12px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;margin-bottom:12px">${stuList}</div>
