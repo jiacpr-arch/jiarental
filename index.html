@@ -215,6 +215,7 @@ tr:hover{background:#f8fafc}
 .cal-event.st-product-status{background:#0d9488;font-style:italic}
 .cal-event.st-student{background:#ec4899}
 .cal-event.st-student-done{background:#22c55e}
+.cal-event.st-deliver{background:#f97316}
 .view-toggle.active{background:var(--primary)!important;color:#fff!important;border-color:var(--primary)!important}
 .gantt-table{border-collapse:collapse;font-size:12px;width:max-content;min-width:100%}
 .gantt-table th,.gantt-table td{border:1px solid #e2e8f0;text-align:center;padding:0}
@@ -659,6 +660,7 @@ QR Code สินค้า
 </div>
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding:10px 14px;background:#f8fafc;border-radius:10px;border:1px solid var(--border)">
 <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" class="cal-filter" value="rent" checked onchange="renderCalendar()" style="accent-color:#3b82f6"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#3b82f6"></span>กำลังเช่า</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" class="cal-filter" value="deliver" checked onchange="renderCalendar()" style="accent-color:#f97316"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#f97316"></span>ส่งสินค้า</label>
 <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" class="cal-filter" value="book" checked onchange="renderCalendar()" style="accent-color:#f59e0b"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#f59e0b"></span>จอง</label>
 <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" class="cal-filter" value="return" onchange="renderCalendar()" style="accent-color:#10b981"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#10b981"></span>คืนแล้ว</label>
 <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" class="cal-filter" value="overdue" checked onchange="renderCalendar()" style="accent-color:#ef4444"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#ef4444"></span>เกินกำหนด</label>
@@ -2223,7 +2225,7 @@ function renderCalendar(){
     if(currentRole==='sales'&&r.sales!==currentUser) return;
     const stCls=r.isVIP?'st-vip':r.status==='กำลังเช่า'?'st-rent':r.status==='จอง'?'st-book':r.status==='คืนแล้ว'?'st-return':r.status==='เกินกำหนด'?'st-overdue':'st-cancel';
     addEv(r.start,`▶ ${r.customer}`,stCls,r.id);
-    if(r.deliverDate) addEv(r.deliverDate,`🚚 ส่ง ${r.customer}`,stCls,r.id);
+    if(r.deliverDate) addEv(r.deliverDate,`🚚 ส่ง ${r.customer}`,'st-deliver',r.id);
     // แสดงคืนจริงถ้ามี ถ้าไม่มีแสดงกำหนดคืน (รวมเป็นช่องเดียว)
     if(r.returnDate) addEv(r.returnDate,`✓ คืน ${r.customer}`,'st-return',r.id);
     else addEv(r.due,`◀ คืน ${r.customer}`,'st-due',r.id);
@@ -2264,7 +2266,7 @@ function renderCalendar(){
   // === ฟิลเตอร์ตาม checkbox ===
   const calFilters=new Set();
   document.querySelectorAll('.cal-filter:checked').forEach(cb=>calFilters.add(cb.value));
-  const clsMap={'st-rent':'rent','st-book':'book','st-return':'return','st-overdue':'overdue','st-vip':'vip','st-due':'rent','st-cancel':'return','st-product-status':'status','st-student':'student','st-student-done':'student'};
+  const clsMap={'st-rent':'rent','st-book':'book','st-return':'return','st-overdue':'overdue','st-vip':'vip','st-due':'rent','st-cancel':'return','st-product-status':'status','st-student':'student','st-student-done':'student','st-deliver':'deliver'};
   for(const key in evMap){
     evMap[key]=evMap[key].filter(e=>{const group=clsMap[e.cls]||'rent';return calFilters.has(group);});
     if(!evMap[key].length)delete evMap[key];
