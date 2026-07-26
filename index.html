@@ -1537,6 +1537,9 @@ async function loadFromSheets() {
       return b;
     });
     localStorage.setItem('jia_student_bookings',JSON.stringify(studentBookings));
+    // Sync counter จาก ID ที่โหลดมา
+    const maxStu=studentBookings.reduce((max,b)=>{const m=b.id?.match(/(\d{4})$/);return m?Math.max(max,parseInt(m[1])):max;},0);
+    if(maxStu>studentCounter){studentCounter=maxStu;localStorage.setItem('jia_student_counter',studentCounter);}
   } else {
     // Sheets ว่าง → ล้าง localStorage ด้วย
     studentBookings=[];
@@ -2964,6 +2967,11 @@ function checkDateAvailability(){
 // ========== STUDENT BOOKINGS ==========
 let studentBookings=JSON.parse(localStorage.getItem('jia_student_bookings')||'[]');
 let studentCounter=parseInt(localStorage.getItem('jia_student_counter')||'0');
+// Sync counter จาก ID ที่มีอยู่
+if(studentBookings.length){
+  const maxNum=studentBookings.reduce((max,b)=>{const m=b.id?.match(/(\d{4})$/);return m?Math.max(max,parseInt(m[1])):max;},0);
+  if(maxNum>studentCounter){studentCounter=maxNum;localStorage.setItem('jia_student_counter',studentCounter);}
+}
 const COURSE_PRICES={'Full Course':0,'Mini Course':0,'Join Course':1000,'Private Course':1000,'ALS Blue Code':0,'BLS Healthcare':0,'อื่นๆ':0};
 
 function openStudentModal(){
