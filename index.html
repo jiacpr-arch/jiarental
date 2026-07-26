@@ -521,12 +521,15 @@ QR Code สินค้า
 <div id="page-students" class="page">
 <div class="page-header">
 <div><h2>จองผู้เรียน</h2><div class="subtitle" id="student-count"></div></div>
+<div style="display:flex;gap:8px">
 <button class="btn btn-primary" onclick="openStudentModal()">+ สร้างจองผู้เรียน</button>
+<button class="btn btn-outline" onclick="openClosedDatesModal()" style="color:#dc2626;border-color:#fca5a5">🔒 ตั้งค่าวันปิด</button>
+</div>
 </div>
 <div class="card"><div class="card-body">
 <div class="search-bar">
 <input class="search-input" id="stu-search" placeholder="ค้นหา... (เลขที่, ชื่อ, เบอร์)" oninput="renderStudents()">
-<select class="filter-select" id="stu-course-filter" onchange="renderStudents()"><option value="">ทุกคอร์ส</option><option>Full Course</option><option>Mini Course</option><option>Join Course</option><option>Private Course</option><option>อื่นๆ</option></select>
+<select class="filter-select" id="stu-course-filter" onchange="renderStudents()"><option value="">ทุกคอร์ส</option><option>Full Course</option><option>Mini Course</option><option>Join Course</option><option>Private Course</option><option>ALS Blue Code</option><option>BLS Healthcare</option><option>อื่นๆ</option></select>
 <select class="filter-select" id="stu-status-filter" onchange="renderStudents()"><option value="">ทุกสถานะ</option><option>จอง</option><option>เรียนแล้ว</option><option>ยกเลิก</option></select>
 </div>
 <div class="table-responsive"><table><thead><tr>
@@ -535,19 +538,40 @@ QR Code สินค้า
 </div></div>
 </div>
 
-<!-- STUDENT BOOKING MODAL -->
-<div class="modal-overlay" id="student-modal">
-<div class="modal" style="max-width:560px">
-<div class="modal-header"><h3>สร้างจองผู้เรียน</h3><button class="modal-close" onclick="closeModal('student-modal')">&times;</button></div>
+<!-- CLOSED DATES MODAL -->
+<div class="modal-overlay" id="closed-dates-modal">
+<div class="modal" style="max-width:480px">
+<div class="modal-header" style="background:linear-gradient(135deg,#dc2626,#991b1b)">
+<h3>🔒 ตั้งค่าวันปิดรับจอง</h3>
+<button class="modal-close" onclick="closeModal('closed-dates-modal')">&times;</button>
+</div>
 <div class="modal-body" style="padding:20px">
 <div class="form-row">
-<div class="form-group"><label>คอร์ส <span style="color:var(--danger)">*</span></label><select id="sm-course" onchange="updateSmTimeSlot()"><option value="">-- เลือก --</option><option>Full Course</option><option>Mini Course</option><option>Join Course</option><option>Private Course</option><option>อื่นๆ</option></select></div>
+<div class="form-group"><label>วันที่ปิด</label><input type="date" id="cd-date"></div>
+<div class="form-group"><label>เหตุผล</label><input type="text" id="cd-reason" placeholder="เช่น วันหยุด, ปิดซ่อม"></div>
+</div>
+<button class="btn btn-primary" onclick="addClosedDate()" style="width:100%;background:#dc2626;margin-bottom:16px">+ เพิ่มวันปิด</button>
+<div style="font-weight:700;font-size:14px;margin-bottom:8px">วันที่ปิดทั้งหมด</div>
+<div id="cd-list" style="max-height:300px;overflow-y:auto"></div>
+</div>
+<div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('closed-dates-modal')">ปิด</button></div>
+</div>
+</div>
+
+<!-- STUDENT BOOKING MODAL -->
+<div class="modal-overlay" id="student-modal">
+<div class="modal" style="max-width:560px;max-height:90vh;display:flex;flex-direction:column">
+<div class="modal-header" style="flex-shrink:0"><h3>สร้างจองผู้เรียน</h3><button class="modal-close" onclick="closeModal('student-modal')">&times;</button></div>
+<div class="modal-body" style="padding:20px;overflow-y:auto;flex:1">
+<div class="form-row">
+<div class="form-group"><label>คอร์ส <span style="color:var(--danger)">*</span></label><select id="sm-course" onchange="updateSmTimeSlot()"><option value="">-- เลือก --</option><option>Full Course</option><option>Mini Course</option><option>Join Course</option><option>Private Course</option><option>ALS Blue Code</option><option>BLS Healthcare</option><option>อื่นๆ</option></select></div>
 <div class="form-group"><label>เซลล์</label><select id="sm-sales"><option value="">-- เลือก --</option></select></div>
 </div>
 <div class="form-row">
-<div class="form-group"><label>วันที่เรียน <span style="color:var(--danger)">*</span></label><input type="date" id="sm-date" onchange="updateSmTimeSlot()"></div>
-<div class="form-group"><label>ผู้สอน</label><select id="sm-instructor"><option value="">-- เลือก --</option><option>ครูเจ๋ง</option><option>ครูป่าน</option><option>ครูโบว์</option><option>ครูพลอย</option><option>ครูจิ๋ว</option></select></div>
+<div class="form-group"><label>วันที่เรียน <span style="color:var(--danger)">*</span></label><input type="date" id="sm-date" onchange="checkDateAvailability();updateSmTimeSlot()"></div>
+<div class="form-group"><label>ผู้สอน</label><select id="sm-instructor"><option value="">-- เลือก --</option><option>ครูเจ๋ง</option><option>ครูป่าน</option><option>ครูโบว์</option><option>ครูพลอย</option><option>ครูจิ๋ว</option><option>หมอปุ้ย</option><option>ครูภูมิ</option></select></div>
 </div>
+<div id="sm-date-status" style="display:none;margin-bottom:10px;padding:8px 12px;border-radius:8px;font-size:12px"></div>
 <div class="form-group" id="sm-timeslot-area" style="display:none"><label>รอบเวลาเรียน</label><select id="sm-timeslot"><option value="">-- เลือก --</option><option>11.00-13.00 น.</option><option>14.00-16.00 น.</option><option>17.00-19.00 น.</option></select></div>
 <div class="form-group" id="sm-custom-time-area" style="display:none"><label>กำหนดเวลาเรียนเอง</label><input type="text" id="sm-custom-time" placeholder="เช่น 09.00-12.00 น."></div>
 <div id="sm-price-area" style="display:none">
@@ -561,15 +585,25 @@ QR Code สินค้า
 <div style="font-size:24px;font-weight:800;color:var(--primary)" id="sm-total-value"></div>
 </div>
 </div>
+<div class="form-group" id="sm-location-area" style="display:none"><label>สถานที่</label><input type="text" id="sm-location" placeholder="สถานที่จัดอบรม"></div>
 <div class="form-group">
 <label>รายชื่อผู้เรียน <span id="sm-student-count" style="font-weight:700;color:var(--primary)"></span></label>
+<div id="sm-qty-mode-area" style="display:none;margin-bottom:10px">
+<div style="display:flex;gap:12px;align-items:flex-end">
+<div style="flex:1"><label style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;display:block">จำนวนผู้เรียน (คน)</label><input type="number" id="sm-qty-only" min="1" value="1" oninput="updateStudentCount()" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-weight:700;text-align:center"></div>
+<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:#f8fafc;white-space:nowrap;height:44px" id="sm-specify-label">
+<input type="checkbox" id="sm-specify-names" onchange="toggleSpecifyNames()" style="accent-color:var(--primary);width:16px;height:16px">
+<span>📝 ระบุชื่อผู้เรียน</span>
+</label>
+</div>
+</div>
 <div id="sm-students-list"></div>
-<button class="btn btn-outline btn-sm" onclick="addStudentRow()" style="margin-top:8px">+ เพิ่มผู้เรียน</button>
+<div id="sm-add-student-btn"><button class="btn btn-outline btn-sm" onclick="addStudentRow()" style="margin-top:8px">+ เพิ่มผู้เรียน</button></div>
 </div>
 <div class="form-group"><label>สถานะการจ่ายเงิน</label><select id="sm-payment"><option value="">-- เลือก --</option><option>โอนแล้ว</option><option>จ่ายหน้างาน</option><option>คูปอง</option></select></div>
 <div class="form-group"><label>หมายเหตุ</label><input type="text" id="sm-note" placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"></div>
 </div>
-<div class="modal-footer" style="display:flex;gap:8px">
+<div class="modal-footer" style="display:flex;gap:8px;flex-shrink:0;border-top:1px solid var(--border)">
 <button class="btn btn-outline" onclick="closeModal('student-modal')">ยกเลิก</button>
 <button class="btn btn-primary" onclick="saveStudentBooking()">บันทึก</button>
 </div>
@@ -1510,6 +1544,11 @@ async function loadFromSheets() {
     localStorage.removeItem('jia_student_counter');
     studentCounter=0;
   }
+  // โหลดวันปิดรับจอง
+  if(data.closedDates&&data.closedDates.length){
+    closedDates=data.closedDates.map(d=>({date:d.date,reason:d.reason||'ปิดรับจอง'}));
+    localStorage.setItem('jia_closed_dates',JSON.stringify(closedDates));
+  }
   isLoading = false;
   showToast('โหลดข้อมูลสำเร็จ! (สินค้า ' + products.length + ' | ลูกค้า ' + customers.length + ' | เช่า ' + rentals.length + ' | ผู้เรียน ' + studentBookings.length + ')', 'success');
 }
@@ -1572,6 +1611,12 @@ async function gsUpdateStudentBooking(data) {
     const rows = students.length > 0 ? students.map((s, i) => ({...data, name: s.name, phone: s.phone || '', studentIndex: i + 1, totalStudents: students.length, students: ''})) : [data];
     await gsAPI({action: 'saveStudentBatch', data: JSON.stringify(rows)});
   } catch(e) { console.error('Update student error:', e); }
+}
+async function gsSaveClosedDate(data) {
+  await gsAPI({action: 'saveClosedDate', data: JSON.stringify(data)});
+}
+async function gsDeleteClosedDate(date) {
+  await gsAPI({action: 'deleteClosedDate', date: date});
 }
 
 // ========== UTILITY ==========
@@ -2829,10 +2874,97 @@ function confirmBatchStatus(){
   renderProducts();renderCalendar();
 }
 
+// ========== CLOSED DATES + DATE VALIDATION ==========
+let closedDates=JSON.parse(localStorage.getItem('jia_closed_dates')||'[]');
+
+function openClosedDatesModal(){
+  document.getElementById('cd-date').value='';
+  document.getElementById('cd-reason').value='';
+  renderClosedDates();
+  document.getElementById('closed-dates-modal').classList.add('show');
+}
+
+function addClosedDate(){
+  const date=document.getElementById('cd-date').value;
+  const reason=document.getElementById('cd-reason').value.trim();
+  if(!date){showToast('กรุณาเลือกวันที่','error');return;}
+  if(closedDates.find(d=>d.date===date)){showToast('วันนี้ปิดอยู่แล้ว','error');return;}
+  closedDates.push({date,reason:reason||'ปิดรับจอง'});
+  closedDates.sort((a,b)=>a.date.localeCompare(b.date));
+  localStorage.setItem('jia_closed_dates',JSON.stringify(closedDates));
+  gsSaveClosedDate({date,reason:reason||'ปิดรับจอง'});
+  document.getElementById('cd-date').value='';
+  document.getElementById('cd-reason').value='';
+  renderClosedDates();
+  showToast(`ปิดวันที่ ${fmtDate(new Date(date))} แล้ว`);
+}
+
+function removeClosedDate(date){
+  closedDates=closedDates.filter(d=>d.date!==date);
+  localStorage.setItem('jia_closed_dates',JSON.stringify(closedDates));
+  gsDeleteClosedDate(date);
+  renderClosedDates();
+  showToast('เปิดวันคืนแล้ว');
+}
+
+function renderClosedDates(){
+  let html='';
+  if(!closedDates.length){html='<div style="text-align:center;padding:20px;color:var(--muted)">ยังไม่มีวันปิด</div>';}
+  else{closedDates.forEach(d=>{
+    html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin-bottom:4px;background:#fef2f2;border:1px solid #fca5a5;border-radius:8px">
+      <div><span style="font-weight:700;color:#dc2626">${fmtDate(new Date(d.date))}</span> <span style="color:var(--muted);font-size:12px">— ${d.reason}</span></div>
+      <button class="btn btn-sm btn-outline" onclick="removeClosedDate('${d.date}')" style="font-size:11px;color:#dc2626;border-color:#fca5a5">ลบ</button>
+    </div>`;
+  });}
+  document.getElementById('cd-list').innerHTML=html;
+}
+
+function checkDateAvailability(){
+  const course=document.getElementById('sm-course').value;
+  const date=document.getElementById('sm-date').value;
+  const statusEl=document.getElementById('sm-date-status');
+  if(!date){statusEl.style.display='none';return;}
+  // 1. เช็ควันปิดแบบ manual
+  const closed=closedDates.find(d=>d.date===date);
+  if(closed){
+    statusEl.style.display='';
+    statusEl.style.background='#fef2f2';statusEl.style.border='1px solid #fca5a5';statusEl.style.color='#dc2626';
+    statusEl.innerHTML=`🔴 <b>วันนี้ปิดรับจอง</b> — ${closed.reason}`;
+    return;
+  }
+  // 2. เช็ค ALS Blue Code ล็อค
+  const alsOnDate=studentBookings.find(b=>b.status!=='ยกเลิก'&&b.date===date&&b.course==='ALS Blue Code'&&b.id!==editingStudentId);
+  const otherOnDate=studentBookings.find(b=>b.status!=='ยกเลิก'&&b.date===date&&b.course!=='ALS Blue Code'&&b.id!==editingStudentId);
+  if(course==='ALS Blue Code'&&otherOnDate){
+    statusEl.style.display='';
+    statusEl.style.background='#fef3c7';statusEl.style.border='1px solid #fbbf24';statusEl.style.color='#92400e';
+    statusEl.innerHTML=`⚠️ <b>วันนี้มีคอร์สอื่นจองอยู่</b> — ${otherOnDate.course} (${otherOnDate.name}) ไม่สามารถจอง ALS Blue Code ได้`;
+    return;
+  }
+  if(course!=='ALS Blue Code'&&alsOnDate){
+    statusEl.style.display='';
+    statusEl.style.background='#fef3c7';statusEl.style.border='1px solid #fbbf24';statusEl.style.color='#92400e';
+    statusEl.innerHTML=`⚠️ <b>วันนี้มี ALS Blue Code จองอยู่</b> — ไม่สามารถจองคอร์สอื่นได้`;
+    return;
+  }
+  // 3. ปกติ
+  const bookingsOnDate=studentBookings.filter(b=>b.status!=='ยกเลิก'&&b.date===date&&b.id!==editingStudentId);
+  if(bookingsOnDate.length){
+    statusEl.style.display='';
+    statusEl.style.background='#eff6ff';statusEl.style.border='1px solid #bfdbfe';statusEl.style.color='#1e40af';
+    const summary=bookingsOnDate.map(b=>`${b.course}${b.timeslot?' ('+b.timeslot+')':''}`).join(', ');
+    statusEl.innerHTML=`ℹ️ วันนี้มีจอง: ${summary}`;
+  } else {
+    statusEl.style.display='';
+    statusEl.style.background='#f0fdf4';statusEl.style.border='1px solid #86efac';statusEl.style.color='#059669';
+    statusEl.innerHTML='✅ วันนี้ว่าง — จองได้';
+  }
+}
+
 // ========== STUDENT BOOKINGS ==========
 let studentBookings=JSON.parse(localStorage.getItem('jia_student_bookings')||'[]');
 let studentCounter=parseInt(localStorage.getItem('jia_student_counter')||'0');
-const COURSE_PRICES={'Full Course':0,'Mini Course':0,'Join Course':1000,'Private Course':1000,'อื่นๆ':0};
+const COURSE_PRICES={'Full Course':0,'Mini Course':0,'Join Course':1000,'Private Course':1000,'ALS Blue Code':0,'BLS Healthcare':0,'อื่นๆ':0};
 
 function openStudentModal(){
   document.getElementById('sm-course').value='';
@@ -2840,13 +2972,21 @@ function openStudentModal(){
   document.getElementById('sm-instructor').value='';
   document.getElementById('sm-timeslot').value='';
   document.getElementById('sm-timeslot-area').style.display='none';
+  document.getElementById('sm-date-status').style.display='none';
   document.getElementById('sm-custom-time-area').style.display='none';
   document.getElementById('sm-price-area').style.display='none';
   document.getElementById('sm-travel-area').style.display='none';
   document.getElementById('sm-custom-time').value='';
   document.getElementById('sm-price').value='';
   document.getElementById('sm-travel').value='0';
-  document.getElementById('sm-code').value='';
+  document.getElementById('sm-code').value='0';
+  document.getElementById('sm-location').value='';
+  document.getElementById('sm-location-area').style.display='none';
+  document.getElementById('sm-qty-mode-area').style.display='none';
+  document.getElementById('sm-qty-only').value='1';
+  document.getElementById('sm-specify-names').checked=false;
+  document.getElementById('sm-students-list').style.display='';
+  document.getElementById('sm-add-student-btn').style.display='';
   document.getElementById('sm-total-display').style.display='none';
   document.getElementById('sm-note').value='';
   document.getElementById('sm-payment').value='';
@@ -2882,8 +3022,24 @@ function removeStudentRow(btn){
   updateStudentCount();
 }
 
+function toggleSpecifyNames(){
+  const specify=document.getElementById('sm-specify-names').checked;
+  document.getElementById('sm-students-list').style.display=specify?'':'none';
+  document.getElementById('sm-add-student-btn').style.display=specify?'':'none';
+  if(specify&&!document.getElementById('sm-students-list').children.length)addStudentRow();
+  updateStudentCount();
+}
+
 function updateStudentCount(){
-  const count=document.getElementById('sm-students-list').children.length;
+  const course=document.getElementById('sm-course').value;
+  const isALS=course==='ALS Blue Code'||course==='BLS Healthcare';
+  const specify=document.getElementById('sm-specify-names').checked;
+  let count;
+  if(isALS&&!specify){
+    count=parseInt(document.getElementById('sm-qty-only').value)||1;
+  } else {
+    count=document.getElementById('sm-students-list').children.length;
+  }
   document.getElementById('sm-student-count').textContent=`(${count} คน)`;
   updateSmTimeSlot();
   calcStudentTotal();
@@ -2905,7 +3061,17 @@ function updateSmTimeSlot(){
   priceArea.style.display='none';
   travelArea.style.display='none';
   codeArea.style.display='none';
-  if(!course){sel.value='';document.getElementById('sm-custom-time').value='';calcStudentTotal();return;}
+  if(!course){sel.value='';document.getElementById('sm-custom-time').value='';
+    document.getElementById('sm-location-area').style.display='none';
+    document.getElementById('sm-qty-mode-area').style.display='none';
+    document.getElementById('sm-students-list').style.display='';
+    document.getElementById('sm-add-student-btn').style.display='';
+    calcStudentTotal();return;}
+  // ซ่อน location/qty-mode ก่อน แล้วเปิดเฉพาะ ALS
+  document.getElementById('sm-location-area').style.display='none';
+  document.getElementById('sm-qty-mode-area').style.display='none';
+  document.getElementById('sm-students-list').style.display='';
+  document.getElementById('sm-add-student-btn').style.display='';
   if(course==='Full Course'){
     customTimeArea.style.display='';
     priceArea.style.display='';
@@ -2929,6 +3095,19 @@ function updateSmTimeSlot(){
     priceArea.style.display='';
     if(!priceInput.value)priceInput.value='1000';
     priceInput.placeholder='ราคา/คน (default 1,000)';
+  } else if(course==='ALS Blue Code'||course==='BLS Healthcare'){
+    customTimeArea.style.display='';
+    priceArea.style.display='';
+    document.getElementById('sm-location-area').style.display='';
+    document.getElementById('sm-qty-mode-area').style.display='';
+    if(!document.getElementById('sm-custom-time').value)document.getElementById('sm-custom-time').value=course==='ALS Blue Code'?'11.00-19.00 น.':'';
+    if(!document.getElementById('sm-location').value)document.getElementById('sm-location').value='the street';
+    priceInput.placeholder='กำหนดราคา/คน';
+    // ถ้าไม่ติ๊กระบุชื่อ → ซ่อนรายชื่อ
+    if(!document.getElementById('sm-specify-names').checked){
+      document.getElementById('sm-students-list').style.display='none';
+      document.getElementById('sm-add-student-btn').style.display='none';
+    }
   } else {
     slotArea.style.display='';
     priceArea.style.display='';
@@ -2990,19 +3169,36 @@ function saveStudentBooking(){
   const note=document.getElementById('sm-note').value.trim();
   if(!course){showToast('กรุณาเลือกคอร์ส','error');return;}
   if(!date){showToast('กรุณาเลือกวันที่เรียน','error');return;}
-  const rows=document.querySelectorAll('#sm-students-list > div');
-  const students=[];
-  rows.forEach(row=>{const n=row.querySelector('.sm-stu-name').value.trim();const p=row.querySelector('.sm-stu-phone').value.trim();if(n)students.push({name:n,phone:p});});
-  if(!students.length){showToast('กรุณากรอกชื่อผู้เรียนอย่างน้อย 1 คน','error');return;}
+  // เช็ควันปิด + ALS ล็อค
+  const closedCheck=closedDates.find(d=>d.date===date);
+  if(closedCheck){showToast(`วันนี้ปิดรับจอง: ${closedCheck.reason}`,'error');return;}
+  const alsCheck=studentBookings.find(b=>b.status!=='ยกเลิก'&&b.date===date&&b.course==='ALS Blue Code'&&b.id!==editingStudentId);
+  const otherCheck=studentBookings.find(b=>b.status!=='ยกเลิก'&&b.date===date&&b.course!=='ALS Blue Code'&&b.id!==editingStudentId);
+  if(course==='ALS Blue Code'&&otherCheck){showToast('วันนี้มีคอร์สอื่นจองอยู่ ไม่สามารถจอง ALS Blue Code ได้','error');return;}
+  if(course!=='ALS Blue Code'&&alsCheck){showToast('วันนี้มี ALS Blue Code จองอยู่ ไม่สามารถจองคอร์สอื่นได้','error');return;}
+  const location=document.getElementById('sm-location').value.trim();
+  const isALS=course==='ALS Blue Code'||course==='BLS Healthcare';
+  const specify=document.getElementById('sm-specify-names').checked;
+  let students=[];
+  let qtyCount=1;
+  if(isALS&&!specify){
+    qtyCount=parseInt(document.getElementById('sm-qty-only').value)||1;
+    if(qtyCount<1){showToast('กรุณาระบุจำนวนผู้เรียน','error');return;}
+  } else {
+    const rows=document.querySelectorAll('#sm-students-list > div');
+    rows.forEach(row=>{const n=row.querySelector('.sm-stu-name').value.trim();const p=row.querySelector('.sm-stu-phone').value.trim();if(n)students.push({name:n,phone:p});});
+    if(!students.length){showToast('กรุณากรอกชื่อผู้เรียนอย่างน้อย 1 คน','error');return;}
+    qtyCount=students.length;
+  }
   const hasLimit=['Mini Course','Join Course','Private Course'].includes(course);
   if(hasLimit&&timeslot&&date){
     const booked=studentBookings.filter(b=>b.status!=='ยกเลิก'&&b.date===date&&b.timeslot===timeslot&&['Mini Course','Join Course','Private Course'].includes(b.course)).reduce((s,b)=>s+(b.qty||1),0);
-    if(booked+students.length>7){showToast(`รอบ ${timeslot} เต็ม! เหลือ ${7-booked} คน`,'error');return;}
+    if(booked+qtyCount>7){showToast(`รอบ ${timeslot} เต็ม! เหลือ ${7-booked} คน`,'error');return;}
   }
   studentCounter++;localStorage.setItem('jia_student_counter',studentCounter);
   const now=new Date();const mm=String(now.getFullYear()).slice(-2)+String(now.getMonth()+1).padStart(2,'0');
   const id=`STU-${mm}-${String(studentCounter).padStart(4,'0')}`;
-  const booking={id,name:students.map(s=>s.name).join(', '),phone:students.map(s=>s.phone).filter(Boolean).join(', '),students:JSON.stringify(students),sales,course,qty:students.length,date:date,dateTo:'',instructor,timeslot,payment,customPrice,travelCost,priceCode,note,status:'จอง',createdAt:now.toISOString(),createdDate:fmtDate(now)};
+  const booking={id,name:students.length?students.map(s=>s.name).join(', '):`ผู้เรียน ${qtyCount} คน`,phone:students.length?students.map(s=>s.phone).filter(Boolean).join(', '):'',students:JSON.stringify(students),sales,course,qty:qtyCount,date:date,dateTo:'',instructor,timeslot,payment,customPrice,travelCost,priceCode,location,note,status:'จอง',createdAt:now.toISOString(),createdDate:fmtDate(now)};
   studentBookings.unshift(booking);localStorage.setItem('jia_student_bookings',JSON.stringify(studentBookings));
   gsSaveStudentBooking(booking);closeModal('student-modal');
   showToast(`จองผู้เรียน ${id} (${students.length} คน) สำเร็จ!`);renderStudents();showStudentReceipt(id);
@@ -3066,11 +3262,19 @@ function editStudentBooking(id){
   if(currentRole==='sales'&&currentUser){salesSel.value=currentUser;salesSel.disabled=true;}
   updateSmTimeSlot();
   document.getElementById('sm-timeslot').value=b.timeslot||'';
-  document.getElementById('sm-custom-time').value=(b.course==='Full Course'||b.course==='Mini Course'||b.course==='Private Course')?(b.timeslot||''):'';
+  document.getElementById('sm-custom-time').value=(b.course==='Full Course'||b.course==='Mini Course'||b.course==='Private Course'||b.course==='ALS Blue Code'||b.course==='BLS Healthcare')?(b.timeslot||''):'';
   document.getElementById('sm-price').value=b.customPrice||'';
   document.getElementById('sm-travel').value=b.travelCost||'0';
-
   document.getElementById('sm-code').value=b.priceCode||'';
+  document.getElementById('sm-location').value=b.location||'';
+  const isALS2=b.course==='ALS Blue Code'||b.course==='BLS Healthcare';
+  const hasNames2=(()=>{try{return JSON.parse(b.students||'[]').length>0;}catch(e){return false;}})();
+  document.getElementById('sm-qty-only').value=b.qty||1;
+  document.getElementById('sm-specify-names').checked=isALS2?hasNames2:false;
+  if(isALS2&&!hasNames2){
+    document.getElementById('sm-students-list').style.display='none';
+    document.getElementById('sm-add-student-btn').style.display='none';
+  }
   calcStudentTotal();
   // โหลดรายชื่อผู้เรียน
   const list=document.getElementById('sm-students-list');
@@ -3092,10 +3296,23 @@ function saveEditStudent(){
   const date=document.getElementById('sm-date').value;
   if(!course){showToast('กรุณาเลือกคอร์ส','error');return;}
   if(!date){showToast('กรุณาเลือกวันที่เรียน','error');return;}
-  const rows=document.querySelectorAll('#sm-students-list > div');
-  const students=[];
-  rows.forEach(row=>{const n=row.querySelector('.sm-stu-name').value.trim();const p=row.querySelector('.sm-stu-phone').value.trim();if(n)students.push({name:n,phone:p});});
-  if(!students.length){showToast('กรุณากรอกชื่อผู้เรียนอย่างน้อย 1 คน','error');return;}
+  const closedCheck2=closedDates.find(d=>d.date===date);
+  if(closedCheck2){showToast(`วันนี้ปิดรับจอง: ${closedCheck2.reason}`,'error');return;}
+  const alsCheck2=studentBookings.find(b=>b.status!=='ยกเลิก'&&b.date===date&&b.course==='ALS Blue Code'&&b.id!==editingStudentId);
+  const otherCheck2=studentBookings.find(b=>b.status!=='ยกเลิก'&&b.date===date&&b.course!=='ALS Blue Code'&&b.id!==editingStudentId);
+  if(course==='ALS Blue Code'&&otherCheck2){showToast('วันนี้มีคอร์สอื่นจองอยู่','error');return;}
+  if(course!=='ALS Blue Code'&&alsCheck2){showToast('วันนี้มี ALS Blue Code จองอยู่','error');return;}
+  const isALS3=course==='ALS Blue Code'||course==='BLS Healthcare';
+  const specify3=document.getElementById('sm-specify-names').checked;
+  let students=[];let qtyCount3=1;
+  if(isALS3&&!specify3){
+    qtyCount3=parseInt(document.getElementById('sm-qty-only').value)||1;
+  } else {
+    const rows=document.querySelectorAll('#sm-students-list > div');
+    rows.forEach(row=>{const n=row.querySelector('.sm-stu-name').value.trim();const p=row.querySelector('.sm-stu-phone').value.trim();if(n)students.push({name:n,phone:p});});
+    if(!students.length){showToast('กรุณากรอกชื่อผู้เรียนอย่างน้อย 1 คน','error');return;}
+    qtyCount3=students.length;
+  }
   b.course=course;
   b.date=date;
   b.sales=document.getElementById('sm-sales').value;
@@ -3105,11 +3322,12 @@ function saveEditStudent(){
   b.customPrice=parseFloat(document.getElementById('sm-price').value)||0;
   b.travelCost=parseFloat(document.getElementById('sm-travel').value)||0;
   b.priceCode=parseFloat(document.getElementById('sm-code').value)||0;
+  b.location=document.getElementById('sm-location').value.trim();
   b.note=document.getElementById('sm-note').value.trim();
-  b.name=students.map(s=>s.name).join(', ');
-  b.phone=students.map(s=>s.phone).filter(Boolean).join(', ');
+  b.name=students.length?students.map(s=>s.name).join(', '):`ผู้เรียน ${qtyCount3} คน`;
+  b.phone=students.length?students.map(s=>s.phone).filter(Boolean).join(', '):'';
   b.students=JSON.stringify(students);
-  b.qty=students.length;
+  b.qty=qtyCount3;
   localStorage.setItem('jia_student_bookings',JSON.stringify(studentBookings));
   gsUpdateStudentBooking(b);
   closeModal('student-modal');
@@ -3140,6 +3358,7 @@ function showStudentReceipt(id){
     ${b.travelCost?`<div class="receipt-row"><div class="label">ค่าเดินทาง</div><div class="value">฿${fmt(b.travelCost)}</div></div>`:''}
     ${(b.customPrice||COURSE_PRICES[b.course]||b.travelCost)?`<div class="receipt-row"><div class="label" style="font-weight:700">รวมทั้งหมด</div><div class="value" style="font-weight:800;font-size:18px;color:var(--primary)">฿${fmt(Math.max((b.customPrice||COURSE_PRICES[b.course]||0)*b.qty+(b.travelCost||0)-(b.priceCode||0),0))}</div></div>`:''}
     <div class="receipt-row"><div class="label">วันที่เรียน</div><div class="value" style="font-weight:700">${fmtDate(new Date(b.date))}</div></div>
+    ${b.location?`<div class="receipt-row"><div class="label">สถานที่</div><div class="value" style="font-weight:600">${b.location}</div></div>`:''}
     ${b.timeslot?`<div class="receipt-row"><div class="label">รอบเวลาเรียน</div><div class="value" style="font-weight:700">${b.timeslot}</div></div>`:''}
     ${b.instructor?`<div class="receipt-row"><div class="label">ผู้สอน</div><div class="value">${b.instructor}</div></div>`:''}
     ${b.payment?`<div class="receipt-row"><div class="label">สถานะการจ่ายเงิน</div><div class="value" style="font-weight:700;color:${b.payment==='โอนแล้ว'?'#059669':b.payment==='คูปอง'?'#8b5cf6':'#d97706'}">${b.payment}</div></div>`:''}
@@ -3184,7 +3403,7 @@ function renderInstrComm(){
   // populate filter
   const pSel=document.getElementById('instr-filter');
   if(pSel.options.length<=1){
-    const instructors=['ครูเจ๋ง','ครูป่าน','ครูโบว์','ครูพลอย','ครูจิ๋ว'];
+    const instructors=['ครูเจ๋ง','ครูป่าน','ครูโบว์','ครูพลอย','ครูจิ๋ว','หมอปุ้ย','ครูภูมิ'];
     instructors.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;pSel.appendChild(o);});
   }
   const filterPerson=pSel.value;
