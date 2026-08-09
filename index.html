@@ -533,7 +533,7 @@ QR Code สินค้า
 <select class="filter-select" id="stu-status-filter" onchange="renderStudents()"><option value="">ทุกสถานะ</option><option>จอง</option><option>เรียนแล้ว</option><option>ยกเลิก</option></select>
 </div>
 <div class="table-responsive"><table><thead><tr>
-<th>เลขที่</th><th>วันที่จอง</th><th>ชื่อผู้เรียน</th><th>เบอร์โทร</th><th>คอร์ส</th><th>วันเรียน</th><th>รอบเวลา</th><th>จำนวน</th><th>ผู้สอน</th><th>เซลล์</th><th>สถานะ</th><th>จัดการ</th>
+<th>เลขที่</th><th>วันที่จอง</th><th>ชื่อผู้เรียน</th><th>เบอร์โทร</th><th>คอร์ส</th><th>วันเรียน</th><th>รอบเวลา</th><th>จำนวน</th><th>ผู้สอน</th><th>เซลล์</th><th>สถานะ</th><th>แก้ไขล่าสุด</th><th>จัดการ</th>
 </tr></thead><tbody id="stu-tbody"></tbody></table></div>
 </div></div>
 </div>
@@ -1516,7 +1516,7 @@ async function loadFromSheets() {
   opsNames = staff.filter(s => s.role === 'ops').map(s => s.name);
   if (!salesNames.length) salesNames = ['พี่มิ้ง','พี่ป่าน','พี่แก้มใส','พี่แนน'];
   if (!opsNames.length) opsNames = ['ป่าน','เจ๋ง','ตี๋','ปั้น','หมวย'];
-  // โหลดจองผู้เรียน — รวมแถวที่มี ID เดียวกัน
+  // โหลดจองผู้เรียน — merge Sheets + localStorage
   if(data.students&&data.students.length){
     const grouped={};
     data.students.forEach(row=>{
@@ -1528,7 +1528,7 @@ async function loadFromSheets() {
         grouped[row.id]._stuArr.push({name:row.name||'',phone:row.phone||''});
       }
     });
-    studentBookings=Object.values(grouped).map(b=>{
+    const sheetsBookings=Object.values(grouped).map(b=>{
       b.students=JSON.stringify(b._stuArr);
       b.name=b._stuArr.map(s=>s.name).join(', ');
       b.phone=b._stuArr.map(s=>s.phone).filter(Boolean).join(', ');
@@ -1536,17 +1536,17 @@ async function loadFromSheets() {
       delete b._stuArr;
       return b;
     });
+    // Merge: เอาข้อมูลจาก Sheets + เพิ่มรายการที่มีเฉพาะใน localStorage
+    const sheetsIds=new Set(sheetsBookings.map(b=>b.id));
+    const localOnly=studentBookings.filter(b=>!sheetsIds.has(b.id));
+    studentBookings=[...sheetsBookings,...localOnly];
+    studentBookings.sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
     localStorage.setItem('jia_student_bookings',JSON.stringify(studentBookings));
     // Sync counter จาก ID ที่โหลดมา
     const maxStu=studentBookings.reduce((max,b)=>{const m=b.id?.match(/(\d{4})$/);return m?Math.max(max,parseInt(m[1])):max;},0);
     if(maxStu>studentCounter){studentCounter=maxStu;localStorage.setItem('jia_student_counter',studentCounter);}
-  } else {
-    // Sheets ว่าง → ล้าง localStorage ด้วย
-    studentBookings=[];
-    localStorage.removeItem('jia_student_bookings');
-    localStorage.removeItem('jia_student_counter');
-    studentCounter=0;
   }
+  // ถ้า Sheets ว่างแต่ localStorage มีข้อมูล → ไม่ล้าง (เก็บไว้)
   // โหลดวันปิดรับจอง
   if(data.closedDates&&data.closedDates.length){
     closedDates=data.closedDates.map(d=>({date:d.date,reason:d.reason||'ปิดรับจอง'}));
@@ -1603,17 +1603,21 @@ async function gsIncCounter() {
 async function gsSaveStudentBooking(data) {
   try {
     const students = JSON.parse(data.students || '[]');
-    const rows = students.length > 0 ? students.map((s, i) => ({...data, name: s.name, phone: s.phone || '', studentIndex: i + 1, totalStudents: students.length, students: ''})) : [data];
-    await gsAPI({action: 'saveStudentBatch', data: JSON.stringify(rows)});
-  } catch(e) { console.error('Save student error:', e); }
+    const rows = students.length > 0 ? students.map((s, i) => ({...data, name: s.name, phone: s.phone || '', studentIndex: i + 1, totalStudents: students.length, students: ''})) : [{...data, studentIndex:1, totalStudents:data.qty||1, students:''}];
+    const res = await gsAPI({action: 'saveStudentBatch', data: JSON.stringify(rows)});
+    if(res&&res.success){showToast('✅ Sync Sheets สำเร็จ','success');}
+    else{showToast('⚠️ Sync Sheets ไม่สำเร็จ — ข้อมูลเก็บใน browser','error');}
+  } catch(e) { showToast('⚠️ Sync Sheets error — ข้อมูลเก็บใน browser','error'); }
 }
 async function gsUpdateStudentBooking(data) {
   try {
     await gsAPI({action: 'deleteStudent', id: data.id});
     const students = JSON.parse(data.students || '[]');
-    const rows = students.length > 0 ? students.map((s, i) => ({...data, name: s.name, phone: s.phone || '', studentIndex: i + 1, totalStudents: students.length, students: ''})) : [data];
-    await gsAPI({action: 'saveStudentBatch', data: JSON.stringify(rows)});
-  } catch(e) { console.error('Update student error:', e); }
+    const rows = students.length > 0 ? students.map((s, i) => ({...data, name: s.name, phone: s.phone || '', studentIndex: i + 1, totalStudents: students.length, students: ''})) : [{...data, studentIndex:1, totalStudents:data.qty||1, students:''}];
+    const res = await gsAPI({action: 'saveStudentBatch', data: JSON.stringify(rows)});
+    if(res&&res.success){showToast('✅ Sync Sheets สำเร็จ','success');}
+    else{showToast('⚠️ Sync Sheets ไม่สำเร็จ','error');}
+  } catch(e) { showToast('⚠️ Sync Sheets error','error'); }
 }
 async function gsSaveClosedDate(data) {
   await gsAPI({action: 'saveClosedDate', data: JSON.stringify(data)});
@@ -1989,7 +1993,7 @@ function renderRentals(){
     hdrHtml+=sth('มัดจำ (฿)','deposit','text-right');
     if(!isOps) hdrHtml+='<th>การโอน</th>';
     hdrHtml+=sth('ผู้เช่า','customer')+sth('เซลล์','sales');
-    hdrHtml+=sth('สถานะ','status','text-center')+'<th class="text-center">จัดการ</th>';
+    hdrHtml+=sth('สถานะ','status','text-center')+'<th>แก้ไขล่าสุด</th><th class="text-center">จัดการ</th>';
     thead.innerHTML=hdrHtml;
   }
 
@@ -2029,6 +2033,7 @@ function renderRentals(){
     } else {
       rowHtml+=`<td class="text-center"><span class="badge ${badgeClass(r.status)}">${r.status}</span></td>`;
     }
+    rowHtml+=`<td style="font-size:11px;color:var(--muted);white-space:nowrap">${r.lastEditedDate||'—'}</td>`;
     rowHtml+=`<td class="text-center" style="white-space:nowrap">`;
 
     // ปุ่มแก้ไข — active + คืนแล้ว (ยกเลิกไม่ให้แก้)
@@ -2308,8 +2313,8 @@ function renderCalendar(){
     const d=new Date(b.date);
     const cls=b.status==='เรียนแล้ว'?'st-student-done':'st-student';
     const icon=b.status==='เรียนแล้ว'?'✅':'🎓';
-    addEv(d,`${icon} ${b.course} ${b.qty}คน — ${b.name}`,cls,b.id);
-    if(b.dateTo){const d2=new Date(b.dateTo);if(d2>d)addEv(d2,`${icon} ${b.course} ${b.qty}คน — ${b.name}`,cls,b.id);}
+    addEv(d,`${icon} ${b.course} ${b.qty}คน${b.timeslot?' '+b.timeslot:''}`,cls,b.id);
+    if(b.dateTo){const d2=new Date(b.dateTo);if(d2>d)addEv(d2,`${icon} ${b.course} ${b.qty}คน${b.timeslot?' '+b.timeslot:''}`,cls,b.id);}
   });
   // === ฟิลเตอร์ตาม checkbox ===
   const calFilters=new Set();
@@ -2941,13 +2946,17 @@ function checkDateAvailability(){
   if(course==='ALS Blue Code'&&otherOnDate){
     statusEl.style.display='';
     statusEl.style.background='#fef3c7';statusEl.style.border='1px solid #fbbf24';statusEl.style.color='#92400e';
-    statusEl.innerHTML=`⚠️ <b>วันนี้มีคอร์สอื่นจองอยู่</b> — ${otherOnDate.course} (${otherOnDate.name}) ไม่สามารถจอง ALS Blue Code ได้`;
+    statusEl.innerHTML=`⚠️ <b>วันนี้มี ${otherOnDate.course} จองอยู่</b> — เปลี่ยนเป็น ${otherOnDate.course} อัตโนมัติ`;
+    document.getElementById('sm-course').value=otherOnDate.course;
+    updateSmTimeSlot();
     return;
   }
   if(course!=='ALS Blue Code'&&alsOnDate){
     statusEl.style.display='';
     statusEl.style.background='#fef3c7';statusEl.style.border='1px solid #fbbf24';statusEl.style.color='#92400e';
-    statusEl.innerHTML=`⚠️ <b>วันนี้มี ALS Blue Code จองอยู่</b> — ไม่สามารถจองคอร์สอื่นได้`;
+    statusEl.innerHTML=`⚠️ <b>วันนี้มี ALS Blue Code จองอยู่</b> — เปลี่ยนเป็น ALS Blue Code อัตโนมัติ`;
+    document.getElementById('sm-course').value='ALS Blue Code';
+    updateSmTimeSlot();
     return;
   }
   // 3. ปกติ
@@ -3009,6 +3018,22 @@ function openStudentModal(){
 }
 
 function addStudentRow(){
+  const course=document.getElementById('sm-course').value;
+  const hasLimit=['Mini Course','Join Course'].includes(course);
+  if(hasLimit){
+    const date=document.getElementById('sm-date').value;
+    const slot=document.getElementById('sm-timeslot').value;
+    const list=document.getElementById('sm-students-list');
+    const currentCount=list.children.length;
+    let booked=0;
+    if(date&&slot){
+      booked=studentBookings.filter(b=>b.status!=='ยกเลิก'&&b.date===date&&b.timeslot===slot&&b.id!==editingStudentId&&['Mini Course','Join Course','Private Course'].includes(b.course)).reduce((s,b)=>s+(b.qty||1),0);
+    }
+    if(currentCount+booked>=7){
+      showToast(`รอบนี้เต็มแล้ว! (${booked} คนจองแล้ว + ${currentCount} คนในฟอร์ม = ${booked+currentCount}/7)`,'error');
+      return;
+    }
+  }
   const list=document.getElementById('sm-students-list');
   const idx=list.children.length+1;
   const row=document.createElement('div');
@@ -3049,6 +3074,25 @@ function updateStudentCount(){
     count=document.getElementById('sm-students-list').children.length;
   }
   document.getElementById('sm-student-count').textContent=`(${count} คน)`;
+  // เช็คจำกัดจำนวน + ซ่อน/แสดงปุ่มเพิ่ม
+  const hasLimit=['Mini Course','Join Course'].includes(course);
+  const addBtn=document.getElementById('sm-add-student-btn');
+  if(hasLimit&&addBtn){
+    const date=document.getElementById('sm-date').value;
+    const slot=document.getElementById('sm-timeslot').value;
+    let booked=0;
+    if(date&&slot){
+      booked=studentBookings.filter(b=>b.status!=='ยกเลิก'&&b.date===date&&b.timeslot===slot&&b.id!==editingStudentId&&['Mini Course','Join Course','Private Course'].includes(b.course)).reduce((s,b)=>s+(b.qty||1),0);
+    }
+    const remain=7-booked-count;
+    if(remain<=0){
+      addBtn.innerHTML=`<div style="margin-top:8px;padding:6px 12px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;font-size:12px;color:#dc2626;font-weight:600">🔴 เต็ม ${booked+count}/7 คน — ไม่สามารถเพิ่มได้</div>`;
+    } else {
+      addBtn.innerHTML=`<button class="btn btn-outline btn-sm" onclick="addStudentRow()" style="margin-top:8px">+ เพิ่มผู้เรียน</button><span style="font-size:11px;color:#059669;margin-left:8px">เหลือ ${remain} คน</span>`;
+    }
+  } else if(addBtn&&addBtn.style.display!=='none'){
+    addBtn.innerHTML=`<button class="btn btn-outline btn-sm" onclick="addStudentRow()" style="margin-top:8px">+ เพิ่มผู้เรียน</button>`;
+  }
   updateSmTimeSlot();
   calcStudentTotal();
 }
@@ -3238,6 +3282,7 @@ function renderStudents(){
       <td>${b.instructor||'—'}</td>
       <td>${b.sales||'—'}</td>
       <td><span class="badge ${stCls}">${b.status}</span></td>
+      <td style="font-size:11px;color:var(--muted);white-space:nowrap">${b.lastEditedDate||'—'}</td>
       <td style="white-space:nowrap">
         <button class="btn btn-sm btn-outline" onclick="editStudentBooking('${b.id}')" style="font-size:11px;margin:1px" title="แก้ไข">✏️</button>
         ${b.status==='จอง'?`<button class="btn btn-sm btn-outline" onclick="changeStudentStatus('${b.id}','เรียนแล้ว')" style="font-size:11px;margin:1px" title="เรียนแล้ว">✅</button>`:''}
@@ -3245,13 +3290,20 @@ function renderStudents(){
         <button class="btn btn-sm btn-outline" onclick="showStudentReceipt('${b.id}')" style="font-size:11px;margin:1px" title="ใบจอง">📄</button>
       </td></tr>`;
   });
-  document.getElementById('stu-tbody').innerHTML=html||'<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--muted)">ยังไม่มีรายการจองผู้เรียน</td></tr>';
+  document.getElementById('stu-tbody').innerHTML=html||'<tr><td colspan="13" style="text-align:center;padding:40px;color:var(--muted)">ยังไม่มีรายการจองผู้เรียน</td></tr>';
 }
 
 function changeStudentStatus(id,status){
   const b=studentBookings.find(x=>x.id===id);if(!b)return;
   if(!confirm(`เปลี่ยนสถานะ ${b.id} "${b.name}" เป็น "${status}"?`))return;
-  b.status=status;localStorage.setItem('jia_student_bookings',JSON.stringify(studentBookings));
+  b.status=status;
+  const nowSt=new Date();
+  const editTimeSt=fmtDate(nowSt)+' '+String(nowSt.getHours()).padStart(2,'0')+':'+String(nowSt.getMinutes()).padStart(2,'0');
+  if(!b.editLog)b.editLog=[];
+  b.editLog.push({time:editTimeSt,changes:[`สถานะ: ${b.status} → ${status}`]});
+  b.lastEditedAt=nowSt.toISOString();
+  b.lastEditedDate=editTimeSt;
+  localStorage.setItem('jia_student_bookings',JSON.stringify(studentBookings));
   gsUpdateStudentBooking(b);showToast(`${b.id}: ${status}`);renderStudents();
 }
 
@@ -3321,6 +3373,21 @@ function saveEditStudent(){
     if(!students.length){showToast('กรุณากรอกชื่อผู้เรียนอย่างน้อย 1 คน','error');return;}
     qtyCount3=students.length;
   }
+  // บันทึกประวัติการแก้ไข
+  const now2=new Date();
+  const editTime=fmtDate(now2)+' '+String(now2.getHours()).padStart(2,'0')+':'+String(now2.getMinutes()).padStart(2,'0');
+  const newTimeslot=document.getElementById('sm-timeslot').value||document.getElementById('sm-custom-time').value;
+  const newInstructor=document.getElementById('sm-instructor').value;
+  const newPayment=document.getElementById('sm-payment').value;
+  const changes=[];
+  if(b.course!==course)changes.push(`คอร์ส: ${b.course} → ${course}`);
+  if(b.date!==date)changes.push(`วันเรียน: ${b.date?fmtDate(new Date(b.date)):'—'} → ${fmtDate(new Date(date))}`);
+  if(b.timeslot!==newTimeslot)changes.push(`รอบเวลา: ${b.timeslot||'—'} → ${newTimeslot||'—'}`);
+  if(b.instructor!==newInstructor)changes.push(`ผู้สอน: ${b.instructor||'—'} → ${newInstructor||'—'}`);
+  if(b.payment!==newPayment)changes.push(`จ่ายเงิน: ${b.payment||'—'} → ${newPayment||'—'}`);
+  if(b.qty!==qtyCount3)changes.push(`จำนวน: ${b.qty} → ${qtyCount3} คน`);
+  if(!b.editLog)b.editLog=[];
+  if(changes.length){b.editLog.push({time:editTime,changes:changes});}
   b.course=course;
   b.date=date;
   b.sales=document.getElementById('sm-sales').value;
@@ -3336,6 +3403,8 @@ function saveEditStudent(){
   b.phone=students.length?students.map(s=>s.phone).filter(Boolean).join(', '):'';
   b.students=JSON.stringify(students);
   b.qty=qtyCount3;
+  b.lastEditedAt=now2.toISOString();
+  b.lastEditedDate=editTime;
   localStorage.setItem('jia_student_bookings',JSON.stringify(studentBookings));
   gsUpdateStudentBooking(b);
   closeModal('student-modal');
@@ -3371,7 +3440,9 @@ function showStudentReceipt(id){
     ${b.instructor?`<div class="receipt-row"><div class="label">ผู้สอน</div><div class="value">${b.instructor}</div></div>`:''}
     ${b.payment?`<div class="receipt-row"><div class="label">สถานะการจ่ายเงิน</div><div class="value" style="font-weight:700;color:${b.payment==='โอนแล้ว'?'#059669':b.payment==='คูปอง'?'#8b5cf6':'#d97706'}">${b.payment}</div></div>`:''}
     ${b.note?`<div class="receipt-row"><div class="label">หมายเหตุ</div><div class="value">${b.note}</div></div>`:''}
-    <div class="receipt-row"><div class="label">สถานะ</div><div class="value"><span class="badge ${b.status==='จอง'?'badge-orange':b.status==='เรียนแล้ว'?'badge-green':'badge-gray'}">${b.status}</span></div></div>`;
+    <div class="receipt-row"><div class="label">สถานะ</div><div class="value"><span class="badge ${b.status==='จอง'?'badge-orange':b.status==='เรียนแล้ว'?'badge-green':'badge-gray'}">${b.status}</span></div></div>
+    ${b.lastEditedDate?`<div class="receipt-row"><div class="label">แก้ไขล่าสุด</div><div class="value" style="font-size:12px;color:var(--muted)">✏️ ${b.lastEditedDate}</div></div>`:''}
+    ${(()=>{try{const log=b.editLog||[];if(!log.length)return '';let h='<div style="font-weight:700;font-size:13px;margin:12px 0 6px">📋 ประวัติการแก้ไข</div><div style="max-height:150px;overflow-y:auto">';log.slice().reverse().forEach((e,i)=>{h+=`<div style="padding:6px 10px;margin-bottom:4px;background:${i===0?'#fef3c7':'#f8fafc'};border:1px solid ${i===0?'#fbbf24':'var(--border)'};border-radius:6px;font-size:11px"><div style="font-weight:600;color:var(--muted)">${e.time}</div>${e.changes.map(c=>'<div>• '+c+'</div>').join('')}</div>`;});h+='</div>';return h;}catch(e){return '';}})()}`;
   document.getElementById('receipt-body').innerHTML=html;
   document.getElementById('receipt-card').querySelector('.receipt-header h2').textContent='JIARAKSA';
   document.getElementById('receipt-card').querySelector('.receipt-header p').textContent='ใบยืนยันจองผู้เรียน — บริษัท โรจน์รุ่ง ธุรกิจ จำกัด';
@@ -3927,6 +3998,8 @@ function onChangeRentalStatus(id, newStatus){
   } else {
     r.status=newStatus;
   }
+  const nowSt2=new Date();
+  r.lastEditedDate=fmtDate(nowSt2)+' '+String(nowSt2.getHours()).padStart(2,'0')+':'+String(nowSt2.getMinutes()).padStart(2,'0');
   gsUpdateRental(r);
   showToast(`${r.id}: ${oldStatus} → ${newStatus}`);
   renderRentals();renderDashboard();renderProducts();
@@ -4030,10 +4103,10 @@ function saveEditRental(){
   }
 
   closeModal('edit-rental-modal');
-  // คืน disabled state ของ er-end
   document.getElementById('er-end').disabled=false;
   document.getElementById('er-end').style.opacity='1';
-
+  const nowEdit=new Date();
+  r.lastEditedDate=fmtDate(nowEdit)+' '+String(nowEdit.getHours()).padStart(2,'0')+':'+String(nowEdit.getMinutes()).padStart(2,'0');
   gsUpdateRental(r);
   const wasVIPSwitch=isVIPMode&&oldStatus!=='ยืมด่วน';
   showToast(`แก้ไข ${r.id} สำเร็จ!${wasVIPSwitch?' (เปลี่ยนเป็น VIP)':r.status!==oldStatus?' ('+oldStatus+' → '+r.status+')':''}`);
