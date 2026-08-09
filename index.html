@@ -564,7 +564,7 @@ QR Code สินค้า
 <div class="modal-header" style="flex-shrink:0"><h3>สร้างจองผู้เรียน</h3><button class="modal-close" onclick="closeModal('student-modal')">&times;</button></div>
 <div class="modal-body" style="padding:20px;overflow-y:auto;flex:1">
 <div class="form-row">
-<div class="form-group"><label>คอร์ส <span style="color:var(--danger)">*</span></label><select id="sm-course" onchange="updateSmTimeSlot()"><option value="">-- เลือก --</option><option>Full Course</option><option>Mini Course</option><option>Join Course</option><option>Private Course</option><option>ALS Blue Code</option><option>BLS Healthcare</option><option>อื่นๆ</option></select></div>
+<div class="form-group"><label>คอร์ส <span style="color:var(--danger)">*</span></label><select id="sm-course" onchange="updateSmTimeSlot();checkDateAvailability()"><option value="">-- เลือก --</option><option>Full Course</option><option>Mini Course</option><option>Join Course</option><option>Private Course</option><option>ALS Blue Code</option><option>BLS Healthcare</option><option>อื่นๆ</option></select></div>
 <div class="form-group"><label>เซลล์</label><select id="sm-sales"><option value="">-- เลือก --</option></select></div>
 </div>
 <div class="form-row">
@@ -1759,7 +1759,7 @@ function renderDashboard(){
 
   // === KPI จองผู้เรียน ===
   const now=new Date();const thisM=now.getMonth();const thisY=now.getFullYear();
-  const stuThisMonth=studentBookings.filter(b=>b.status!=='ยกเลิก'&&b.date&&new Date(b.date).getMonth()===thisM&&new Date(b.date).getFullYear()===thisY);
+  const stuThisMonth=studentBookings.filter(b=>b.status==='จอง'&&b.date&&new Date(b.date).getMonth()===thisM&&new Date(b.date).getFullYear()===thisY);
   const stuTotal=stuThisMonth.reduce((s,b)=>s+(b.qty||1),0);
   const stuRev=stuThisMonth.reduce((s,b)=>s+Math.max(((b.customPrice||COURSE_PRICES[b.course]||0)*(b.qty||1))+(b.travelCost||0)-(b.priceCode||0),0),0);
   const stuPaid=stuThisMonth.filter(b=>b.payment==='โอนแล้ว'||b.payment==='คูปอง');
@@ -1784,12 +1784,12 @@ function renderDashboard(){
     let hasSlots=false;
     let dayHtml=`<div style="font-weight:700;font-size:13px;margin-bottom:6px;margin-top:10px">${day.label}</div>`;
     slots.forEach(slot=>{
-      const booked=studentBookings.filter(b=>b.status!=='ยกเลิก'&&b.date===day.date&&b.timeslot===slot&&['Mini Course','Join Course','Private Course'].includes(b.course)).reduce((s,b)=>s+(b.qty||1),0);
+      const booked=studentBookings.filter(b=>b.status==='จอง'&&b.date===day.date&&b.timeslot===slot&&['Mini Course','Join Course','Private Course'].includes(b.course)).reduce((s,b)=>s+(b.qty||1),0);
       if(booked>0){
         hasSlots=true;
         const pct=Math.min(booked/7*100,100);
         const color=booked>=7?'#dc2626':booked>=5?'#f59e0b':'#059669';
-        const names=studentBookings.filter(b=>b.status!=='ยกเลิก'&&b.date===day.date&&b.timeslot===slot).map(b=>b.name).join(', ');
+        const names=studentBookings.filter(b=>b.status==='จอง'&&b.date===day.date&&b.timeslot===slot).map(b=>b.name).join(', ');
         dayHtml+=`<div style="padding:8px 12px;margin-bottom:4px;border-radius:8px;background:#f8fafc;border:1px solid var(--border)">
           <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="font-weight:600">${slot}</span><span style="font-weight:700;color:${color}">${booked}/7 คน${booked>=7?' 🔴 เต็ม':''}</span></div>
           <div style="height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${color};border-radius:3px"></div></div>
@@ -2885,6 +2885,12 @@ function confirmBatchStatus(){
 // ========== CLOSED DATES + DATE VALIDATION ==========
 let closedDates=JSON.parse(localStorage.getItem('jia_closed_dates')||'[]');
 
+function normDate(d){
+  if(!d)return '';
+  if(typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d))return d;
+  try{const dt=new Date(d);if(isNaN(dt))return '';return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');}catch(e){return '';}
+}
+
 function openClosedDatesModal(){
   document.getElementById('cd-date').value='';
   document.getElementById('cd-reason').value='';
@@ -2896,7 +2902,7 @@ function addClosedDate(){
   const date=document.getElementById('cd-date').value;
   const reason=document.getElementById('cd-reason').value.trim();
   if(!date){showToast('กรุณาเลือกวันที่','error');return;}
-  if(closedDates.find(d=>d.date===date)){showToast('วันนี้ปิดอยู่แล้ว','error');return;}
+  if(closedDates.find(d=>normDate(d.date)===normDate(date))){showToast('วันนี้ปิดอยู่แล้ว','error');return;}
   closedDates.push({date,reason:reason||'ปิดรับจอง'});
   closedDates.sort((a,b)=>a.date.localeCompare(b.date));
   localStorage.setItem('jia_closed_dates',JSON.stringify(closedDates));
@@ -2933,7 +2939,7 @@ function checkDateAvailability(){
   const statusEl=document.getElementById('sm-date-status');
   if(!date){statusEl.style.display='none';return;}
   // 1. เช็ควันปิดแบบ manual
-  const closed=closedDates.find(d=>d.date===date);
+  const closed=closedDates.find(d=>normDate(d.date)===normDate(date));
   if(closed){
     statusEl.style.display='';
     statusEl.style.background='#fef2f2';statusEl.style.border='1px solid #fca5a5';statusEl.style.color='#dc2626';
@@ -2941,8 +2947,15 @@ function checkDateAvailability(){
     return;
   }
   // 2. เช็ค ALS Blue Code ล็อค
-  const alsOnDate=studentBookings.find(b=>b.status!=='ยกเลิก'&&b.date===date&&b.course==='ALS Blue Code'&&b.id!==editingStudentId);
-  const otherOnDate=studentBookings.find(b=>b.status!=='ยกเลิก'&&b.date===date&&b.course!=='ALS Blue Code'&&b.id!==editingStudentId);
+  const alsOnDate=studentBookings.find(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.course==='ALS Blue Code'&&b.id!==editingStudentId);
+  const otherOnDate=studentBookings.find(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.course!=='ALS Blue Code'&&b.id!==editingStudentId);
+  // ถ้ายังไม่เลือกคอร์ส แต่วันนี้มี ALS → แจ้งเลย
+  if(!course&&alsOnDate){
+    statusEl.style.display='';
+    statusEl.style.background='#fef3c7';statusEl.style.border='1px solid #fbbf24';statusEl.style.color='#92400e';
+    statusEl.innerHTML=`⚠️ <b>วันนี้มี ALS Blue Code จองอยู่</b> — จองได้เฉพาะ ALS Blue Code เท่านั้น`;
+    return;
+  }
   if(course==='ALS Blue Code'&&otherOnDate){
     statusEl.style.display='';
     statusEl.style.background='#fef3c7';statusEl.style.border='1px solid #fbbf24';statusEl.style.color='#92400e';
@@ -2960,7 +2973,7 @@ function checkDateAvailability(){
     return;
   }
   // 3. ปกติ
-  const bookingsOnDate=studentBookings.filter(b=>b.status!=='ยกเลิก'&&b.date===date&&b.id!==editingStudentId);
+  const bookingsOnDate=studentBookings.filter(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.id!==editingStudentId);
   if(bookingsOnDate.length){
     statusEl.style.display='';
     statusEl.style.background='#eff6ff';statusEl.style.border='1px solid #bfdbfe';statusEl.style.color='#1e40af';
@@ -3027,7 +3040,7 @@ function addStudentRow(){
     const currentCount=list.children.length;
     let booked=0;
     if(date&&slot){
-      booked=studentBookings.filter(b=>b.status!=='ยกเลิก'&&b.date===date&&b.timeslot===slot&&b.id!==editingStudentId&&['Mini Course','Join Course','Private Course'].includes(b.course)).reduce((s,b)=>s+(b.qty||1),0);
+      booked=studentBookings.filter(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.timeslot===slot&&b.id!==editingStudentId&&['Mini Course','Join Course','Private Course'].includes(b.course)).reduce((s,b)=>s+(b.qty||1),0);
     }
     if(currentCount+booked>=7){
       showToast(`รอบนี้เต็มแล้ว! (${booked} คนจองแล้ว + ${currentCount} คนในฟอร์ม = ${booked+currentCount}/7)`,'error');
@@ -3082,7 +3095,7 @@ function updateStudentCount(){
     const slot=document.getElementById('sm-timeslot').value;
     let booked=0;
     if(date&&slot){
-      booked=studentBookings.filter(b=>b.status!=='ยกเลิก'&&b.date===date&&b.timeslot===slot&&b.id!==editingStudentId&&['Mini Course','Join Course','Private Course'].includes(b.course)).reduce((s,b)=>s+(b.qty||1),0);
+      booked=studentBookings.filter(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.timeslot===slot&&b.id!==editingStudentId&&['Mini Course','Join Course','Private Course'].includes(b.course)).reduce((s,b)=>s+(b.qty||1),0);
     }
     const remain=7-booked-count;
     if(remain<=0){
@@ -3174,7 +3187,7 @@ function updateSmTimeSlot(){
     let opts='<option value="">-- เลือก --</option>';
     slots.forEach(slot=>{
       let booked=0;
-      if(hasLimit&&date){booked=studentBookings.filter(b=>b.status!=='ยกเลิก'&&b.date===date&&b.timeslot===slot&&b.id!==editingStudentId&&['Mini Course','Join Course','Private Course'].includes(b.course)).reduce((s,b)=>s+(b.qty||1),0);}
+      if(hasLimit&&date){booked=studentBookings.filter(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.timeslot===slot&&b.id!==editingStudentId&&['Mini Course','Join Course','Private Course'].includes(b.course)).reduce((s,b)=>s+(b.qty||1),0);}
       const remain=7-booked;const full=hasLimit&&date&&remain<=0;const notEnough=hasLimit&&date&&adding>remain&&remain>0;
       if(full){opts+=`<option value="${slot}" disabled style="color:#999">🔴 ${slot} (เต็ม ${booked}/7)</option>`;}
       else if(notEnough){opts+=`<option value="${slot}" style="color:#dc2626">⚠️ ${slot} (เหลือ ${remain} — ไม่พอ)</option>`;}
@@ -3222,10 +3235,10 @@ function saveStudentBooking(){
   if(!course){showToast('กรุณาเลือกคอร์ส','error');return;}
   if(!date){showToast('กรุณาเลือกวันที่เรียน','error');return;}
   // เช็ควันปิด + ALS ล็อค
-  const closedCheck=closedDates.find(d=>d.date===date);
+  const closedCheck=closedDates.find(d=>normDate(d.date)===normDate(date));
   if(closedCheck){showToast(`วันนี้ปิดรับจอง: ${closedCheck.reason}`,'error');return;}
-  const alsCheck=studentBookings.find(b=>b.status!=='ยกเลิก'&&b.date===date&&b.course==='ALS Blue Code'&&b.id!==editingStudentId);
-  const otherCheck=studentBookings.find(b=>b.status!=='ยกเลิก'&&b.date===date&&b.course!=='ALS Blue Code'&&b.id!==editingStudentId);
+  const alsCheck=studentBookings.find(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.course==='ALS Blue Code'&&b.id!==editingStudentId);
+  const otherCheck=studentBookings.find(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.course!=='ALS Blue Code'&&b.id!==editingStudentId);
   if(course==='ALS Blue Code'&&otherCheck){showToast('วันนี้มีคอร์สอื่นจองอยู่ ไม่สามารถจอง ALS Blue Code ได้','error');return;}
   if(course!=='ALS Blue Code'&&alsCheck){showToast('วันนี้มี ALS Blue Code จองอยู่ ไม่สามารถจองคอร์สอื่นได้','error');return;}
   const location=document.getElementById('sm-location').value.trim();
@@ -3244,7 +3257,7 @@ function saveStudentBooking(){
   }
   const hasLimit=['Mini Course','Join Course','Private Course'].includes(course);
   if(hasLimit&&timeslot&&date){
-    const booked=studentBookings.filter(b=>b.status!=='ยกเลิก'&&b.date===date&&b.timeslot===timeslot&&['Mini Course','Join Course','Private Course'].includes(b.course)).reduce((s,b)=>s+(b.qty||1),0);
+    const booked=studentBookings.filter(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.timeslot===timeslot&&['Mini Course','Join Course','Private Course'].includes(b.course)).reduce((s,b)=>s+(b.qty||1),0);
     if(booked+qtyCount>7){showToast(`รอบ ${timeslot} เต็ม! เหลือ ${7-booked} คน`,'error');return;}
   }
   studentCounter++;localStorage.setItem('jia_student_counter',studentCounter);
@@ -3286,7 +3299,7 @@ function renderStudents(){
       <td style="white-space:nowrap">
         <button class="btn btn-sm btn-outline" onclick="editStudentBooking('${b.id}')" style="font-size:11px;margin:1px" title="แก้ไข">✏️</button>
         ${b.status==='จอง'?`<button class="btn btn-sm btn-outline" onclick="changeStudentStatus('${b.id}','เรียนแล้ว')" style="font-size:11px;margin:1px" title="เรียนแล้ว">✅</button>`:''}
-        ${b.status!=='ยกเลิก'?`<button class="btn btn-sm btn-outline" onclick="changeStudentStatus('${b.id}','ยกเลิก')" style="font-size:11px;margin:1px;color:var(--danger)" title="ยกเลิก">✕</button>`:''}
+        ${b.status==='จอง'?`<button class="btn btn-sm btn-outline" onclick="changeStudentStatus('${b.id}','ยกเลิก')" style="font-size:11px;margin:1px;color:var(--danger)" title="ยกเลิก">✕</button>`:''}
         <button class="btn btn-sm btn-outline" onclick="showStudentReceipt('${b.id}')" style="font-size:11px;margin:1px" title="ใบจอง">📄</button>
       </td></tr>`;
   });
@@ -3356,10 +3369,10 @@ function saveEditStudent(){
   const date=document.getElementById('sm-date').value;
   if(!course){showToast('กรุณาเลือกคอร์ส','error');return;}
   if(!date){showToast('กรุณาเลือกวันที่เรียน','error');return;}
-  const closedCheck2=closedDates.find(d=>d.date===date);
+  const closedCheck2=closedDates.find(d=>normDate(d.date)===normDate(date));
   if(closedCheck2){showToast(`วันนี้ปิดรับจอง: ${closedCheck2.reason}`,'error');return;}
-  const alsCheck2=studentBookings.find(b=>b.status!=='ยกเลิก'&&b.date===date&&b.course==='ALS Blue Code'&&b.id!==editingStudentId);
-  const otherCheck2=studentBookings.find(b=>b.status!=='ยกเลิก'&&b.date===date&&b.course!=='ALS Blue Code'&&b.id!==editingStudentId);
+  const alsCheck2=studentBookings.find(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.course==='ALS Blue Code'&&b.id!==editingStudentId);
+  const otherCheck2=studentBookings.find(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.course!=='ALS Blue Code'&&b.id!==editingStudentId);
   if(course==='ALS Blue Code'&&otherCheck2){showToast('วันนี้มีคอร์สอื่นจองอยู่','error');return;}
   if(course!=='ALS Blue Code'&&alsCheck2){showToast('วันนี้มี ALS Blue Code จองอยู่','error');return;}
   const isALS3=course==='ALS Blue Code'||course==='BLS Healthcare';
