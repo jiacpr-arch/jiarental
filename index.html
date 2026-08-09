@@ -1424,7 +1424,7 @@ function applyRoleVisibility(){
   const navItems = document.querySelectorAll('.nav-item');
   if(currentRole==='sales'){
     navItems.forEach((n,i)=>{
-      if(i===5||i===6||i===7) n.classList.add('hidden-by-role');
+      if(i===6||i===7) n.classList.add('hidden-by-role');
       else n.classList.remove('hidden-by-role');
     });
   } else {
@@ -2356,7 +2356,7 @@ function renderGantt(){
   const q=(document.getElementById('gantt-search').value||'').toLowerCase();const cat=document.getElementById('gantt-cat-filter').value;
   let prods=products.filter(p=>{if(cat&&p.cat!==cat)return false;if(q&&!p.id.toLowerCase().includes(q)&&!p.name.toLowerCase().includes(q))return false;return true;});
   const rentalMap={};
-  rentals.forEach(r=>{if(r.status==='ยกเลิก')return;const ids=r.productIds||[r.productId];const stClass=r.isVIP?'gb-vip':r.status==='กำลังเช่า'?'gb-rent':r.status==='จอง'?'gb-book':r.status==='คืนแล้ว'?'gb-return':r.status==='เกินกำหนด'?'gb-overdue':'';ids.forEach(pid=>{if(!rentalMap[pid])rentalMap[pid]=[];rentalMap[pid].push({start:r.start,end:r.returnDate||r.due,cls:stClass,customer:r.customer,id:r.id});});});
+  rentals.forEach(r=>{if(r.status==='ยกเลิก')return;if(currentRole==='sales'&&r.sales!==currentUser)return;const ids=r.productIds||[r.productId];const stClass=r.isVIP?'gb-vip':r.status==='กำลังเช่า'?'gb-rent':r.status==='จอง'?'gb-book':r.status==='คืนแล้ว'?'gb-return':r.status==='เกินกำหนด'?'gb-overdue':'';ids.forEach(pid=>{if(!rentalMap[pid])rentalMap[pid]=[];rentalMap[pid].push({start:r.start,end:r.returnDate||r.due,cls:stClass,customer:r.customer,id:r.id});});});
   // เพิ่มสถานะ ออกสอน/ออกบูธ เข้า Gantt
   products.forEach(p=>{if((p.status==='ออกสอน'||p.status==='ออกบูธ')&&p.statusDateFrom){if(!rentalMap[p.id])rentalMap[p.id]=[];const note=(p.statusNote||'').split('|')[0].trim();rentalMap[p.id].push({start:p.statusDateFrom,end:p.statusDateTo||p.statusDateFrom,cls:'gb-status',customer:p.status+' — '+note,id:''});}});
   let html='<table class="gantt-table"><thead>';
