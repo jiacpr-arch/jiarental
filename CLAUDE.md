@@ -11,10 +11,12 @@
 ## โครงสร้างไฟล์
 ```
 jiarental/
-├── index.html             # ไฟล์หลัก (single-page app)
-├── apps_script_v4.js      # Apps Script backend (paste in Google Apps Script)
-├── CLAUDE.md              # ไฟล์นี้
-└── README.md              # (optional)
+├── index.html                  # ไฟล์หลัก (single-page app, ต้อง login เซลล์/Ops)
+├── availability.html           # ปฏิทินว่างสาธารณะ ไม่ต้อง login ลูกค้าดูวันว่างได้เอง
+├── apps_script_v4.js           # Apps Script backend หลัก (paste in Google Apps Script)
+├── apps_script_additions.js    # ส่วนเพิ่ม: แจ้งเตือน LINE + API ปฏิทินสาธารณะ (วางเพิ่มใน Apps Script project เดิม — ดูคำแนะนำในไฟล์)
+├── CLAUDE.md                   # ไฟล์นี้
+└── README.md                   # (optional)
 ```
 
 ## Hosting & Deployment
@@ -122,9 +124,19 @@ jiarental/
 - **Export PDF** สรุปรายเดือน + แยกคน + รายละเอียดทุกรายการ
 
 ### แจ้งเตือน
+- 🆕 จองใหม่ รอ Ops ยืนยันส่ง — การ์ดแรกในหน้าแจ้งเตือน (เฉพาะ Ops), มี tag "ใหม่" ถ้าเพิ่งเข้ามาระหว่าง auto-refresh
 - ⏰ ใกล้ถึงกำหนดคืน (3 วัน) — สีตามความเร่งด่วน
 - เกินกำหนด — auto-detect
-- Badge ตัวเลขที่ sidebar
+- Badge ตัวเลขที่ sidebar (รวมจองใหม่ + ใกล้คืน + เกินกำหนด สำหรับ Ops)
+- ฝั่งเซลล์: การ์ด "สถานะการจองของฉัน" ใน Dashboard (เซลล์เข้าหน้าแจ้งเตือนไม่ได้) แสดงรายการที่รอ Ops ยืนยัน + ที่เพิ่งยืนยันส่งใน 7 วันล่าสุด
+- **Auto-refresh**: ดึงข้อมูลจาก Sheets ทุก 90 วินาที (เงียบ ไม่มี toast โหลด) + refresh ทันทีเมื่อสลับกลับมาที่แท็บ ข้ามการ refresh ถ้ามี modal เปิดอยู่หรือกำลังบันทึกข้อมูล
+- **LINE แจ้งเตือนกลุ่ม Ops**: ส่งข้อความเข้า LINE OA เมื่อมีจองใหม่ / ยืนยันส่งแล้ว / ยกเลิกจอง (ต้องตั้งค่าตาม `apps_script_additions.js` ก่อนถึงจะทำงาน — ถ้ายังไม่ตั้งค่า ระบบหลักยังใช้งานได้ปกติ แค่ไม่มีข้อความเข้า LINE)
+
+### ปฏิทินสาธารณะ (`availability.html`)
+- หน้าแยกต่างหาก ไม่ต้อง login ให้ลูกค้าดูวันว่างอุปกรณ์เองได้ก่อนติดต่อจอง
+- แสดงเฉพาะ ชนิดอุปกรณ์ + จำนวนว่าง/ทั้งหมด รายวัน — **ไม่มีชื่อลูกค้า ราคา หรือเลขที่จอง**
+- อัปเดตทุก 1 นาที, ข้อมูลมาจาก `getPublicAvailability` action ใน `apps_script_additions.js`
+- เป็นหน้า read-only ไม่มีปุ่มจองออนไลน์ — ลูกค้าต้องติดต่อเจ้าหน้าที่เพื่อจองจริง
 
 ### Data Isolation (เซลล์)
 - เห็นเฉพาะรายการ/ลูกค้า/ปฏิทิน/ยอดขาย ของตัวเอง
@@ -175,3 +187,6 @@ jiarental/
 - `autoSelectSmartProducts()` — smart select
 - `onSmartCatChange(row)` — handle toggle มอนิเตอร์
 - `exportCommissionPDF()` — Export PDF สรุปเงิน
+- `refreshFromSheets()` — auto-refresh เงียบทุก 90 วิ + แจ้งเตือนถ้ามีจองใหม่/สถานะเปลี่ยน (`index.html`)
+- `gsNotifyLine(event, r)` — ยิงแจ้งเตือน LINE กลุ่ม Ops แบบ fire-and-forget (`index.html`)
+- `notifyLine_(event, data)` / `getPublicAvailability_()` — ฝั่ง Apps Script (`apps_script_additions.js`)

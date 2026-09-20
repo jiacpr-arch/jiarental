@@ -406,6 +406,10 @@ QR Code สินค้า
 <div style="font-size:13px;color:var(--muted)" id="current-date"></div>
 </div>
 <div class="kpi-grid" id="kpi-area"></div>
+<div class="card" id="dash-mybookings" style="display:none;margin-top:0">
+<div class="card-header" style="background:linear-gradient(135deg,#ffedd5,#fff7ed)"><h3 style="color:#9a3412">📋 สถานะการจองของฉัน</h3></div>
+<div class="card-body alert-list" id="mybookings-list"></div>
+</div>
 <div class="charts-grid">
 <div class="card">
 <div class="card-header"><h3>สินค้าตาม Category</h3></div>
@@ -659,6 +663,10 @@ QR Code สินค้า
 <div id="page-alerts" class="page">
 <div class="page-header">
 <div><h2>แจ้งเตือน</h2><div class="subtitle">รายการที่ต้องดำเนินการ</div></div>
+</div>
+<div class="card">
+<div class="card-header" style="background:linear-gradient(135deg,#ffedd5,#fff7ed)"><h3 style="color:#9a3412">🆕 จองใหม่ รอยืนยันส่ง</h3></div>
+<div class="card-body alert-list" id="newbooking-alerts"></div>
 </div>
 <div class="card">
 <div class="card-header" style="background:linear-gradient(135deg,#fef3c7,#fffbeb)"><h3 style="color:#92400e">⏰ ใกล้ถึงกำหนดคืน (3 วัน)</h3></div>
@@ -1410,8 +1418,10 @@ function enterSystem(){
     : `<span class="role-badge ops-badge" onclick="switchRole()" title="คลิกเพื่อเปลี่ยนบทบาท">📦 หน้างาน: ${currentUser}</span>`;
   applyRoleVisibility();
   loadDataAndRender();
+  startAutoRefresh();
 }
 function switchRole(){
+  stopAutoRefresh();
   currentRole = '';currentUser = '';
   document.getElementById('role-overlay').classList.remove('hidden');
   document.getElementById('role-btn-sales').classList.remove('selected');
@@ -1442,9 +1452,18 @@ let rentalCounter = 0;
 let isLoading = true;
 const salesPeople = ['พี่มิ้ง','พี่ป่าน','พี่แก้มใส','พี่แนน'];
 
+// ========== AUTO-REFRESH / แจ้งเตือนจองใหม่ ==========
+let currentPage = 'dashboard';
+let newBookingIds = new Set();
+let pendingWrites = 0;
+let autoRefreshInterval = null;
+let lastAutoRefresh = 0;
+
 async function gsAPI(params) {
   const url = new URL(GAS_URL);
   Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, typeof v === 'object' ? JSON.stringify(v) : v));
+  const isWrite = params.action !== 'getAll';
+  if (isWrite) pendingWrites++;
   try {
     const res = await fetch(url.toString());
     return await res.json();
@@ -1452,15 +1471,17 @@ async function gsAPI(params) {
     console.error('API Error:', e);
     showToast('เชื่อมต่อ Google Sheets ไม่ได้ — ลองใหม่อีกครั้ง', 'error');
     return null;
+  } finally {
+    if (isWrite) pendingWrites--;
   }
 }
 
-async function loadFromSheets() {
+async function loadFromSheets(silent) {
   isLoading = true;
-  showToast('กำลังโหลดข้อมูลจาก Google Sheets...', 'info');
+  if(!silent) showToast('กำลังโหลดข้อมูลจาก Google Sheets...', 'info');
   const data = await gsAPI({action: 'getAll'});
   if (!data || data.error) {
-    showToast('โหลดข้อมูลไม่สำเร็จ: ' + (data?.error || 'ไม่ทราบสาเหตุ'), 'error');
+    if(!silent) showToast('โหลดข้อมูลไม่สำเร็จ: ' + (data?.error || 'ไม่ทราบสาเหตุ'), 'error');
     isLoading = false;
     return;
   }
@@ -1553,7 +1574,61 @@ async function loadFromSheets() {
     localStorage.setItem('jia_closed_dates',JSON.stringify(closedDates));
   }
   isLoading = false;
-  showToast('โหลดข้อมูลสำเร็จ! (สินค้า ' + products.length + ' | ลูกค้า ' + customers.length + ' | เช่า ' + rentals.length + ' | ผู้เรียน ' + studentBookings.length + ')', 'success');
+  if(!silent) showToast('โหลดข้อมูลสำเร็จ! (สินค้า ' + products.length + ' | ลูกค้า ' + customers.length + ' | เช่า ' + rentals.length + ' | ผู้เรียน ' + studentBookings.length + ')', 'success');
+}
+
+// re-render เฉพาะหน้าที่กำลังเปิดอยู่ (ใช้กับ auto-refresh ไม่ต้องรีเซ็ต active/sidebar)
+function renderCurrentPage(){
+  if(currentPage==='dashboard')renderDashboard();
+  else if(currentPage==='products')renderProducts();
+  else if(currentPage==='rentals')renderRentals();
+  else if(currentPage==='customers')renderCustomers();
+  else if(currentPage==='calendar')renderCalendar();
+  else if(currentPage==='students')renderStudents();
+  else if(currentPage==='alerts')renderAlerts();
+  else if(currentPage==='commission')renderCommission();
+  else if(currentPage==='instructor-commission')renderInstrComm();
+  else if(currentPage==='qrcode')renderQRPage();
+}
+
+// โหลดข้อมูลใหม่จาก Sheets แบบเงียบ ๆ + แจ้งเตือนถ้ามีจองใหม่/มีการเปลี่ยนสถานะ
+async function refreshFromSheets(){
+  if(!currentRole) return;
+  if(document.hidden||isLoading||pendingWrites>0) return;
+  if(document.querySelector('.modal.show')) return;
+  lastAutoRefresh=Date.now();
+  const prevStatus={};
+  rentals.forEach(r=>{prevStatus[r.id]=r.status;});
+  await loadFromSheets(true);
+  checkOverdue();
+  let newCount=0;
+  rentals.forEach(r=>{
+    if(r.status==='จอง'&&!(r.id in prevStatus)){
+      newCount++;
+      newBookingIds.add(r.id);
+    }
+    if(currentRole==='sales'&&r.sales===currentUser&&prevStatus[r.id]==='จอง'&&r.status!=='จอง'){
+      if(r.status==='กำลังเช่า') showToast(`✅ Ops ยืนยันส่ง ${r.id} แล้ว`,'success');
+      else if(r.status==='ยกเลิก') showToast(`❌ การจอง ${r.id} ถูกยกเลิก`,'error');
+    }
+  });
+  if(currentRole==='ops'&&newCount>0) showToast(`🆕 มีจองใหม่ ${newCount} รายการ รอยืนยันส่ง`,'info');
+  renderCurrentPage();
+  updateAlertBadge();
+}
+
+function handleVisibilityRefresh(){
+  if(!document.hidden && Date.now()-lastAutoRefresh>60000) refreshFromSheets();
+}
+function startAutoRefresh(){
+  stopAutoRefresh();
+  lastAutoRefresh=Date.now();
+  autoRefreshInterval=setInterval(refreshFromSheets,90000);
+  document.addEventListener('visibilitychange',handleVisibilityRefresh);
+}
+function stopAutoRefresh(){
+  if(autoRefreshInterval){clearInterval(autoRefreshInterval);autoRefreshInterval=null;}
+  document.removeEventListener('visibilitychange',handleVisibilityRefresh);
 }
 
 function dateToSheets(d){if(!d)return '';if(!(d instanceof Date))return d;return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;}
@@ -1570,6 +1645,20 @@ async function gsSaveRental(rentalData) {
   d.productNames = Array.isArray(d.productNames) ? d.productNames.join(',') : d.productNames;
   const res = await gsAPI({action: 'saveRental', data: d});
   if (!res || res.error) showToast('บันทึกลง Sheets ไม่สำเร็จ', 'error');
+  return res;
+}
+// แจ้งเตือน LINE กลุ่ม Ops — ไม่ block งานหลัก ไม่โชว์ toast ถ้า error (backend ยังไม่ตั้งค่า LINE ก็ไม่เป็นไร)
+function gsNotifyLine(event, r){
+  try{
+    const payload={
+      id:r.id,customer:r.customer,sales:r.sales||'—',
+      productNames:Array.isArray(r.productNames)?r.productNames.join(', '):(r.productNames||''),
+      start:dateToSheets(r.start),due:r.noDueDate?'ไม่กำหนด':dateToSheets(r.due),
+      deliverDate:dateToSheets(r.deliverDate),returnBy:dateToSheets(r.returnBy),
+      note:r.note||'',rentalMode:r.rentalMode||''
+    };
+    gsAPI({action:'notifyLine',event,data:payload}).catch(e=>console.error('LINE notify error:',e));
+  }catch(e){console.error('LINE notify error:',e);}
 }
 async function gsUpdateRental(rentalData) {
   const d = {...rentalData};
@@ -1645,6 +1734,7 @@ function showPage(page){
   if(currentRole==='sales'&&page==='alerts'){page='dashboard';}
   if(currentRole==='sales'&&page==='commission'){page='dashboard';}
   if(currentRole==='sales'&&page==='qrcode'){page='dashboard';}
+  currentPage=page;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
@@ -1686,13 +1776,15 @@ function renderDashboard(){
       <div class="kpi-card orange"><div class="kpi-label">รายการของฉัน (Active)</div><div class="kpi-value">${myActive}</div><div style="font-size:12px;color:var(--muted)">จาก ${myRentals.length} ทั้งหมด</div></div>
       <div class="kpi-card cyan"><div class="kpi-label">ยอดขายของฉัน</div><div class="kpi-value" style="font-size:26px">฿${fmt(myRev)}</div><div style="font-size:12px;color:var(--muted)">${currentUser}</div></div>
     `;
+    renderMyBookingsCard();
   } else {
+    document.getElementById('dash-mybookings').style.display='none';
     const waitSend=rentals.filter(r=>r.status==='จอง').length;
     const active=rentals.filter(r=>r.status==='กำลังเช่า').length;
     document.getElementById('kpi-area').innerHTML=`
       <div class="kpi-card blue"><div class="kpi-label">สินค้าทั้งหมด</div><div class="kpi-value">${products.length}</div><div style="font-size:12px;color:var(--muted)">${[...new Set(products.map(p=>p.cat))].length} Categories</div></div>
       <div class="kpi-card green"><div class="kpi-label">ว่าง (พร้อมเช่า)</div><div class="kpi-value">${avail}</div><div style="font-size:12px;color:var(--muted)">${(avail/products.length*100).toFixed(1)}%</div></div>
-      <div class="kpi-card orange"><div class="kpi-label">รอจัดส่ง (จอง)</div><div class="kpi-value">${waitSend}</div><div style="font-size:12px;color:var(--muted)">รายการ</div></div>
+      <div class="kpi-card orange" style="cursor:pointer" onclick="showPage('alerts')" title="ดูรายการจองใหม่"><div class="kpi-label">รอจัดส่ง (จอง)</div><div class="kpi-value">${waitSend}</div><div style="font-size:12px;color:var(--muted)">รายการ</div></div>
       <div class="kpi-card red"><div class="kpi-label">เกินกำหนดคืน</div><div class="kpi-value">${overdue}</div><div style="font-size:12px;color:var(--muted)">รายการ</div></div>
       <div class="kpi-card cyan"><div class="kpi-label">กำลังเช่าอยู่</div><div class="kpi-value">${active}</div><div style="font-size:12px;color:var(--muted)">รายการ</div></div>
       ${vipCount?`<div class="kpi-card purple"><div class="kpi-label">ยืมด่วน/VIP</div><div class="kpi-value">${vipCount}</div><div style="font-size:12px;color:var(--muted)">รายการ</div></div>`:''}
@@ -1800,6 +1892,36 @@ function renderDashboard(){
     if(hasSlots)slotHtml+=dayHtml;
   });
   document.getElementById('slot-status').innerHTML=slotHtml||'<div style="text-align:center;padding:20px;color:var(--muted)">ไม่มีรอบเรียนวันนี้/พรุ่งนี้</div>';
+}
+
+// สถานะการจองของฉัน (เซลล์) — รอ Ops ยืนยันส่ง + ที่เพิ่งยืนยันส่งแล้ว
+function renderMyBookingsCard(){
+  const card=document.getElementById('dash-mybookings');
+  const list=document.getElementById('mybookings-list');
+  const myRentals=rentals.filter(r=>r.sales===currentUser);
+  const waiting=myRentals.filter(r=>r.status==='จอง').sort((a,b)=>(a.deliverDate||a.start)-(b.deliverDate||b.start));
+  const weekAgo=new Date();weekAgo.setDate(weekAgo.getDate()-7);
+  const justConfirmed=myRentals.filter(r=>r.status==='กำลังเช่า'&&r.confirmedDate&&new Date(r.confirmedDate)>=weekAgo).sort((a,b)=>new Date(b.confirmedDate)-new Date(a.confirmedDate));
+  if(!waiting.length&&!justConfirmed.length){card.style.display='none';return;}
+  card.style.display='';
+  let html='';
+  waiting.forEach(r=>{
+    const prodNames=Array.isArray(r.productNames)?r.productNames.join(', '):'';
+    html+=`<div class="alert-item" style="background:#fff7ed;border-left-color:#9a3412">
+      <div class="alert-icon" style="font-size:20px;color:#9a3412">&#8987;</div>
+      <div class="alert-text"><strong>${r.id} — ${prodNames}</strong>ผู้เช่า: ${r.customer} | รอ Ops ยืนยันส่ง${r.deliverDate?' | 🚚 วันส่งของ: '+fmtDate(r.deliverDate):''}</div>
+      <button class="btn btn-sm btn-outline" onclick="showReceipt('${r.id}')">ใบจอง</button>
+    </div>`;
+  });
+  justConfirmed.forEach(r=>{
+    const prodNames=Array.isArray(r.productNames)?r.productNames.join(', '):'';
+    html+=`<div class="alert-item" style="background:#f0fdf4;border-left-color:var(--success)">
+      <div class="alert-icon" style="font-size:20px;color:var(--success)">&#9989;</div>
+      <div class="alert-text"><strong>${r.id} — ${prodNames}</strong>ผู้เช่า: ${r.customer} | Ops ยืนยันส่งแล้ว (${fmtDate(r.confirmedDate)})</div>
+      <button class="btn btn-sm btn-outline" onclick="showReceipt('${r.id}')">ใบจอง</button>
+    </div>`;
+  });
+  list.innerHTML=html;
 }
 
 // ========== PRODUCTS ==========
@@ -2172,6 +2294,35 @@ function renderAlerts(){
   const today=new Date();today.setHours(0,0,0,0);
   const in3Days=new Date(today);in3Days.setDate(in3Days.getDate()+3);
 
+  // จองใหม่ รอ Ops ยืนยันส่ง
+  const pendingBookings=rentals.filter(r=>r.status==='จอง').sort((a,b)=>(a.deliverDate||a.start)-(b.deliverDate||b.start));
+  document.getElementById('newbooking-alerts').innerHTML=pendingBookings.length?pendingBookings.map(r=>{
+    const deliverD=r.deliverDate?new Date(r.deliverDate):null;
+    let urgencyColor='#9a3412',urgencyText='';
+    if(deliverD){
+      deliverD.setHours(0,0,0,0);
+      const daysLeft=Math.round((deliverD-today)/86400000);
+      urgencyColor=daysLeft<=0?'var(--danger)':daysLeft===1?'#ea580c':'#9a3412';
+      urgencyText=daysLeft<0?'เลยกำหนดส่ง!':daysLeft===0?'ส่งวันนี้!':daysLeft===1?'ส่งพรุ่งนี้':`ส่งอีก ${daysLeft} วัน`;
+    }
+    const prodNames=Array.isArray(r.productNames)?r.productNames.join(', '):'';
+    const isNew=newBookingIds.has(r.id);
+    return `<div class="alert-item" style="background:#fff7ed;border-left-color:${urgencyColor}">
+      <div class="alert-icon" style="font-size:22px;color:${urgencyColor}">&#128230;</div>
+      <div class="alert-text">
+        <strong>${isNew?'<span style="background:var(--danger);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;margin-right:6px">ใหม่</span>':''}${r.id} — ${prodNames}</strong>
+        ผู้เช่า: ${r.customer} | เซลล์: ${r.sales||'—'} | วันเช่า: ${fmtDate(r.start)} - ${r.noDueDate?'ไม่กำหนด':fmtDate(r.due)}${deliverD?' | 🚚 วันส่งของ: '+fmtDate(r.deliverDate):''}
+        ${urgencyText?'<span style="color:'+urgencyColor+';font-weight:700;margin-left:6px">'+urgencyText+'</span>':''}
+        ${r.note?'<div style="font-size:14px;color:#991b1b;margin-top:6px;font-weight:700;padding:4px 8px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;display:inline-block">⚠ '+r.note+'</div>':''}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <button class="btn btn-sm btn-primary" onclick="openConfirmBookingModal('${r.id}')">ยืนยัน</button>
+        <button class="btn btn-sm btn-outline" onclick="showReceipt('${r.id}')">ใบจอง</button>
+      </div>
+    </div>`;
+  }).join(''):'<div class="empty-state"><p>ไม่มีรายการจองใหม่</p></div>';
+  newBookingIds.clear();
+
   // ใกล้ถึงกำหนดคืน (ภายใน 3 วัน)
   const upcoming=rentals.filter(r=>{
     if(!['กำลังเช่า','ยืมด่วน'].includes(r.status)||!r.due||r.noDueDate) return false;
@@ -2228,8 +2379,21 @@ function renderAlerts(){
     </div>`;
   }).join(''):'<div class="empty-state"><p>ไม่มีรายการยืมไม่กำหนดคืน</p></div>';
 
-  // อัปเดต badge แจ้งเตือนที่ sidebar
-  const totalAlerts=upcoming.length+overdue.length;
+  updateAlertBadge();
+}
+
+// อัปเดต badge แจ้งเตือนที่ sidebar โดยไม่ต้อง render DOM ทั้งหน้าแจ้งเตือน (ใช้กับ auto-refresh)
+function updateAlertBadge(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const in3Days=new Date(today);in3Days.setDate(in3Days.getDate()+3);
+  const upcomingCount=rentals.filter(r=>{
+    if(!['กำลังเช่า','ยืมด่วน'].includes(r.status)||!r.due||r.noDueDate) return false;
+    const due=new Date(r.due);due.setHours(0,0,0,0);
+    return due>=today&&due<=in3Days;
+  }).length;
+  const overdueCount=rentals.filter(r=>r.status==='เกินกำหนด').length;
+  const pendingCount=currentRole==='ops'?rentals.filter(r=>r.status==='จอง').length:0;
+  const totalAlerts=upcomingCount+overdueCount+pendingCount;
   const badge=document.getElementById('alert-badge');
   if(badge){
     if(totalAlerts>0){badge.textContent=totalAlerts;badge.style.display='inline';}
@@ -3821,7 +3985,7 @@ function saveRental(){
   cust.rentCount++;cust.total+=total;
   closeModal('rental-modal');
   showToast(`บันทึกจอง ${cfg.label} ${selProds.length} รายการ สำเร็จ!`);
-  gsSaveRental(newRental);
+  gsSaveRental(newRental).then(res=>{if(res&&!res.error)gsNotifyLine('newBooking',newRental);});
   showReceipt(newRental.id);
   renderRentals();
 }
@@ -4599,6 +4763,7 @@ function doConfirmBooking(){
   closeConfirmBookingModal();
   showToast(`ยืนยันจอง ${r.id} → กำลังเช่า สำเร็จ! (สแกน ${newIds.length} ชิ้น)`);
   gsUpdateRental(r);
+  gsNotifyLine('confirmed',r);
   renderRentals();renderDashboard();renderProducts();
 }
 
@@ -4609,6 +4774,7 @@ function cancelBooking(id){
   r.status='ยกเลิก';
   showToast(`ยกเลิกการจอง ${r.id} สำเร็จ`);
   gsUpdateRental(r);ids.forEach(pid=>gsUpdateProductStatus(pid,'ว่าง'));
+  gsNotifyLine('cancelled',r);
   renderRentals();renderDashboard();renderProducts();
 }
 
@@ -5439,6 +5605,7 @@ async function loadDataAndRender(){
   const cats=[...new Set(products.map(p=>p.cat))].sort();
   document.getElementById('prod-cat-filter').innerHTML='<option value="">ทุก Category</option>'+cats.map(c=>`<option>${c}</option>`).join('');
   showPage('dashboard');
+  updateAlertBadge();
 }
 
 function checkOverdue(){

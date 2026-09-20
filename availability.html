@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ตรวจสอบวันว่างอุปกรณ์เช่า | JIARAKSA</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#2563eb;--primary-dark:#1d4ed8;--success:#059669;--warning:#d97706;--danger:#dc2626;--bg:#f0f4f8;--card:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--radius:12px;--shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06)}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;padding:16px}
+.wrap{max-width:760px;margin:0 auto}
+.header{background:linear-gradient(135deg,#1e3a5f,#0f2744);color:#fff;border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.header h1{font-size:20px;font-weight:700;letter-spacing:.5px}
+.header p{font-size:13px;opacity:.85;margin-top:4px}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
+.card h2{font-size:15px;margin-bottom:12px;color:var(--text)}
+.form-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
+.form-group{flex:1;min-width:140px}
+.form-group label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:600}
+.form-group input,.form-group select{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit}
+.btn{padding:10px 20px;border:none;border-radius:8px;background:var(--primary);color:#fff;font-size:14px;font-weight:700;cursor:pointer;width:100%}
+.btn:hover{background:var(--primary-dark)}
+.btn:disabled{background:#94a3b8;cursor:not-allowed}
+.result-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.result-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:8px;border-left:4px solid var(--border);background:#f8fafc}
+.result-item .name{font-weight:700;font-size:14px}
+.result-item .count{font-size:13px;font-weight:700}
+.result-item.ok{border-left-color:var(--success)}
+.result-item.low{border-left-color:var(--warning)}
+.result-item.none{border-left-color:var(--danger)}
+.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700;color:#fff}
+.badge.ok{background:var(--success)}
+.badge.low{background:var(--warning)}
+.badge.none{background:var(--danger)}
+.cal-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-toolbar .title{font-weight:700;font-size:15px}
+.cal-toolbar button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:14px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;font-size:11px}
+.cal-head{text-align:center;font-weight:700;color:var(--muted);padding:6px 2px;font-size:11px}
+.cal-cell{min-height:52px;border-radius:6px;border:1px solid var(--border);padding:4px 3px;text-align:center;cursor:pointer;background:#fff}
+.cal-cell:hover{outline:2px solid var(--primary)}
+.cal-cell.other{opacity:.35;cursor:default}
+.cal-cell.other:hover{outline:none}
+.cal-cell.today{border-color:var(--primary);border-width:2px}
+.cal-cell.selected{outline:2px solid var(--primary-dark)}
+.cal-cell .d{font-weight:700;color:var(--text)}
+.cal-cell .n{font-size:10px;margin-top:2px;font-weight:700}
+.cal-cell.ok .n{color:var(--success)}
+.cal-cell.low .n{color:var(--warning)}
+.cal-cell.none .n{color:var(--danger)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:4px}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.note{font-size:12px;color:var(--muted);line-height:1.7;margin-top:6px}
+.note strong{color:var(--text)}
+.empty{text-align:center;color:var(--muted);padding:20px;font-size:13px}
+.loading{text-align:center;color:var(--muted);padding:20px;font-size:13px}
+.contact{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.contact a{flex:1;min-width:140px;text-align:center;padding:10px;border-radius:8px;background:#eff6ff;color:var(--primary);text-decoration:none;font-weight:700;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>JIARAKSA — ตรวจสอบวันว่างอุปกรณ์เช่า</h1>
+    <p>บริษัท โรจน์รุ่ง ธุรกิจ จำกัด · อุปกรณ์ฝึกสอน CPR/AED</p>
+  </div>
+
+  <div class="card">
+    <h2>เช็ควันว่างตามช่วงวันที่ต้องการ</h2>
+    <div class="form-row">
+      <div class="form-group"><label>วันเช่า</label><input type="date" id="av-start"></div>
+      <div class="form-group"><label>กำหนดคืน</label><input type="date" id="av-end"></div>
+      <div class="form-group"><label>ชนิดอุปกรณ์</label><select id="av-cat"><option value="">ทุกชนิด</option></select></div>
+    </div>
+    <button class="btn" id="av-check-btn" onclick="checkAvailability()">เช็ควันว่าง</button>
+    <div class="result-list" id="av-results"></div>
+  </div>
+
+  <div class="card">
+    <div class="cal-toolbar">
+      <button onclick="calNav(-1)">◀</button>
+      <div class="title" id="av-cal-title">—</div>
+      <button onclick="calNav(1)">▶</button>
+    </div>
+    <div style="margin-bottom:10px">
+      <select id="av-cal-cat" onchange="renderCalendar()" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:13px"><option value="">ทุกชนิด (รวม)</option></select>
+    </div>
+    <div id="av-cal-body"><div class="loading">กำลังโหลดข้อมูล...</div></div>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--success)"></i>ว่างเยอะ</span>
+      <span><i class="dot" style="background:var(--warning)"></i>เหลือน้อย</span>
+      <span><i class="dot" style="background:var(--danger)"></i>เต็ม</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="note">
+      📌 <strong>ข้อมูลอัปเดตอัตโนมัติทุก ๆ 1 นาที</strong><br>
+      ตัวเลขนี้ยังไม่รวมวันเผื่อขนส่งไป-กลับ และยังไม่ใช่การจองจริง<br>
+      กรุณาติดต่อเจ้าหน้าที่เพื่อยืนยันวันที่และทำการจองอย่างเป็นทางการ
+    </div>
+    <div class="contact">
+      <a href="tel:0000000000" id="contact-phone">📞 โทร 000-000-0000</a>
+      <a href="https://line.me/R/ti/p/@yourlineoa" id="contact-line" target="_blank">💬 แชท LINE OA</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ⚠️ ผู้ดูแลระบบ: แก้ 3 ค่านี้ก่อนเผยแพร่หน้านี้จริง
+// 1) GAS_URL ต้องเป็น URL เดียวกับใน index.html (ต้อง deploy apps_script_additions.js ก่อน — ดูคำแนะนำในไฟล์นั้น)
+// 2) เบอร์โทรติดต่อ
+// 3) ลิงก์ LINE OA ของบริษัท
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbz-BdCSLYps-EY9cmrY2eBN6xZlTdEBDqeZSMZXKGbarfRhyNQUyeact_IOeqktJL2qTw/exec';
+document.getElementById('contact-phone').href = 'tel:0000000000';
+document.getElementById('contact-phone').textContent = '📞 โทร 000-000-0000';
+document.getElementById('contact-line').href = 'https://line.me/R/ti/p/@yourlineoa';
+
+const UNAVAILABLE_STATUSES = ['ซ่อม','ไม่พร้อมใช้งาน','ออกสอน','ออกบูธ','ทดแทน'];
+
+let avProducts = [];
+let avBusy = [];
+let avCategories = [];
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let calSelectedDate = null;
+const thaiMonths=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const thaiDays=['อา','จ','อ','พ','พฤ','ศ','ส'];
+
+function toIso(d){ // Date -> 'yyyy-mm-dd' (local)
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
+function todayIso(){ const d=new Date();d.setHours(0,0,0,0);return toIso(d); }
+function addDaysIso(iso,n){ const d=new Date(iso+'T00:00:00');d.setDate(d.getDate()+n);return toIso(d); }
+
+async function loadAvailability(){
+  try{
+    const url=new URL(GAS_URL);
+    url.searchParams.set('action','getPublicAvailability');
+    const res=await fetch(url.toString());
+    const data=await res.json();
+    if(!data||data.error) throw new Error(data&&data.error||'โหลดข้อมูลไม่สำเร็จ');
+    avProducts=data.products||[];
+    avBusy=data.busy||[];
+    avCategories=[...new Set(avProducts.map(p=>p.cat))].filter(Boolean).sort();
+    const catOpts=avCategories.map(c=>`<option value="${c}">${c}</option>`).join('');
+    document.getElementById('av-cat').innerHTML='<option value="">ทุกชนิด</option>'+catOpts;
+    document.getElementById('av-cal-cat').innerHTML='<option value="">ทุกชนิด (รวม)</option>'+catOpts;
+    const start=document.getElementById('av-start');
+    const end=document.getElementById('av-end');
+    if(!start.value) start.value=todayIso();
+    if(!end.value) end.value=addDaysIso(start.value,1);
+    renderCalendar();
+  }catch(e){
+    console.error(e);
+    document.getElementById('av-cal-body').innerHTML='<div class="empty">โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่ภายหลัง หรือติดต่อเจ้าหน้าที่</div>';
+  }
+}
+
+// สินค้าที่ "พอจะใช้เช่าได้" (ไม่นับ ซ่อม/ไม่พร้อม/ออกสอน/ออกบูธ/ทดแทน — สถานะเหล่านี้คือถาวร ไม่ใช่แค่วันนั้น)
+function usableProducts(cat){
+  return avProducts.filter(p=>(!cat||p.cat===cat)&&UNAVAILABLE_STATUSES.indexOf(p.status)===-1);
+}
+// เช็คว่าสินค้าชิ้นนี้ถูกจองคาบเกี่ยวกับช่วง [fromIso,toIso] หรือไม่ (busy.to=null คือยืมไม่กำหนดคืน กันไปเรื่อย ๆ)
+function isProductBusyInRange(pid,fromIso,toIso_){
+  for(const b of avBusy){
+    if(b.productIds.indexOf(pid)===-1) continue;
+    const bTo=b.to||'9999-12-31';
+    if(fromIso<=bTo && toIso_>=b.from) return true;
+  }
+  return false;
+}
+function isProductBusyOnDate(pid,dateIso){
+  return isProductBusyInRange(pid,dateIso,dateIso);
+}
+
+function checkAvailability(){
+  const start=document.getElementById('av-start').value;
+  const end=document.getElementById('av-end').value;
+  const cat=document.getElementById('av-cat').value;
+  const box=document.getElementById('av-results');
+  if(!start||!end){box.innerHTML='<div class="empty">กรุณาเลือกวันเช่าและกำหนดคืน</div>';return;}
+  if(end<start){box.innerHTML='<div class="empty">กำหนดคืนต้องไม่ก่อนวันเช่า</div>';return;}
+  const cats=cat?[cat]:avCategories;
+  if(!cats.length){box.innerHTML='<div class="empty">ไม่มีข้อมูลสินค้า</div>';return;}
+  box.innerHTML=cats.map(c=>{
+    const prods=usableProducts(c);
+    const availCount=prods.filter(p=>!isProductBusyInRange(p.id,start,end)).length;
+    const total=prods.length;
+    const ratio=total?availCount/total:0;
+    const cls=availCount===0?'none':ratio<0.34?'low':'ok';
+    const badgeText=availCount===0?'เต็ม':`ว่าง ${availCount}/${total}`;
+    return `<div class="result-item ${cls}"><span class="name">${c}</span><span class="badge ${cls}">${badgeText}</span></div>`;
+  }).join('');
+}
+
+function calNav(dir){
+  calMonth+=dir;
+  if(calMonth<0){calMonth=11;calYear--;}
+  if(calMonth>11){calMonth=0;calYear++;}
+  renderCalendar();
+}
+
+function renderCalendar(){
+  if(!avProducts.length&&!avBusy.length&&avCategories.length===0){
+    // ยังไม่โหลดข้อมูลเสร็จ
+  }
+  document.getElementById('av-cal-title').textContent=`${thaiMonths[calMonth]} ${calYear+543}`;
+  const cat=document.getElementById('av-cal-cat').value;
+  const prods=usableProducts(cat);
+  const total=prods.length;
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const today=todayIso();
+  let html=thaiDays.map((d,i)=>`<div class="cal-head" style="${i===0?'color:#fca5a5':''}">${d}</div>`).join('');
+  for(let i=0;i<firstDay;i++) html+=`<div class="cal-cell other"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const iso=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const availCount=total?prods.filter(p=>!isProductBusyOnDate(p.id,iso)).length:0;
+    const ratio=total?availCount/total:0;
+    const cls=total===0?'none':availCount===0?'none':ratio<0.34?'low':'ok';
+    const isToday=iso===today;
+    const isSelected=iso===calSelectedDate;
+    html+=`<div class="cal-cell ${cls}${isToday?' today':''}${isSelected?' selected':''}" onclick="pickDate('${iso}')" title="${availCount}/${total} ว่าง">
+      <div class="d">${d}</div><div class="n">${total?availCount+'/'+total:'—'}</div>
+    </div>`;
+  }
+  document.getElementById('av-cal-body').innerHTML=`<div class="cal-grid">${html}</div>`;
+}
+
+function pickDate(iso){
+  calSelectedDate=iso;
+  document.getElementById('av-start').value=iso;
+  const end=document.getElementById('av-end').value;
+  if(!end||end<=iso) document.getElementById('av-end').value=addDaysIso(iso,1);
+  renderCalendar();
+  checkAvailability();
+  document.querySelector('.card').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+loadAvailability();
+setInterval(loadAvailability,60000);
+</script>
+</body>
+</html>
