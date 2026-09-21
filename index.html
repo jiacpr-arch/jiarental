@@ -412,6 +412,10 @@ td{padding:10px 12px;vertical-align:middle}
 /* ช่องกรอกที่กรอกไม่ครบ: กรอบแดง + ข้อความใต้ช่อง แทน toast อย่างเดียว */
 .field-error{border-color:var(--danger)!important;background:#fff5f5!important}
 .field-msg{color:var(--danger);font-size:13px;margin-top:4px;font-weight:600}
+/* ทางลัด Dashboard */
+.quick-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.quick-actions .btn{min-height:48px;font-size:15px}
+@media(max-width:768px){.quick-actions .btn{flex:1 1 45%}}
 </style>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
@@ -511,7 +515,12 @@ QR Code สินค้า
 <div><h2>Dashboard</h2><div class="subtitle">ภาพรวมระบบเช่า-ยืม บริษัท โรจน์รุ่ง ธุรกิจ จำกัด</div></div>
 <div style="font-size:13px;color:var(--muted)" id="current-date"></div>
 </div>
+<div class="quick-actions" id="quick-actions"></div>
 <div class="kpi-grid" id="kpi-area"></div>
+<div class="card" id="dash-pending" style="display:none;margin-top:0">
+<div class="card-header" style="background:linear-gradient(135deg,#dbeafe,#eff6ff)"><h3 style="color:#1e40af">🚚 รอยืนยันส่ง</h3><button class="btn btn-sm btn-outline" onclick="showPage('alerts')">ดูทั้งหมด</button></div>
+<div class="card-body alert-list" id="dash-pending-list"></div>
+</div>
 <div class="card" id="dash-mybookings" style="display:none;margin-top:0">
 <div class="card-header" style="background:linear-gradient(135deg,#ffedd5,#fff7ed)"><h3 style="color:#9a3412">📋 สถานะการจองของฉัน</h3></div>
 <div class="card-body alert-list" id="mybookings-list"></div>
@@ -1991,6 +2000,20 @@ function renderDashboard(){
 
   document.getElementById('current-date').textContent=new Date().toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
+  // ทางลัด: สร้างจองได้จาก Dashboard เลย ไม่ต้องไปหน้าเช่า-ยืมก่อน
+  document.getElementById('quick-actions').innerHTML=
+    '<button class="btn btn-primary" onclick="openRentalModal()">+ สร้างจอง</button>'
+    +(currentRole==='ops'?'<button class="btn btn-vip" onclick="openVIPModal()">⚡ ยืมด่วน/VIP</button>':'')
+    +'<button class="btn btn-outline" onclick="showPage(\'calendar\')">📅 ปฏิทิน</button>';
+
+  if(currentRole==='ops'){
+    const pendingCount=rentals.filter(r=>r.status==='จอง').length;
+    document.getElementById('dash-pending').style.display=pendingCount?'':'none';
+    if(pendingCount) renderPendingBookingList('dash-pending-list',5);
+  } else {
+    document.getElementById('dash-pending').style.display='none';
+  }
+
   if(currentRole==='sales'){
     const myRentals=rentals.filter(r=>r.sales===currentUser);
     const myRev=myRentals.reduce((s,r)=>s+r.total,0);
@@ -2592,14 +2615,14 @@ function openCustomerDetail(custId){
 }
 
 // ========== ALERTS ==========
-function renderAlerts(){
-  checkOverdue();
+// จองใหม่ รอ Ops ยืนยันส่ง — ใช้ร่วมกันทั้งหน้าแจ้งเตือน (เต็ม) และการ์ดบน Dashboard (limit)
+function renderPendingBookingList(containerId,limit){
   const today=new Date();today.setHours(0,0,0,0);
-  const in3Days=new Date(today);in3Days.setDate(in3Days.getDate()+3);
-
-  // จองใหม่ รอ Ops ยืนยันส่ง
-  const pendingBookings=rentals.filter(r=>r.status==='จอง').sort((a,b)=>(a.deliverDate||a.start)-(b.deliverDate||b.start));
-  document.getElementById('newbooking-alerts').innerHTML=pendingBookings.length?pendingBookings.map(r=>{
+  let pendingBookings=rentals.filter(r=>r.status==='จอง').sort((a,b)=>(a.deliverDate||a.start)-(b.deliverDate||b.start));
+  if(limit) pendingBookings=pendingBookings.slice(0,limit);
+  const el=document.getElementById(containerId);
+  if(!el)return;
+  el.innerHTML=pendingBookings.length?pendingBookings.map(r=>{
     const deliverD=r.deliverDate?new Date(r.deliverDate):null;
     let urgencyColor='#9a3412',urgencyText='';
     if(deliverD){
@@ -2619,11 +2642,18 @@ function renderAlerts(){
         ${r.note?'<div style="font-size:14px;color:#991b1b;margin-top:6px;font-weight:700;padding:4px 8px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;display:inline-block">⚠ '+r.note+'</div>':''}
       </div>
       <div style="display:flex;flex-direction:column;gap:4px">
-        <button class="btn btn-sm btn-primary" onclick="openConfirmBookingModal('${r.id}')">ยืนยัน</button>
+        <button class="btn btn-sm btn-primary" onclick="openConfirmBookingModal('${r.id}')">✅ ยืนยันส่ง</button>
         <button class="btn btn-sm btn-outline" onclick="showReceipt('${r.id}')">ใบจอง</button>
       </div>
     </div>`;
   }).join(''):'<div class="empty-state"><p>ไม่มีรายการจองใหม่</p></div>';
+}
+function renderAlerts(){
+  checkOverdue();
+  const today=new Date();today.setHours(0,0,0,0);
+  const in3Days=new Date(today);in3Days.setDate(in3Days.getDate()+3);
+
+  renderPendingBookingList('newbooking-alerts');
   newBookingIds.clear();
 
   // ใกล้ถึงกำหนดคืน (ภายใน 3 วัน)
