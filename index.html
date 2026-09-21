@@ -364,6 +364,17 @@ td{padding:10px 12px;vertical-align:middle}
 .loading-overlay.show{display:flex}
 .loading-overlay .spinner{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+/* เมนูแถบล่างบนมือถือ: แสดงเฉพาะจอเล็ก แทนที่ hamburger ลอย */
+.bottom-nav{display:none}
+@media(max-width:768px){
+.bottom-nav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;height:calc(58px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:#fff;border-top:1px solid var(--border);z-index:150;box-shadow:0 -2px 10px rgba(0,0,0,.06)}
+.bottom-nav-item{position:relative;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;font-weight:600;color:var(--muted);min-height:56px;padding:6px 2px}
+.bottom-nav-item svg{width:20px;height:20px;flex-shrink:0}
+.bottom-nav-item.active{color:var(--primary)}
+.bottom-nav-badge{position:absolute;top:2px;right:calc(50% - 20px);background:var(--danger);color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px}
+.hamburger{display:none!important}
+.main{padding-bottom:calc(74px + env(safe-area-inset-bottom))!important}
+}
 </style>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
@@ -401,58 +412,60 @@ td{padding:10px 12px;vertical-align:middle}
 </div>
 <div class="nav-section">
 <div class="nav-label">เมนูหลัก</div>
-<div class="nav-item active" onclick="showPage('dashboard')">
+<div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
 Dashboard
 </div>
-<div class="nav-item" onclick="showPage('products')">
+<div class="nav-item" data-page="products" onclick="showPage('products')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
 สินค้าทั้งหมด
 </div>
-<div class="nav-item" onclick="showPage('rentals')">
+<div class="nav-item" data-page="rentals" onclick="showPage('rentals')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
 บันทึกเช่า-ยืม
 </div>
-<div class="nav-item" onclick="showPage('students')">
+<div class="nav-item" data-page="students" onclick="showPage('students')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
 จองผู้เรียน
 </div>
-<div class="nav-item" onclick="showPage('customers')">
+<div class="nav-item" data-page="customers" onclick="showPage('customers')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
 ลูกค้า
 </div>
-<div class="nav-item" onclick="showPage('calendar')">
+<div class="nav-item" data-page="calendar" onclick="showPage('calendar')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
 ปฏิทิน
 </div>
 </div>
 <div class="nav-section">
 <div class="nav-label">รายงาน</div>
-<div class="nav-item" onclick="showPage('alerts')">
+<div class="nav-item" data-page="alerts" data-roles="ops" onclick="showPage('alerts')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
 แจ้งเตือน <span id="alert-badge" style="display:none;background:var(--danger);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:4px"></span>
 </div>
-<div class="nav-item" onclick="showPage('commission')">
+<div class="nav-item" data-page="commission" data-roles="ops" onclick="showPage('commission')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
 สรุปเงินรายเดือน
 </div>
-<div class="nav-item" onclick="showPage('instructor-commission')">
+<div class="nav-item" data-page="instructor-commission" onclick="showPage('instructor-commission')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
 สรุปเงินผู้สอน
 </div>
 </div>
 <div class="nav-section">
 <div class="nav-label">จัดการ</div>
-<div class="nav-item" onclick="showPage('qrcode')">
+<div class="nav-item" data-page="qrcode" data-roles="ops" onclick="showPage('qrcode')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/><line x1="21" y1="14" x2="21" y2="21"/><line x1="14" y1="21" x2="21" y2="21"/></svg>
 QR Code สินค้า
 </div>
-<div class="nav-item" onclick="showPage('addproduct')">
+<div class="nav-item" data-page="addproduct" onclick="showPage('addproduct')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
 เพิ่มสินค้า
 </div>
 </div>
 </nav>
+
+<nav class="bottom-nav" id="bottom-nav"></nav>
 
 <main class="main">
 <!-- DASHBOARD -->
@@ -1470,9 +1483,11 @@ function enterSystem(){
   currentUser = document.getElementById('role-name-select').value;
   if(!currentRole || !currentUser) return;
   document.getElementById('role-overlay').classList.add('hidden');
-  document.getElementById('sidebar-role-badge').innerHTML = currentRole==='sales'
+  document.getElementById('sidebar-role-badge').innerHTML = (currentRole==='sales'
     ? `<span class="role-badge sales-badge" onclick="switchRole()" title="คลิกเพื่อเปลี่ยนบทบาท">📋 เซลล์: ${currentUser}</span>`
-    : `<span class="role-badge ops-badge" onclick="switchRole()" title="คลิกเพื่อเปลี่ยนบทบาท">📦 หน้างาน: ${currentUser}</span>`;
+    : `<span class="role-badge ops-badge" onclick="switchRole()" title="คลิกเพื่อเปลี่ยนบทบาท">📦 หน้างาน: ${currentUser}</span>`)
+    + `<button class="btn btn-sm btn-outline" style="margin-top:8px;width:100%;color:#fff;border-color:rgba(255,255,255,.4)" onclick="switchRole()">สลับผู้ใช้</button>`;
+  try{localStorage.setItem('jia_role',currentRole);localStorage.setItem('jia_user',currentUser);}catch(e){}
   applyRoleVisibility();
   loadDataAndRender();
   startAutoRefresh();
@@ -1480,6 +1495,7 @@ function enterSystem(){
 function switchRole(){
   stopAutoRefresh();
   currentRole = '';currentUser = '';
+  try{localStorage.removeItem('jia_role');localStorage.removeItem('jia_user');}catch(e){}
   document.getElementById('role-overlay').classList.remove('hidden');
   document.getElementById('role-btn-sales').classList.remove('selected');
   document.getElementById('role-btn-ops').classList.remove('selected');
@@ -1488,16 +1504,44 @@ function switchRole(){
 }
 
 function applyRoleVisibility(){
-  const navItems = document.querySelectorAll('.nav-item');
-  if(currentRole==='sales'){
-    navItems.forEach((n,i)=>{
-      if(i===6||i===7) n.classList.add('hidden-by-role');
-      else n.classList.remove('hidden-by-role');
-    });
-  } else {
-    // FEATURE 4: Ops เห็นทุกเมนู (ลบการซ่อนลูกค้าออก)
-    navItems.forEach(n=>n.classList.remove('hidden-by-role'));
-  }
+  // ใช้ data-roles ของแต่ละเมนูแทน index ตายตัว กันเมนูไม่ตรงกับที่ showPage() อนุญาตจริง
+  document.querySelectorAll('.nav-item[data-page]').forEach(n=>{
+    const roles=(n.dataset.roles||'').split(',').filter(Boolean);
+    n.classList.toggle('hidden-by-role', roles.length>0 && !roles.includes(currentRole));
+  });
+  renderBottomNav();
+}
+
+// ===== เมนูแถบล่างบนมือถือ (4 หน้าที่ใช้บ่อยตามบทบาท + ปุ่มเมนูเต็ม) =====
+const bottomNavConfig={
+  sales:[
+    {page:'dashboard',label:'Dashboard'},
+    {page:'rentals',label:'เช่า-ยืม'},
+    {page:'students',label:'ผู้เรียน'},
+    {page:'customers',label:'ลูกค้า'}
+  ],
+  ops:[
+    {page:'dashboard',label:'Dashboard'},
+    {page:'rentals',label:'เช่า-ยืม'},
+    {page:'alerts',label:'แจ้งเตือน'},
+    {page:'calendar',label:'ปฏิทิน'}
+  ]
+};
+function renderBottomNav(){
+  const nav=document.getElementById('bottom-nav');
+  if(!nav||!currentRole)return;
+  const items=bottomNavConfig[currentRole]||bottomNavConfig.sales;
+  const iconFor=page=>{
+    const svg=document.querySelector('.nav-item[data-page="'+page+'"] svg');
+    return svg?svg.outerHTML:'';
+  };
+  let html=items.map(it=>{
+    const badge=it.page==='alerts'?'<span class="bottom-nav-badge" id="bottom-nav-alert-badge" style="display:none"></span>':'';
+    return `<button class="bottom-nav-item${it.page===currentPage?' active':''}" data-page="${it.page}" onclick="showPage('${it.page}')">${iconFor(it.page)}<span>${it.label}</span>${badge}</button>`;
+  }).join('');
+  html+=`<button class="bottom-nav-item" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg><span>เมนู</span></button>`;
+  nav.innerHTML=html;
+  updateAlertBadge();
 }
 
 // ========== DATA (Google Sheets Backend) ==========
@@ -1805,15 +1849,15 @@ function closeSidebar(){document.getElementById('sidebar').classList.remove('ope
 // ========== NAVIGATION ==========
 const pageList=['dashboard','products','rentals','students','customers','calendar','alerts','commission','instructor-commission','qrcode','addproduct'];
 function showPage(page){
-  if(currentRole==='sales'&&page==='alerts'){page='dashboard';}
-  if(currentRole==='sales'&&page==='commission'){page='dashboard';}
-  if(currentRole==='sales'&&page==='qrcode'){page='dashboard';}
+  if(currentRole==='sales'&&(page==='alerts'||page==='commission'||page==='qrcode')){
+    showToast('หน้านี้สำหรับหน้างานเท่านั้น','info');
+    page='dashboard';
+  }
   currentPage=page;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.nav-item,.bottom-nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
-  const idx=pageList.indexOf(page);
-  if(idx>=0)document.querySelectorAll('.nav-item')[idx].classList.add('active');
+  document.querySelectorAll('.nav-item[data-page="'+page+'"],.bottom-nav-item[data-page="'+page+'"]').forEach(n=>n.classList.add('active'));
   closeSidebar();
   if(page==='dashboard')renderDashboard();
   if(page==='products')renderProducts();
@@ -2472,6 +2516,11 @@ function updateAlertBadge(){
   if(badge){
     if(totalAlerts>0){badge.textContent=totalAlerts;badge.style.display='inline';}
     else{badge.style.display='none';}
+  }
+  const bottomBadge=document.getElementById('bottom-nav-alert-badge');
+  if(bottomBadge){
+    if(totalAlerts>0){bottomBadge.textContent=totalAlerts;bottomBadge.style.display='inline-flex';}
+    else{bottomBadge.style.display='none';}
   }
 }
 
@@ -5670,6 +5719,18 @@ async function init(){
   }
   if (!salesNames.length) salesNames = ['พี่มิ้ง','พี่ป่าน','พี่แก้มใส','พี่แนน'];
   if (!opsNames.length) opsNames = ['ป่าน','เจ๋ง','ตี๋','ปั้น','หมวย'];
+  // จำสถานะล็อกอินไว้ในเครื่อง — refresh หน้าแล้วไม่ต้องเลือกบทบาท/ชื่อใหม่
+  try{
+    const savedRole=localStorage.getItem('jia_role');
+    const savedUser=localStorage.getItem('jia_user');
+    const savedNames=savedRole==='sales'?salesNames:savedRole==='ops'?opsNames:[];
+    if(savedRole && savedUser && savedNames.includes(savedUser)){
+      selectRole(savedRole);
+      document.getElementById('role-name-select').value=savedUser;
+      checkRoleReady();
+      enterSystem();
+    }
+  }catch(e){}
 }
 init();
 
