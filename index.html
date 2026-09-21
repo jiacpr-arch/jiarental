@@ -397,6 +397,21 @@ td{padding:10px 12px;vertical-align:middle}
 .rec-actions{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
 .rec-actions .btn{flex:1;min-height:48px;white-space:nowrap}
 }
+/* ฟอร์มยาวแบ่งเป็นหัวข้อ + ปุ่มบันทึกติดล่างเสมอ (สร้างจอง/ยืนยันส่ง/รับคืน/VIP) */
+.modal-sectioned{display:flex;flex-direction:column;max-height:90vh}
+.modal-sectioned .modal-body{overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+.modal-sectioned .modal-footer{position:sticky;bottom:0;background:#fff;box-shadow:0 -4px 12px rgba(0,0,0,.06);z-index:1}
+.form-section{padding:16px 0;border-top:1px solid var(--border)}
+.form-section:first-child{padding-top:0;border-top:0}
+.form-section h4{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;margin-bottom:12px;color:var(--text)}
+.form-section .step{width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+@media(max-width:768px){
+.modal-sectioned .modal-footer{flex-wrap:wrap}
+.modal-sectioned .modal-footer .btn-primary{flex:1 1 100%;order:-1;min-height:52px;font-size:16px}
+}
+/* ช่องกรอกที่กรอกไม่ครบ: กรอบแดง + ข้อความใต้ช่อง แทน toast อย่างเดียว */
+.field-error{border-color:var(--danger)!important;background:#fff5f5!important}
+.field-msg{color:var(--danger);font-size:13px;margin-top:4px;font-weight:600}
 </style>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
@@ -998,10 +1013,20 @@ QR Code สินค้า
 
 <!-- RENTAL MODAL (ปรับปรุงรองรับทั้งสร้างใหม่และแก้ไข) -->
 <div class="modal-overlay" id="rental-modal">
-<div class="modal" style="max-width:700px">
+<div class="modal modal-sectioned" style="max-width:700px">
 <div class="modal-header"><h3 id="rental-modal-title">สร้างรายการจอง</h3><button class="modal-close" onclick="closeModal('rental-modal')">&times;</button></div>
 <div class="modal-body">
-<!-- โหมดการเช่า (dropdown ด้านบนสุด) -->
+
+<section class="form-section">
+<h4><span class="step">1</span> ลูกค้าและเซลล์</h4>
+<div class="form-group"><label>ผู้เช่า <span style="color:var(--danger)">*</span></label><select id="rm-customer" onchange="onBookingCustomerChange()"><option value="">-- เลือกลูกค้า --</option></select>
+<div id="rm-customer-info" style="display:none;margin-top:6px;padding:10px;background:#f8fafc;border-radius:8px;font-size:12px;border:1px solid var(--border)"></div>
+</div>
+<div class="form-group"><label>เซลล์</label><select id="rm-sales"><option value="">-- เลือกเซลล์ --</option></select></div>
+</section>
+
+<section class="form-section">
+<h4><span class="step">2</span> สินค้า</h4>
 <div class="form-group">
 <label>โหมดการเช่า</label>
 <select id="rm-rental-mode" onchange="setRentalMode(this.value)" style="font-weight:700;font-size:14px">
@@ -1013,17 +1038,10 @@ QR Code สินค้า
 <option value="4year">ราย 4 ปี</option>
 </select>
 </div>
-
-<!-- Tab เลือกสินค้า -->
 <div class="modal-tabs" id="rm-tabs">
 <div class="modal-tab active" onclick="switchRentalTab('smart')">🎯 เลือกตามชนิด+จำนวน</div>
 <div class="modal-tab" onclick="switchRentalTab('manual')">📋 เลือกสินค้าเอง</div>
 </div>
-<div class="form-group"><label>ผู้เช่า</label><select id="rm-customer" onchange="onBookingCustomerChange()"><option value="">-- เลือกลูกค้า --</option></select>
-<div id="rm-customer-info" style="display:none;margin-top:6px;padding:10px;background:#f8fafc;border-radius:8px;font-size:12px;border:1px solid var(--border)"></div>
-</div>
-<div class="form-group"><label>เซลล์</label><select id="rm-sales"><option value="">-- เลือกเซลล์ --</option></select></div>
-
 <div id="rm-manual-select" style="display:none">
 <div class="form-group"><label>สินค้า (เลือกได้หลายรายการ) <span id="rm-selected-count" style="background:var(--primary);color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;display:none"></span></label>
 <input class="search-input" id="rm-product-search" placeholder="พิมพ์เพื่อค้นหาสินค้า..." oninput="filterProductCheckboxes()" style="margin-bottom:6px;padding:8px 12px;font-size:13px">
@@ -1031,7 +1049,6 @@ QR Code สินค้า
 <div class="selected-items" id="rm-selected-products"></div>
 </div>
 </div>
-
 <div id="rm-smart-select">
 <div class="form-group">
 <label>เลือกชนิดอุปกรณ์และจำนวน</label>
@@ -1043,38 +1060,36 @@ QR Code สินค้า
 </div>
 <div id="smart-auto-selected" style="margin-top:8px"></div>
 </div>
+</section>
 
+<section class="form-section">
+<h4><span class="step">3</span> วันที่</h4>
 <div class="form-row">
-<div class="form-group"><label>วันเช่า</label><input type="date" id="rm-start"></div>
-<div class="form-group" id="rm-end-group"><label>วันกำหนดคืน</label><input type="date" id="rm-end"></div>
+<div class="form-group"><label>วันเช่า <span style="color:var(--danger)">*</span></label><input type="date" id="rm-start"></div>
+<div class="form-group" id="rm-end-group"><label>วันกำหนดคืน <span style="color:var(--danger)">*</span></label><input type="date" id="rm-end"></div>
 </div>
-
-<!-- จำนวนตามโหมด (ซ่อน/แสดง) -->
 <div class="form-row" id="rm-qty-row" style="display:none">
 <div class="form-group"><label id="rm-qty-label">จำนวน</label><input type="number" id="rm-qty" min="1" value="1" oninput="calcRental()"></div>
 <div class="form-group"><label>จำนวนวัน</label><input type="number" id="rm-days-qty" readonly></div>
 </div>
-
 <div class="form-row" id="rm-daily-row">
 <div class="form-group"><label>วันที่ส่งของให้ลูกค้า</label><input type="date" id="rm-deliver"></div>
 <div class="form-group"><label>จำนวนวัน</label><input type="number" id="rm-days" readonly></div>
 </div>
+</section>
 
-<!-- ค่าเช่ารวม: รายวัน=auto -->
+<section class="form-section">
+<h4><span class="step">4</span> ราคาและการชำระ</h4>
 <div class="form-group" id="rm-total-auto"><label>ค่าเช่ารวม (฿)</label><input type="text" id="rm-total" readonly style="font-weight:700;color:var(--primary);font-size:18px;background:#f0f8ff"></div>
 <div class="form-group" id="rm-custom-price-area"><label>ค่าเช่ากำหนดเอง (฿) <span style="font-weight:400;font-size:11px;color:var(--muted)">— เว้นว่างใช้ราคาอัตโนมัติ</span></label>
 <div style="position:relative"><input type="number" id="rm-custom-price" min="0" placeholder="กรอกจำนวนเงินเอง" oninput="updateCustomPrice()" style="font-weight:700;color:#059669;font-size:16px;border-color:#86efac;padding-right:40px">
 <button type="button" id="rm-custom-clear" onclick="clearCustomPrice()" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);background:#fee2e2;border:none;color:#dc2626;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;font-weight:700" title="ล้างค่า">✕</button></div></div>
-
-<!-- ค่าเช่าต่อหน่วย + คำนวณรวม: สัปดาห์/เดือน/ปี -->
 <div id="rm-unit-price-area" style="display:none">
 <div class="form-row">
 <div class="form-group"><label id="rm-unit-price-label">ค่าเช่า/เดือน (฿) <span style="color:var(--danger)">*</span></label><input type="number" id="rm-unit-price" min="0" placeholder="0" oninput="calcUnitTotal()" style="font-weight:700;color:var(--primary);font-size:16px"></div>
 <div class="form-group"><label>ค่าเช่ารวม (฿)</label><input type="text" id="rm-unit-total" readonly style="font-weight:700;color:var(--primary);font-size:18px;background:#f0f8ff"></div>
 </div>
 </div>
-
-<!-- ผ่อนชำระ (รายปีขึ้นไป) -->
 <div id="rm-installment-area" style="display:none">
 <div style="padding:12px;background:#eff6ff;border-radius:8px;border:1px solid #bfdbfe;margin-bottom:12px">
 <div style="font-weight:700;color:var(--primary);margin-bottom:6px">💳 ผ่อนชำระรายเดือน</div>
@@ -1084,13 +1099,18 @@ QR Code สินค้า
 </div>
 </div>
 </div>
-
 <div class="form-row">
 <div class="form-group"><label>ค่ามัดจำ (บาท)</label><input type="number" id="rm-deposit" min="0" placeholder="0"></div>
 <div class="form-group"><label>เผื่อวันขนส่ง (วัน)</label><input type="number" id="rm-buffer-days" min="0" value="0" placeholder="0" style="font-weight:700"><div id="rm-buffer-auto" style="font-size:10px;color:var(--success);margin-top:2px"></div></div>
 </div>
 <div class="form-group"><label>สถานะการโอนเงิน</label><select id="rm-payment-status"><option value="">-- เลือก --</option><option>โอน</option><option>จ่ายหน้างาน</option><option>ผ่อนรายเดือน</option></select></div>
+</section>
+
+<section class="form-section">
+<h4><span class="step">5</span> หมายเหตุ</h4>
 <div class="form-group" id="rm-note-group"><label>หมายเหตุ</label><input id="rm-note" placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"></div>
+</section>
+
 </div>
 <div class="modal-footer" style="display:flex;gap:8px">
 <button class="btn btn-outline" onclick="closeModal('rental-modal')">ยกเลิก</button>
@@ -1221,7 +1241,7 @@ QR Code สินค้า
 
 <!-- RETURN MODAL -->
 <div class="modal-overlay" id="return-modal">
-<div class="modal" style="max-width:600px">
+<div class="modal modal-sectioned" style="max-width:600px">
 <div class="modal-header"><h3>บันทึกการคืนสินค้า</h3><button class="modal-close" onclick="closeReturnModalSafe()">&times;</button></div>
 <div class="modal-body">
 <div id="return-info"></div>
@@ -1278,7 +1298,7 @@ QR Code สินค้า
 
 <!-- CONFIRM BOOKING MODAL -->
 <div class="modal-overlay" id="confirm-booking-modal">
-<div class="modal" style="max-width:600px">
+<div class="modal modal-sectioned" style="max-width:600px">
 <div class="modal-header" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><h3 style="color:#fff">ยืนยันการจอง → เริ่มเช่า</h3><button class="modal-close" onclick="closeModal('confirm-booking-modal')" style="color:#fff">&times;</button></div>
 <div class="modal-body">
 <div id="cb-info"></div>
@@ -1310,7 +1330,7 @@ QR Code สินค้า
 
 <!-- FEATURE 5: VIP/QUICK LOAN MODAL -->
 <div class="modal-overlay" id="vip-modal">
-<div class="modal" style="max-width:560px">
+<div class="modal modal-sectioned" style="max-width:560px">
 <div class="modal-header" style="background:linear-gradient(135deg,#7c3aed,#6d28d9)"><h3 style="color:#fff">⚡ ยืมด่วน / VIP</h3><button class="modal-close" onclick="closeModal('vip-modal')" style="color:#fff">&times;</button></div>
 <div class="modal-body">
 <div style="padding:10px 14px;background:#ede9fe;border-radius:8px;margin-bottom:16px;font-size:13px;color:#5b21b6">
@@ -1389,7 +1409,7 @@ QR Code สินค้า
 <div class="modal-body" id="bp-body" style="padding:20px"></div>
 <div style="display:flex;gap:10px;padding:16px 20px;border-top:1px solid var(--border)">
 <button class="btn btn-outline" onclick="closeModal('booking-preview-modal')" style="flex:1">ยกเลิก</button>
-<button class="btn btn-primary" id="bp-confirm-btn" onclick="closeModal('booking-preview-modal');saveRental()" style="flex:1;background:linear-gradient(135deg,#059669,#047857)">✅ ยืนยันจอง</button>
+<button class="btn btn-primary" id="bp-confirm-btn" onclick="saveRental()" style="flex:1;background:linear-gradient(135deg,#059669,#047857)">✅ ยืนยันจอง</button>
 </div>
 </div>
 </div>
@@ -1599,6 +1619,7 @@ const salesPeople = ['พี่มิ้ง','พี่ป่าน','พี่�
 
 // ========== ปุ่มจัดการในตาราง: ข้อความ+ไอคอน แทนไอคอนล้วน + ล้นเก็บใน modal "เพิ่มเติม" ==========
 let rowActionCache = {};
+let savingRental = false; // กันกดบันทึกจองซ้ำระหว่างรอ Google Sheets
 function actionBtnHtml(a){
   return `<button class="btn btn-sm ${a.cls||'btn-outline'}" onclick="${a.fn}" title="${a.label}">${a.icon?a.icon+' ':''}${a.label}</button>`;
 }
@@ -1906,6 +1927,28 @@ function showLoading(msg){
   ov.classList.add('show');
 }
 function hideLoading(){document.getElementById('loading-overlay').classList.remove('show');}
+// ===== inline field errors ในฟอร์ม: กรอบแดง + ข้อความใต้ช่อง แทน toast อย่างเดียว =====
+function clearFieldErrors(root){
+  root.querySelectorAll('.field-error').forEach(e=>e.classList.remove('field-error'));
+  root.querySelectorAll('.field-msg').forEach(e=>e.remove());
+}
+function markFieldError(el,msg){
+  if(!el)return;
+  el.classList.add('field-error');
+  const m=document.createElement('div');
+  m.className='field-msg';
+  m.textContent=msg;
+  (el.closest('.form-group')||el.parentNode).appendChild(m);
+  const clear=()=>{el.classList.remove('field-error');m.remove();};
+  el.addEventListener('input',clear,{once:true});
+  el.addEventListener('change',clear,{once:true});
+}
+function focusFirstError(root){
+  const f=root.querySelector('.field-error');
+  if(!f)return;
+  f.scrollIntoView({behavior:'smooth',block:'center'});
+  if(typeof f.focus==='function')f.focus({preventScroll:true});
+}
 function closeModal(id){document.getElementById(id).classList.remove('show');}
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('mobile-overlay').classList.toggle('show');}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('mobile-overlay').classList.remove('show');}
@@ -4134,10 +4177,16 @@ function previewBeforeSave(){
   const end=document.getElementById('rm-end').value;
   const mode=currentRentalMode;
   const cfg=RENTAL_MODES[mode];
-  // Validate
-  if(!custId){showToast('กรุณาเลือกลูกค้า','error');return;}
-  if(!selectedProductIds.length){showToast('กรุณาเลือกสินค้า','error');return;}
-  if(!start||!end){showToast('กรุณาเลือกวันเช่าและกำหนดคืน','error');return;}
+  // Validate — เก็บ error ทุกช่องพร้อมกัน แสดงกรอบแดง+ข้อความใต้ช่อง แล้วเลื่อนไปช่องแรก
+  const rentalModal=document.getElementById('rental-modal');
+  clearFieldErrors(rentalModal);
+  let hasError=false;
+  if(!custId){markFieldError(document.getElementById('rm-customer'),'กรุณาเลือกลูกค้า');hasError=true;}
+  if(!selectedProductIds.length){markFieldError(document.getElementById('rm-tabs'),'กรุณาเลือกสินค้าอย่างน้อย 1 รายการ');hasError=true;}
+  if(!start){markFieldError(document.getElementById('rm-start'),'กรุณาเลือกวันเช่า');hasError=true;}
+  if(!end){markFieldError(document.getElementById('rm-end'),'กรุณาเลือกวันกำหนดคืน');hasError=true;}
+  if(mode!=='daily'&&!(parseFloat(document.getElementById('rm-unit-price').value)>0)){markFieldError(document.getElementById('rm-unit-price'),'กรุณากรอกค่าเช่า');hasError=true;}
+  if(hasError){focusFirstError(rentalModal);showToast('กรุณากรอกข้อมูลให้ครบ','error');return;}
   const cust=customers.find(c=>c.id===custId);
   // สรุป category
   const catMap={};
@@ -4189,7 +4238,8 @@ function previewBeforeSave(){
   document.getElementById('booking-preview-modal').classList.add('show');
 }
 
-function saveRental(){
+async function saveRental(){
+  if(savingRental)return;
   const custId=document.getElementById('rm-customer').value;
   const sales=document.getElementById('rm-sales').value;
   const start=document.getElementById('rm-start').value;
@@ -4245,14 +4295,25 @@ function saveRental(){
     isVIP:false,vipReason:'',
     rentalMode:mode,installments,monthlyAmount:monthlyAmt
   };
+  savingRental=true;
+  closeModal('booking-preview-modal');
+  closeModal('rental-modal');
+  showLoading('กำลังบันทึก…');
   rentals.push(newRental);
   // ไม่ล็อคสินค้าเป็น "จอง" — ให้ล็อคตอนยืนยันส่งจริงเท่านั้น
   cust.rentCount++;cust.total+=total;
-  closeModal('rental-modal');
-  showToast(`บันทึกจอง ${cfg.label} ${selProds.length} รายการ สำเร็จ!`);
-  gsSaveRental(newRental).then(res=>{if(res&&!res.error)gsNotifyLine('newBooking',newRental);});
-  showReceipt(newRental.id);
-  renderRentals();
+  try{
+    const res=await gsSaveRental(newRental); // gsSaveRental() เองแจ้ง toast แดงให้แล้วถ้าล้มเหลว
+    if(res&&!res.error){
+      gsNotifyLine('newBooking',newRental);
+      showToast(`บันทึกจอง ${cfg.label} ${selProds.length} รายการ สำเร็จ!`);
+      showReceipt(newRental.id);
+    }
+  } finally {
+    hideLoading();
+    savingRental=false;
+    renderRentals();
+  }
 }
 
 // ========== FEATURE 1: EDIT RENTAL ==========
