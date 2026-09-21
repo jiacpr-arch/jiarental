@@ -2,9 +2,9 @@
 
 ## ภาพรวม
 ระบบเช่า-ยืมอุปกรณ์ฝึกสอน CPR/AED ของบริษัท **โรจน์รุ่ง ธุรกิจ จำกัด** (เจี๋ยรักษา)
-- **Single HTML file** (`index.html`) ~3,900 บรรทัด
+- **Single HTML file** (`index.html`) ~5,700 บรรทัด
 - **Vanilla JavaScript** ไม่ใช้ framework
-- **Tailwind CSS** + inline styles
+- **CSS มือเขียนล้วน** (ไม่มี Tailwind) + inline styles ในบางจุด + ฟอนต์ Sarabun (Google Fonts)
 - **Google Sheets backend** ผ่าน Google Apps Script
 - **ภาษาไทย** ทั้งหมด — UI, ข้อความ, toast, label
 
