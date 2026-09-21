@@ -4,10 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ระบบเช่า-ยืม | บริษัท โรจน์รุ่ง ธุรกิจ จำกัด</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--primary:#2563eb;--primary-dark:#1d4ed8;--secondary:#0891b2;--success:#059669;--warning:#d97706;--danger:#dc2626;--bg:#f0f4f8;--card:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--radius:12px;--shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);--vip:#7c3aed}
-body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+body{font-family:'Sarabun','Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:15px}
 .app{display:flex;min-height:100vh}
 .sidebar{width:260px;background:linear-gradient(180deg,#1e3a5f 0%,#0f2744 100%);color:#fff;padding:0;position:fixed;height:100vh;overflow-y:auto;z-index:100;transition:transform .3s ease}
 .sidebar-header{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
@@ -34,9 +37,6 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
 .charts-grid{grid-template-columns:1fr}
 .modal{width:95%;max-width:none;margin:8px}
 .qr-grid{grid-template-columns:repeat(2,1fr);gap:10px}
-table{font-size:11px}
-th,td{padding:6px 8px}
-.btn{padding:6px 12px;font-size:12px}
 .receipt-content{padding:16px!important}
 }
 .nav-section{padding:16px 0}
@@ -45,7 +45,7 @@ th,td{padding:6px 8px}
 .nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
 .nav-item.active{background:rgba(255,255,255,.12);color:#fff;border-left-color:var(--primary)}
 .nav-item svg{width:18px;height:18px;flex-shrink:0}
-.main{margin-left:260px;flex:1;padding:24px 32px}
+.main{margin-left:260px;flex:1;padding:24px 32px;min-width:0}
 .page{display:none}
 .page.active{display:block}
 .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
@@ -308,6 +308,114 @@ tr:hover{background:#f8fafc}
 .scan-verify-camera-btn:hover{background:var(--primary-dark)}
 #cb-scan-camera-area,#ret-scan-camera-area{margin-top:10px;max-width:320px;margin-left:auto;margin-right:auto}
 #cb-scan-camera-area video,#ret-scan-camera-area video{border-radius:10px!important}
+
+/* ===== UX FLOOR (2026-09) — ปรับปุ่ม/ตัวอักษร/ช่องกรอกให้ใช้ง่ายขึ้นบนมือถือและคอม ===== */
+/* ปุ่มพื้นฐาน: อย่างน้อยขนาดที่นิ้วโป้งกดง่าย (44px) */
+.btn{min-height:44px;padding:10px 16px;font-size:14px}
+.btn-sm{min-height:40px;padding:8px 12px;font-size:13px}
+@media(max-width:768px),(pointer:coarse){
+.btn-sm{min-height:44px;padding:9px 12px;font-size:14px}
+}
+.modal-close,.hamburger,.sidebar-close{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.pagination button{min-height:44px;min-width:44px;font-size:14px}
+.modal-tab{min-height:44px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.multi-select-wrap label{min-height:40px;font-size:14px}
+.role-badge{min-height:36px;font-size:13px}
+/* ตัวอักษรพื้นฐาน: อ่านง่ายขึ้นทั้งตารางและป้ายสถานะ */
+table{font-size:13px}
+th{font-size:12px;text-transform:none;letter-spacing:0}
+td{padding:10px 12px;vertical-align:middle}
+.badge{font-size:12px;padding:4px 10px}
+.kpi-label{font-size:13px;text-transform:none}
+.nav-label{font-size:11px}
+.nav-item{min-height:44px;font-size:15px}
+.cal-event{font-size:12px;padding:3px 6px}
+.cal-day{font-size:13px}
+.chart-bar-label{font-size:13px}
+/* ช่องกรอก/dropdown: ขนาดกดง่าย + 16px บนมือถือกันจอซูมเอง (iOS) */
+.form-group input,.form-group select,.form-group textarea,.search-input,.filter-select,.qr-scan-input,.scan-verify-input{min-height:44px;font-size:15px}
+.table-select{min-height:44px;padding:6px 10px;font-size:14px;border:1.5px solid var(--border);border-radius:8px}
+.table-responsive{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.close-btn{background:none;border:none;font-size:24px;cursor:pointer;color:inherit;min-width:44px;min-height:44px}
+@media(max-width:768px){
+.form-group input,.form-group select,.form-group textarea,.search-input,.filter-select,.scan-verify-input,.main select,.main input,.modal select,.modal input{font-size:16px}
+.modal{width:100%;max-width:none;margin:0;max-height:100dvh;border-radius:16px 16px 0 0}
+.modal-overlay.show{align-items:flex-end}
+.modal-body{padding:16px}
+.modal-header{padding:14px 16px}
+}
+/* ขนาดตัวอักษรเล็กที่ฝังเป็น inline style ในโค้ด JS (การ์ด/แถวตาราง) — ยกเว้นใบเสร็จ/สิ่งพิมพ์ที่ต้องคงขนาดเดิม */
+.main [style*="font-size:7px"],.main [style*="font-size:8px"],.main [style*="font-size:9px"],.main [style*="font-size:10px"],.main [style*="font-size:11px"],.main [style*="font-size:12px"],
+.modal [style*="font-size:7px"],.modal [style*="font-size:8px"],.modal [style*="font-size:9px"],.modal [style*="font-size:10px"],.modal [style*="font-size:11px"],.modal [style*="font-size:12px"]{font-size:13px!important}
+.receipt-content [style],.print-area [style],.receipt-overlay [style]{font-size:revert!important}
+/* Toast: ซ้อนได้หลายอัน อยู่เหนือกล้องสแกน QR เสมอ */
+.toast-stack{position:fixed;right:24px;bottom:24px;display:flex;flex-direction:column;gap:8px;z-index:3500;pointer-events:none;align-items:flex-end}
+.toast-stack .toast{position:static;transform:translateY(20px);opacity:0;padding:14px 20px;border-radius:10px;color:#fff;font-size:15px;font-weight:600;max-width:min(92vw,420px);transition:all .3s}
+.toast-stack .toast.show{transform:translateY(0);opacity:1}
+.toast-stack .toast.success{background:var(--success)}
+.toast-stack .toast.error{background:var(--danger)}
+.toast-stack .toast.info{background:var(--primary)}
+@media(max-width:768px){
+.toast-stack{top:12px;left:12px;right:12px;bottom:auto;align-items:stretch}
+.toast-stack .toast{transform:translateY(-20px);max-width:none}
+}
+/* Loading overlay: ใช้ตอนโหลดข้อมูลครั้งแรก/บันทึกข้อมูล กันหน้าจอว่างเปล่าไม่รู้สถานะ */
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(255,255,255,.8);z-index:2500;justify-content:center;align-items:center;flex-direction:column;gap:14px;font-weight:700;color:var(--text);font-size:15px}
+.loading-overlay.show{display:flex}
+.loading-overlay .spinner{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* เมนูแถบล่างบนมือถือ: แสดงเฉพาะจอเล็ก แทนที่ hamburger ลอย */
+.bottom-nav{display:none}
+@media(max-width:768px){
+.bottom-nav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;height:calc(58px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:#fff;border-top:1px solid var(--border);z-index:150;box-shadow:0 -2px 10px rgba(0,0,0,.06)}
+.bottom-nav-item{position:relative;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;font-weight:600;color:var(--muted);min-height:56px;padding:6px 2px}
+.bottom-nav-item svg{width:20px;height:20px;flex-shrink:0}
+.bottom-nav-item.active{color:var(--primary)}
+.bottom-nav-badge{position:absolute;top:2px;right:calc(50% - 20px);background:var(--danger);color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px}
+.hamburger{display:none!important}
+.main{padding-bottom:calc(74px + env(safe-area-inset-bottom))!important}
+}
+/* ปุ่มจัดการในตาราง: สีอ่อนบอกความหมาย แทน inline style เดิม */
+.btn-danger-soft{background:#fee2e2;color:#991b1b}
+.btn-amber-soft{background:#fffbeb;color:#92400e}
+.btn-blue-soft{background:#e0f2fe;color:#0369a1}
+.row-actions{white-space:nowrap}
+.row-actions .btn{margin:2px}
+#row-actions-body .btn{display:flex}
+/* มุมมองการ์ดบนมือถือ แทนตารางกว้างที่ต้องเลื่อนดู */
+.rec-cards{display:none}
+.mobile-only-sort{display:none}
+@media(max-width:768px){
+.table-wrap{display:none}
+.rec-cards{display:grid;gap:10px;margin-top:4px}
+.mobile-only-sort{display:block;width:100%}
+.rec-card{border:1px solid var(--border);border-radius:12px;padding:14px;background:#fff;display:grid;gap:6px}
+.rec-card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:700;font-size:15px;flex-wrap:wrap}
+.rec-row{display:flex;justify-content:space-between;gap:12px;font-size:14px;align-items:center}
+.rec-row>span:first-child{color:var(--muted);flex-shrink:0}
+.rec-row>span:last-child{text-align:right}
+.rec-actions{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.rec-actions .btn{flex:1;min-height:48px;white-space:nowrap}
+}
+/* ฟอร์มยาวแบ่งเป็นหัวข้อ + ปุ่มบันทึกติดล่างเสมอ (สร้างจอง/ยืนยันส่ง/รับคืน/VIP) */
+.modal-sectioned{display:flex;flex-direction:column;max-height:90vh}
+.modal-sectioned .modal-body{overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+.modal-sectioned .modal-footer{position:sticky;bottom:0;background:#fff;box-shadow:0 -4px 12px rgba(0,0,0,.06);z-index:1}
+.form-section{padding:16px 0;border-top:1px solid var(--border)}
+.form-section:first-child{padding-top:0;border-top:0}
+.form-section h4{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;margin-bottom:12px;color:var(--text)}
+.form-section .step{width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+@media(max-width:768px){
+.modal-sectioned .modal-footer{flex-wrap:wrap}
+.modal-sectioned .modal-footer .btn-primary{flex:1 1 100%;order:-1;min-height:52px;font-size:16px}
+}
+/* ช่องกรอกที่กรอกไม่ครบ: กรอบแดง + ข้อความใต้ช่อง แทน toast อย่างเดียว */
+.field-error{border-color:var(--danger)!important;background:#fff5f5!important}
+.field-msg{color:var(--danger);font-size:13px;margin-top:4px;font-weight:600}
+/* ทางลัด Dashboard */
+.quick-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.quick-actions .btn{min-height:48px;font-size:15px}
+@media(max-width:768px){.quick-actions .btn{flex:1 1 45%}}
 </style>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
@@ -345,58 +453,60 @@ tr:hover{background:#f8fafc}
 </div>
 <div class="nav-section">
 <div class="nav-label">เมนูหลัก</div>
-<div class="nav-item active" onclick="showPage('dashboard')">
+<div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
 Dashboard
 </div>
-<div class="nav-item" onclick="showPage('products')">
+<div class="nav-item" data-page="products" onclick="showPage('products')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
 สินค้าทั้งหมด
 </div>
-<div class="nav-item" onclick="showPage('rentals')">
+<div class="nav-item" data-page="rentals" onclick="showPage('rentals')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
 บันทึกเช่า-ยืม
 </div>
-<div class="nav-item" onclick="showPage('students')">
+<div class="nav-item" data-page="students" onclick="showPage('students')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
 จองผู้เรียน
 </div>
-<div class="nav-item" onclick="showPage('customers')">
+<div class="nav-item" data-page="customers" onclick="showPage('customers')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
 ลูกค้า
 </div>
-<div class="nav-item" onclick="showPage('calendar')">
+<div class="nav-item" data-page="calendar" onclick="showPage('calendar')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
 ปฏิทิน
 </div>
 </div>
 <div class="nav-section">
 <div class="nav-label">รายงาน</div>
-<div class="nav-item" onclick="showPage('alerts')">
+<div class="nav-item" data-page="alerts" data-roles="ops" onclick="showPage('alerts')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
 แจ้งเตือน <span id="alert-badge" style="display:none;background:var(--danger);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:4px"></span>
 </div>
-<div class="nav-item" onclick="showPage('commission')">
+<div class="nav-item" data-page="commission" data-roles="ops" onclick="showPage('commission')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
 สรุปเงินรายเดือน
 </div>
-<div class="nav-item" onclick="showPage('instructor-commission')">
+<div class="nav-item" data-page="instructor-commission" onclick="showPage('instructor-commission')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
 สรุปเงินผู้สอน
 </div>
 </div>
 <div class="nav-section">
 <div class="nav-label">จัดการ</div>
-<div class="nav-item" onclick="showPage('qrcode')">
+<div class="nav-item" data-page="qrcode" data-roles="ops" onclick="showPage('qrcode')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/><line x1="21" y1="14" x2="21" y2="21"/><line x1="14" y1="21" x2="21" y2="21"/></svg>
 QR Code สินค้า
 </div>
-<div class="nav-item" onclick="showPage('addproduct')">
+<div class="nav-item" data-page="addproduct" onclick="showPage('addproduct')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
 เพิ่มสินค้า
 </div>
 </div>
 </nav>
+
+<nav class="bottom-nav" id="bottom-nav"></nav>
 
 <main class="main">
 <!-- DASHBOARD -->
@@ -405,7 +515,12 @@ QR Code สินค้า
 <div><h2>Dashboard</h2><div class="subtitle">ภาพรวมระบบเช่า-ยืม บริษัท โรจน์รุ่ง ธุรกิจ จำกัด</div></div>
 <div style="font-size:13px;color:var(--muted)" id="current-date"></div>
 </div>
+<div class="quick-actions" id="quick-actions"></div>
 <div class="kpi-grid" id="kpi-area"></div>
+<div class="card" id="dash-pending" style="display:none;margin-top:0">
+<div class="card-header" style="background:linear-gradient(135deg,#dbeafe,#eff6ff)"><h3 style="color:#1e40af">🚚 รอยืนยันส่ง</h3><button class="btn btn-sm btn-outline" onclick="showPage('alerts')">ดูทั้งหมด</button></div>
+<div class="card-body alert-list" id="dash-pending-list"></div>
+</div>
 <div class="card" id="dash-mybookings" style="display:none;margin-top:0">
 <div class="card-header" style="background:linear-gradient(135deg,#ffedd5,#fff7ed)"><h3 style="color:#9a3412">📋 สถานะการจองของฉัน</h3></div>
 <div class="card-body alert-list" id="mybookings-list"></div>
@@ -457,12 +572,13 @@ QR Code สินค้า
 <select class="filter-select" id="prod-cat-filter" onchange="renderProducts()"><option value="">ทุก Category</option></select>
 <select class="filter-select" id="prod-status-filter" onchange="renderProducts()"><option value="">ทุกสถานะ</option><option value="ว่าง">ว่าง</option><option value="ถูกเช่า">ถูกเช่า</option><option value="จอง">จอง</option><option value="ซ่อม">ซ่อม</option><option value="ไม่พร้อมใช้งาน">ไม่พร้อมใช้งาน</option><option value="ออกสอน">ออกสอน</option><option value="ออกบูธ">ออกบูธ</option><option value="ทดแทน">ทดแทน</option><option value="ใช้งานได้">⚠ ใช้งานได้ (มีหมายเหตุ)</option></select>
 </div>
-<div style="overflow-x:auto">
+<div class="table-wrap" style="overflow-x:auto">
 <table>
 <thead><tr><th>รหัส</th><th>Category</th><th>ชื่อสินค้า</th><th>รายละเอียด</th><th>หน่วย</th><th class="text-right">ราคา/วัน</th><th class="text-center">สถานะ</th><th class="text-center">จัดการ</th></tr></thead>
 <tbody id="prod-table"></tbody>
 </table>
 </div>
+<div class="rec-cards" id="prod-cards"></div>
 <div class="pagination" id="prod-pagination"></div>
 </div>
 </div>
@@ -509,13 +625,26 @@ QR Code สินค้า
 <div class="search-bar">
 <input class="search-input" id="rent-search" placeholder="ค้นหา... (เลขที่เช่า, ชื่อลูกค้า, สินค้า)" oninput="renderRentals()">
 <select class="filter-select" id="rent-status-filter" onchange="renderRentals()"><option value="">ทุกสถานะ</option><option value="กำลังเช่า">กำลังเช่า</option><option value="จอง">จอง</option><option value="คืนแล้ว">คืนแล้ว</option><option value="เกินกำหนด">เกินกำหนด</option><option value="ยืมด่วน">ยืมด่วน</option><option value="ยกเลิก">ยกเลิก</option></select>
+<select class="filter-select mobile-only-sort" id="rent-sort-mobile" onchange="sortRentals(this.value)">
+<option value="deliverDate">เรียงตาม: วันส่งของ</option>
+<option value="id">เลขที่เช่า</option>
+<option value="start">วันเช่า</option>
+<option value="due">กำหนดคืน</option>
+<option value="returnDate">คืนจริง</option>
+<option value="total">ยอดรวม</option>
+<option value="deposit">มัดจำ</option>
+<option value="customer">ผู้เช่า</option>
+<option value="sales">เซลล์</option>
+<option value="status">สถานะ</option>
+</select>
 </div>
-<div style="overflow-x:auto">
+<div class="table-wrap" style="overflow-x:auto">
 <table>
 <thead><tr></tr></thead>
 <tbody id="rent-table"></tbody>
 </table>
 </div>
+<div class="rec-cards" id="rent-cards"></div>
 <div class="pagination" id="rent-pagination"></div>
 </div>
 </div>
@@ -625,12 +754,13 @@ QR Code สินค้า
 <div class="search-bar">
 <input class="search-input" id="cust-search" placeholder="ค้นหาลูกค้า..." oninput="renderCustomers()">
 </div>
-<div style="overflow-x:auto">
+<div class="table-wrap" style="overflow-x:auto">
 <table>
 <thead><tr><th>รหัส</th><th>ชื่อลูกค้า/องค์กร</th><th>เบอร์โทร</th><th>จังหวัด</th><th>ที่อยู่</th><th>เซลล์</th><th class="text-center">เช่า(ครั้ง)</th><th class="text-right">ยอดรวม (฿)</th><th class="text-center">จัดการ</th></tr></thead>
 <tbody id="cust-table"></tbody>
 </table>
 </div>
+<div class="rec-cards" id="cust-cards"></div>
 </div>
 </div>
 </div>
@@ -892,10 +1022,20 @@ QR Code สินค้า
 
 <!-- RENTAL MODAL (ปรับปรุงรองรับทั้งสร้างใหม่และแก้ไข) -->
 <div class="modal-overlay" id="rental-modal">
-<div class="modal" style="max-width:700px">
+<div class="modal modal-sectioned" style="max-width:700px">
 <div class="modal-header"><h3 id="rental-modal-title">สร้างรายการจอง</h3><button class="modal-close" onclick="closeModal('rental-modal')">&times;</button></div>
 <div class="modal-body">
-<!-- โหมดการเช่า (dropdown ด้านบนสุด) -->
+
+<section class="form-section">
+<h4><span class="step">1</span> ลูกค้าและเซลล์</h4>
+<div class="form-group"><label>ผู้เช่า <span style="color:var(--danger)">*</span></label><select id="rm-customer" onchange="onBookingCustomerChange()"><option value="">-- เลือกลูกค้า --</option></select>
+<div id="rm-customer-info" style="display:none;margin-top:6px;padding:10px;background:#f8fafc;border-radius:8px;font-size:12px;border:1px solid var(--border)"></div>
+</div>
+<div class="form-group"><label>เซลล์</label><select id="rm-sales"><option value="">-- เลือกเซลล์ --</option></select></div>
+</section>
+
+<section class="form-section">
+<h4><span class="step">2</span> สินค้า</h4>
 <div class="form-group">
 <label>โหมดการเช่า</label>
 <select id="rm-rental-mode" onchange="setRentalMode(this.value)" style="font-weight:700;font-size:14px">
@@ -907,17 +1047,10 @@ QR Code สินค้า
 <option value="4year">ราย 4 ปี</option>
 </select>
 </div>
-
-<!-- Tab เลือกสินค้า -->
 <div class="modal-tabs" id="rm-tabs">
 <div class="modal-tab active" onclick="switchRentalTab('smart')">🎯 เลือกตามชนิด+จำนวน</div>
 <div class="modal-tab" onclick="switchRentalTab('manual')">📋 เลือกสินค้าเอง</div>
 </div>
-<div class="form-group"><label>ผู้เช่า</label><select id="rm-customer" onchange="onBookingCustomerChange()"><option value="">-- เลือกลูกค้า --</option></select>
-<div id="rm-customer-info" style="display:none;margin-top:6px;padding:10px;background:#f8fafc;border-radius:8px;font-size:12px;border:1px solid var(--border)"></div>
-</div>
-<div class="form-group"><label>เซลล์</label><select id="rm-sales"><option value="">-- เลือกเซลล์ --</option></select></div>
-
 <div id="rm-manual-select" style="display:none">
 <div class="form-group"><label>สินค้า (เลือกได้หลายรายการ) <span id="rm-selected-count" style="background:var(--primary);color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;display:none"></span></label>
 <input class="search-input" id="rm-product-search" placeholder="พิมพ์เพื่อค้นหาสินค้า..." oninput="filterProductCheckboxes()" style="margin-bottom:6px;padding:8px 12px;font-size:13px">
@@ -925,7 +1058,6 @@ QR Code สินค้า
 <div class="selected-items" id="rm-selected-products"></div>
 </div>
 </div>
-
 <div id="rm-smart-select">
 <div class="form-group">
 <label>เลือกชนิดอุปกรณ์และจำนวน</label>
@@ -937,38 +1069,36 @@ QR Code สินค้า
 </div>
 <div id="smart-auto-selected" style="margin-top:8px"></div>
 </div>
+</section>
 
+<section class="form-section">
+<h4><span class="step">3</span> วันที่</h4>
 <div class="form-row">
-<div class="form-group"><label>วันเช่า</label><input type="date" id="rm-start"></div>
-<div class="form-group" id="rm-end-group"><label>วันกำหนดคืน</label><input type="date" id="rm-end"></div>
+<div class="form-group"><label>วันเช่า <span style="color:var(--danger)">*</span></label><input type="date" id="rm-start"></div>
+<div class="form-group" id="rm-end-group"><label>วันกำหนดคืน <span style="color:var(--danger)">*</span></label><input type="date" id="rm-end"></div>
 </div>
-
-<!-- จำนวนตามโหมด (ซ่อน/แสดง) -->
 <div class="form-row" id="rm-qty-row" style="display:none">
 <div class="form-group"><label id="rm-qty-label">จำนวน</label><input type="number" id="rm-qty" min="1" value="1" oninput="calcRental()"></div>
 <div class="form-group"><label>จำนวนวัน</label><input type="number" id="rm-days-qty" readonly></div>
 </div>
-
 <div class="form-row" id="rm-daily-row">
 <div class="form-group"><label>วันที่ส่งของให้ลูกค้า</label><input type="date" id="rm-deliver"></div>
 <div class="form-group"><label>จำนวนวัน</label><input type="number" id="rm-days" readonly></div>
 </div>
+</section>
 
-<!-- ค่าเช่ารวม: รายวัน=auto -->
+<section class="form-section">
+<h4><span class="step">4</span> ราคาและการชำระ</h4>
 <div class="form-group" id="rm-total-auto"><label>ค่าเช่ารวม (฿)</label><input type="text" id="rm-total" readonly style="font-weight:700;color:var(--primary);font-size:18px;background:#f0f8ff"></div>
 <div class="form-group" id="rm-custom-price-area"><label>ค่าเช่ากำหนดเอง (฿) <span style="font-weight:400;font-size:11px;color:var(--muted)">— เว้นว่างใช้ราคาอัตโนมัติ</span></label>
 <div style="position:relative"><input type="number" id="rm-custom-price" min="0" placeholder="กรอกจำนวนเงินเอง" oninput="updateCustomPrice()" style="font-weight:700;color:#059669;font-size:16px;border-color:#86efac;padding-right:40px">
 <button type="button" id="rm-custom-clear" onclick="clearCustomPrice()" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);background:#fee2e2;border:none;color:#dc2626;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;font-weight:700" title="ล้างค่า">✕</button></div></div>
-
-<!-- ค่าเช่าต่อหน่วย + คำนวณรวม: สัปดาห์/เดือน/ปี -->
 <div id="rm-unit-price-area" style="display:none">
 <div class="form-row">
 <div class="form-group"><label id="rm-unit-price-label">ค่าเช่า/เดือน (฿) <span style="color:var(--danger)">*</span></label><input type="number" id="rm-unit-price" min="0" placeholder="0" oninput="calcUnitTotal()" style="font-weight:700;color:var(--primary);font-size:16px"></div>
 <div class="form-group"><label>ค่าเช่ารวม (฿)</label><input type="text" id="rm-unit-total" readonly style="font-weight:700;color:var(--primary);font-size:18px;background:#f0f8ff"></div>
 </div>
 </div>
-
-<!-- ผ่อนชำระ (รายปีขึ้นไป) -->
 <div id="rm-installment-area" style="display:none">
 <div style="padding:12px;background:#eff6ff;border-radius:8px;border:1px solid #bfdbfe;margin-bottom:12px">
 <div style="font-weight:700;color:var(--primary);margin-bottom:6px">💳 ผ่อนชำระรายเดือน</div>
@@ -978,13 +1108,18 @@ QR Code สินค้า
 </div>
 </div>
 </div>
-
 <div class="form-row">
 <div class="form-group"><label>ค่ามัดจำ (บาท)</label><input type="number" id="rm-deposit" min="0" placeholder="0"></div>
 <div class="form-group"><label>เผื่อวันขนส่ง (วัน)</label><input type="number" id="rm-buffer-days" min="0" value="0" placeholder="0" style="font-weight:700"><div id="rm-buffer-auto" style="font-size:10px;color:var(--success);margin-top:2px"></div></div>
 </div>
 <div class="form-group"><label>สถานะการโอนเงิน</label><select id="rm-payment-status"><option value="">-- เลือก --</option><option>โอน</option><option>จ่ายหน้างาน</option><option>ผ่อนรายเดือน</option></select></div>
+</section>
+
+<section class="form-section">
+<h4><span class="step">5</span> หมายเหตุ</h4>
 <div class="form-group" id="rm-note-group"><label>หมายเหตุ</label><input id="rm-note" placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"></div>
+</section>
+
 </div>
 <div class="modal-footer" style="display:flex;gap:8px">
 <button class="btn btn-outline" onclick="closeModal('rental-modal')">ยกเลิก</button>
@@ -1115,7 +1250,7 @@ QR Code สินค้า
 
 <!-- RETURN MODAL -->
 <div class="modal-overlay" id="return-modal">
-<div class="modal" style="max-width:600px">
+<div class="modal modal-sectioned" style="max-width:600px">
 <div class="modal-header"><h3>บันทึกการคืนสินค้า</h3><button class="modal-close" onclick="closeReturnModalSafe()">&times;</button></div>
 <div class="modal-body">
 <div id="return-info"></div>
@@ -1172,7 +1307,7 @@ QR Code สินค้า
 
 <!-- CONFIRM BOOKING MODAL -->
 <div class="modal-overlay" id="confirm-booking-modal">
-<div class="modal" style="max-width:600px">
+<div class="modal modal-sectioned" style="max-width:600px">
 <div class="modal-header" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><h3 style="color:#fff">ยืนยันการจอง → เริ่มเช่า</h3><button class="modal-close" onclick="closeModal('confirm-booking-modal')" style="color:#fff">&times;</button></div>
 <div class="modal-body">
 <div id="cb-info"></div>
@@ -1204,7 +1339,7 @@ QR Code สินค้า
 
 <!-- FEATURE 5: VIP/QUICK LOAN MODAL -->
 <div class="modal-overlay" id="vip-modal">
-<div class="modal" style="max-width:560px">
+<div class="modal modal-sectioned" style="max-width:560px">
 <div class="modal-header" style="background:linear-gradient(135deg,#7c3aed,#6d28d9)"><h3 style="color:#fff">⚡ ยืมด่วน / VIP</h3><button class="modal-close" onclick="closeModal('vip-modal')" style="color:#fff">&times;</button></div>
 <div class="modal-body">
 <div style="padding:10px 14px;background:#ede9fe;border-radius:8px;margin-bottom:16px;font-size:13px;color:#5b21b6">
@@ -1283,7 +1418,7 @@ QR Code สินค้า
 <div class="modal-body" id="bp-body" style="padding:20px"></div>
 <div style="display:flex;gap:10px;padding:16px 20px;border-top:1px solid var(--border)">
 <button class="btn btn-outline" onclick="closeModal('booking-preview-modal')" style="flex:1">ยกเลิก</button>
-<button class="btn btn-primary" id="bp-confirm-btn" onclick="closeModal('booking-preview-modal');saveRental()" style="flex:1;background:linear-gradient(135deg,#059669,#047857)">✅ ยืนยันจอง</button>
+<button class="btn btn-primary" id="bp-confirm-btn" onclick="saveRental()" style="flex:1;background:linear-gradient(135deg,#059669,#047857)">✅ ยืนยันจอง</button>
 </div>
 </div>
 </div>
@@ -1361,7 +1496,15 @@ QR Code สินค้า
 </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="modal-overlay" id="row-actions-modal">
+<div class="modal" style="max-width:420px">
+<div class="modal-header"><h3 id="row-actions-title">เลือกการดำเนินการ</h3><button class="modal-close" onclick="closeModal('row-actions-modal')">&times;</button></div>
+<div class="modal-body" id="row-actions-body"></div>
+</div>
+</div>
+
+<div class="toast-stack" id="toast-stack"></div>
+<div class="loading-overlay" id="loading-overlay"><div class="spinner"></div><div id="loading-text">กำลังโหลดข้อมูล…</div></div>
 
 <script>
 // ========== ROLE SYSTEM ==========
@@ -1413,9 +1556,11 @@ function enterSystem(){
   currentUser = document.getElementById('role-name-select').value;
   if(!currentRole || !currentUser) return;
   document.getElementById('role-overlay').classList.add('hidden');
-  document.getElementById('sidebar-role-badge').innerHTML = currentRole==='sales'
+  document.getElementById('sidebar-role-badge').innerHTML = (currentRole==='sales'
     ? `<span class="role-badge sales-badge" onclick="switchRole()" title="คลิกเพื่อเปลี่ยนบทบาท">📋 เซลล์: ${currentUser}</span>`
-    : `<span class="role-badge ops-badge" onclick="switchRole()" title="คลิกเพื่อเปลี่ยนบทบาท">📦 หน้างาน: ${currentUser}</span>`;
+    : `<span class="role-badge ops-badge" onclick="switchRole()" title="คลิกเพื่อเปลี่ยนบทบาท">📦 หน้างาน: ${currentUser}</span>`)
+    + `<button class="btn btn-sm btn-outline" style="margin-top:8px;width:100%;color:#fff;border-color:rgba(255,255,255,.4)" onclick="switchRole()">สลับผู้ใช้</button>`;
+  try{localStorage.setItem('jia_role',currentRole);localStorage.setItem('jia_user',currentUser);}catch(e){}
   applyRoleVisibility();
   loadDataAndRender();
   startAutoRefresh();
@@ -1423,6 +1568,7 @@ function enterSystem(){
 function switchRole(){
   stopAutoRefresh();
   currentRole = '';currentUser = '';
+  try{localStorage.removeItem('jia_role');localStorage.removeItem('jia_user');}catch(e){}
   document.getElementById('role-overlay').classList.remove('hidden');
   document.getElementById('role-btn-sales').classList.remove('selected');
   document.getElementById('role-btn-ops').classList.remove('selected');
@@ -1431,16 +1577,44 @@ function switchRole(){
 }
 
 function applyRoleVisibility(){
-  const navItems = document.querySelectorAll('.nav-item');
-  if(currentRole==='sales'){
-    navItems.forEach((n,i)=>{
-      if(i===6||i===7) n.classList.add('hidden-by-role');
-      else n.classList.remove('hidden-by-role');
-    });
-  } else {
-    // FEATURE 4: Ops เห็นทุกเมนู (ลบการซ่อนลูกค้าออก)
-    navItems.forEach(n=>n.classList.remove('hidden-by-role'));
-  }
+  // ใช้ data-roles ของแต่ละเมนูแทน index ตายตัว กันเมนูไม่ตรงกับที่ showPage() อนุญาตจริง
+  document.querySelectorAll('.nav-item[data-page]').forEach(n=>{
+    const roles=(n.dataset.roles||'').split(',').filter(Boolean);
+    n.classList.toggle('hidden-by-role', roles.length>0 && !roles.includes(currentRole));
+  });
+  renderBottomNav();
+}
+
+// ===== เมนูแถบล่างบนมือถือ (4 หน้าที่ใช้บ่อยตามบทบาท + ปุ่มเมนูเต็ม) =====
+const bottomNavConfig={
+  sales:[
+    {page:'dashboard',label:'Dashboard'},
+    {page:'rentals',label:'เช่า-ยืม'},
+    {page:'students',label:'ผู้เรียน'},
+    {page:'customers',label:'ลูกค้า'}
+  ],
+  ops:[
+    {page:'dashboard',label:'Dashboard'},
+    {page:'rentals',label:'เช่า-ยืม'},
+    {page:'alerts',label:'แจ้งเตือน'},
+    {page:'calendar',label:'ปฏิทิน'}
+  ]
+};
+function renderBottomNav(){
+  const nav=document.getElementById('bottom-nav');
+  if(!nav||!currentRole)return;
+  const items=bottomNavConfig[currentRole]||bottomNavConfig.sales;
+  const iconFor=page=>{
+    const svg=document.querySelector('.nav-item[data-page="'+page+'"] svg');
+    return svg?svg.outerHTML:'';
+  };
+  let html=items.map(it=>{
+    const badge=it.page==='alerts'?'<span class="bottom-nav-badge" id="bottom-nav-alert-badge" style="display:none"></span>':'';
+    return `<button class="bottom-nav-item${it.page===currentPage?' active':''}" data-page="${it.page}" onclick="showPage('${it.page}')">${iconFor(it.page)}<span>${it.label}</span>${badge}</button>`;
+  }).join('');
+  html+=`<button class="bottom-nav-item" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg><span>เมนู</span></button>`;
+  nav.innerHTML=html;
+  updateAlertBadge();
 }
 
 // ========== DATA (Google Sheets Backend) ==========
@@ -1451,6 +1625,27 @@ let rentals = [];
 let rentalCounter = 0;
 let isLoading = true;
 const salesPeople = ['พี่มิ้ง','พี่ป่าน','พี่แก้มใส','พี่แนน'];
+
+// ========== ปุ่มจัดการในตาราง: ข้อความ+ไอคอน แทนไอคอนล้วน + ล้นเก็บใน modal "เพิ่มเติม" ==========
+let rowActionCache = {};
+let savingRental = false; // กันกดบันทึกจองซ้ำระหว่างรอ Google Sheets
+function actionBtnHtml(a){
+  return `<button class="btn btn-sm ${a.cls||'btn-outline'}" onclick="${a.fn}" title="${a.label}">${a.icon?a.icon+' ':''}${a.label}</button>`;
+}
+function renderRowActions(id, acts){
+  rowActionCache[id]=acts;
+  if(!acts.length) return '';
+  if(acts.length<=3) return acts.map(actionBtnHtml).join('');
+  return acts.slice(0,2).map(actionBtnHtml).join('')
+    + `<button class="btn btn-sm btn-outline" onclick="openRowActions('${id}')">เพิ่มเติม ▾</button>`;
+}
+function openRowActions(id){
+  const acts=rowActionCache[id]||[];
+  document.getElementById('row-actions-body').innerHTML=acts.map(a=>
+    `<button class="btn ${a.cls||'btn-outline'}" style="width:100%;justify-content:flex-start;min-height:48px;font-size:16px;margin-bottom:8px" onclick="closeModal('row-actions-modal');${a.fn}">${a.icon?a.icon+' ':''}${a.label}</button>`
+  ).join('');
+  document.getElementById('row-actions-modal').classList.add('show');
+}
 
 // ========== AUTO-REFRESH / แจ้งเตือนจองใหม่ ==========
 let currentPage = 'dashboard';
@@ -1478,9 +1673,10 @@ async function gsAPI(params) {
 
 async function loadFromSheets(silent) {
   isLoading = true;
-  if(!silent) showToast('กำลังโหลดข้อมูลจาก Google Sheets...', 'info');
+  if(!silent) showLoading('กำลังโหลดข้อมูลจาก Google Sheets…');
   const data = await gsAPI({action: 'getAll'});
   if (!data || data.error) {
+    hideLoading();
     if(!silent) showToast('โหลดข้อมูลไม่สำเร็จ: ' + (data?.error || 'ไม่ทราบสาเหตุ'), 'error');
     isLoading = false;
     return;
@@ -1574,6 +1770,7 @@ async function loadFromSheets(silent) {
     localStorage.setItem('jia_closed_dates',JSON.stringify(closedDates));
   }
   isLoading = false;
+  hideLoading();
   if(!silent) showToast('โหลดข้อมูลสำเร็จ! (สินค้า ' + products.length + ' | ลูกค้า ' + customers.length + ' | เช่า ' + rentals.length + ' | ผู้เรียน ' + studentBookings.length + ')', 'success');
 }
 
@@ -1723,7 +1920,44 @@ const fmtDate = d => {
 };
 const badgeClass = s => s==='ว่าง'||s==='คืนแล้ว'?'badge-green':s==='ถูกเช่า'||s==='กำลังเช่า'?'badge-blue':s==='เกินกำหนด'?'badge-red':s==='จอง'?'badge-orange':s==='ยกเลิก'?'badge-gray':s==='ยืมด่วน'?'badge-purple':s==='ไม่พร้อมใช้งาน'||s==='ออกสอน'||s==='ออกบูธ'?'badge-slate':s==='ทดแทน'?'badge-purple':s==='ใช้งานได้'?'badge-orange':'badge-gray';
 
-function showToast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';setTimeout(()=>t.classList.remove('show'),3000);}
+function showToast(msg,type='success'){
+  const stack=document.getElementById('toast-stack');
+  const t=document.createElement('div');
+  t.className='toast '+type;
+  t.textContent=msg;
+  stack.appendChild(t);
+  requestAnimationFrame(()=>t.classList.add('show'));
+  const dur=type==='error'?5000:3000;
+  setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400);},dur);
+}
+function showLoading(msg){
+  const ov=document.getElementById('loading-overlay');
+  document.getElementById('loading-text').textContent=msg||'กำลังโหลดข้อมูล…';
+  ov.classList.add('show');
+}
+function hideLoading(){document.getElementById('loading-overlay').classList.remove('show');}
+// ===== inline field errors ในฟอร์ม: กรอบแดง + ข้อความใต้ช่อง แทน toast อย่างเดียว =====
+function clearFieldErrors(root){
+  root.querySelectorAll('.field-error').forEach(e=>e.classList.remove('field-error'));
+  root.querySelectorAll('.field-msg').forEach(e=>e.remove());
+}
+function markFieldError(el,msg){
+  if(!el)return;
+  el.classList.add('field-error');
+  const m=document.createElement('div');
+  m.className='field-msg';
+  m.textContent=msg;
+  (el.closest('.form-group')||el.parentNode).appendChild(m);
+  const clear=()=>{el.classList.remove('field-error');m.remove();};
+  el.addEventListener('input',clear,{once:true});
+  el.addEventListener('change',clear,{once:true});
+}
+function focusFirstError(root){
+  const f=root.querySelector('.field-error');
+  if(!f)return;
+  f.scrollIntoView({behavior:'smooth',block:'center'});
+  if(typeof f.focus==='function')f.focus({preventScroll:true});
+}
 function closeModal(id){document.getElementById(id).classList.remove('show');}
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('mobile-overlay').classList.toggle('show');}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('mobile-overlay').classList.remove('show');}
@@ -1731,15 +1965,15 @@ function closeSidebar(){document.getElementById('sidebar').classList.remove('ope
 // ========== NAVIGATION ==========
 const pageList=['dashboard','products','rentals','students','customers','calendar','alerts','commission','instructor-commission','qrcode','addproduct'];
 function showPage(page){
-  if(currentRole==='sales'&&page==='alerts'){page='dashboard';}
-  if(currentRole==='sales'&&page==='commission'){page='dashboard';}
-  if(currentRole==='sales'&&page==='qrcode'){page='dashboard';}
+  if(currentRole==='sales'&&(page==='alerts'||page==='commission'||page==='qrcode')){
+    showToast('หน้านี้สำหรับหน้างานเท่านั้น','info');
+    page='dashboard';
+  }
   currentPage=page;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.nav-item,.bottom-nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
-  const idx=pageList.indexOf(page);
-  if(idx>=0)document.querySelectorAll('.nav-item')[idx].classList.add('active');
+  document.querySelectorAll('.nav-item[data-page="'+page+'"],.bottom-nav-item[data-page="'+page+'"]').forEach(n=>n.classList.add('active'));
   closeSidebar();
   if(page==='dashboard')renderDashboard();
   if(page==='products')renderProducts();
@@ -1765,6 +1999,20 @@ function renderDashboard(){
   const vipCount=rentals.filter(r=>r.isVIP&&(r.status==='ยืมด่วน'||r.status==='กำลังเช่า')).length;
 
   document.getElementById('current-date').textContent=new Date().toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  // ทางลัด: สร้างจองได้จาก Dashboard เลย ไม่ต้องไปหน้าเช่า-ยืมก่อน
+  document.getElementById('quick-actions').innerHTML=
+    '<button class="btn btn-primary" onclick="openRentalModal()">+ สร้างจอง</button>'
+    +(currentRole==='ops'?'<button class="btn btn-vip" onclick="openVIPModal()">⚡ ยืมด่วน/VIP</button>':'')
+    +'<button class="btn btn-outline" onclick="showPage(\'calendar\')">📅 ปฏิทิน</button>';
+
+  if(currentRole==='ops'){
+    const pendingCount=rentals.filter(r=>r.status==='จอง').length;
+    document.getElementById('dash-pending').style.display=pendingCount?'':'none';
+    if(pendingCount) renderPendingBookingList('dash-pending-list',5);
+  } else {
+    document.getElementById('dash-pending').style.display='none';
+  }
 
   if(currentRole==='sales'){
     const myRentals=rentals.filter(r=>r.sales===currentUser);
@@ -1966,11 +2214,32 @@ function renderProducts(){
       rentalDateInfo=activeR.map(r=>`<div style="font-size:10px;color:${r.status==='จอง'?'var(--warning)':'var(--muted)'};margin-top:2px">${r.status==='จอง'?'📅 ':''}${fmtDate(r.start)} - ${r.noDueDate?'ไม่กำหนด':fmtDate(r.due)}</div>`).join('');
     }
     row+=`<td class="text-center"><span class="badge ${badgeClass(p.status)}" ${(p.status==='ถูกเช่า'||p.status==='จอง')?'style="cursor:pointer" onclick="event.stopPropagation();showProductRenter(\''+p.id+'\')" title="คลิกดูผู้เช่า"':''}>${p.status}</span>${rentalDateInfo}${p.statusNote?'<div style="font-size:14px;color:#991b1b;margin-top:6px;font-weight:700;padding:4px 8px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;display:inline-block">⚠ '+p.statusNote+'</div>':''}</td>`;
-    if(!isSales) row+=`<td class="text-center"><select onchange="onChangeProductStatus('${p.id}',this.value,this)" style="padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px"><option ${p.status==='ว่าง'?'selected':''}>ว่าง</option><option ${p.status==='ถูกเช่า'?'selected':''}>ถูกเช่า</option><option ${p.status==='จอง'?'selected':''}>จอง</option><option ${p.status==='ซ่อม'?'selected':''}>ซ่อม</option><option ${p.status==='ไม่พร้อมใช้งาน'?'selected':''}>ไม่พร้อมใช้งาน</option><option ${p.status==='ออกสอน'?'selected':''}>ออกสอน</option><option ${p.status==='ออกบูธ'?'selected':''}>ออกบูธ</option><option ${p.status==='ทดแทน'?'selected':''}>ทดแทน</option><option ${p.status==='ใช้งานได้'?'selected':''}>ใช้งานได้</option></select>${p.statusNote?'<div style="font-size:14px;color:#991b1b;margin-top:6px;font-weight:700;padding:4px 8px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;display:inline-block">⚠ '+p.statusNote+'</div>':''}</td>`;
+    if(!isSales) row+=`<td class="text-center"><select class="table-select" onchange="onChangeProductStatus('${p.id}',this.value,this)"><option ${p.status==='ว่าง'?'selected':''}>ว่าง</option><option ${p.status==='ถูกเช่า'?'selected':''}>ถูกเช่า</option><option ${p.status==='จอง'?'selected':''}>จอง</option><option ${p.status==='ซ่อม'?'selected':''}>ซ่อม</option><option ${p.status==='ไม่พร้อมใช้งาน'?'selected':''}>ไม่พร้อมใช้งาน</option><option ${p.status==='ออกสอน'?'selected':''}>ออกสอน</option><option ${p.status==='ออกบูธ'?'selected':''}>ออกบูธ</option><option ${p.status==='ทดแทน'?'selected':''}>ทดแทน</option><option ${p.status==='ใช้งานได้'?'selected':''}>ใช้งานได้</option></select>${p.statusNote?'<div style="font-size:14px;color:#991b1b;margin-top:6px;font-weight:700;padding:4px 8px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;display:inline-block">⚠ '+p.statusNote+'</div>':''}</td>`;
     row+=`</tr>`;
     return row;
   }).join('');
   renderPagination('prod-pagination',pages,prodPage,p=>{prodPage=p;renderProducts();});
+  renderProductCards(slice,isOps,isSales);
+}
+function renderProductCards(slice,isOps,isSales){
+  document.getElementById('prod-cards').innerHTML=slice.map(p=>{
+    let rentalDateInfo='';
+    const activeR=rentals.filter(r=>(r.productIds||[]).includes(p.id)&&['กำลังเช่า','จอง','เกินกำหนด','ยืมด่วน'].includes(r.status));
+    if(activeR.length>0){
+      rentalDateInfo=activeR.map(r=>`<div style="font-size:12px;color:${r.status==='จอง'?'var(--warning)':'var(--muted)'};margin-top:2px">${r.status==='จอง'?'📅 ':''}${fmtDate(r.start)} - ${r.noDueDate?'ไม่กำหนด':fmtDate(r.due)}</div>`).join('');
+    }
+    const noteHtml=p.statusNote?`<div style="font-size:13px;color:#991b1b;margin-top:4px;font-weight:700;padding:4px 8px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px">⚠ ${p.statusNote}</div>`:'';
+    const statusHtml=!isSales
+      ? `<select class="table-select" onchange="onChangeProductStatus('${p.id}',this.value,this)"><option ${p.status==='ว่าง'?'selected':''}>ว่าง</option><option ${p.status==='ถูกเช่า'?'selected':''}>ถูกเช่า</option><option ${p.status==='จอง'?'selected':''}>จอง</option><option ${p.status==='ซ่อม'?'selected':''}>ซ่อม</option><option ${p.status==='ไม่พร้อมใช้งาน'?'selected':''}>ไม่พร้อมใช้งาน</option><option ${p.status==='ออกสอน'?'selected':''}>ออกสอน</option><option ${p.status==='ออกบูธ'?'selected':''}>ออกบูธ</option><option ${p.status==='ทดแทน'?'selected':''}>ทดแทน</option><option ${p.status==='ใช้งานได้'?'selected':''}>ใช้งานได้</option></select>`
+      : `<span class="badge ${badgeClass(p.status)}" ${(p.status==='ถูกเช่า'||p.status==='จอง')?'onclick="showProductRenter(\''+p.id+'\')" style="cursor:pointer"':''}>${p.status}</span>`;
+    return `<div class="rec-card">
+      <div class="rec-card-head"><span onclick="showProductHistory('${p.id}')" style="color:var(--primary);text-decoration:underline;cursor:pointer">${p.id}</span><span class="badge badge-gray">${p.cat}</span></div>
+      <div class="rec-row"><span>ชื่อ</span><span>${p.name}</span></div>
+      ${!isOps?`<div class="rec-row"><span>ราคา/วัน</span><span class="price">฿${fmt(p.price)}</span></div>`:''}
+      <div class="rec-row"><span>สถานะ</span><span>${statusHtml}</span></div>
+      ${rentalDateInfo}${noteHtml}
+    </div>`;
+  }).join('');
 }
 let unavailPendingId = null;
 let unavailPendingSelect = null;
@@ -2149,43 +2418,78 @@ function renderRentals(){
     const isLocked = ['คืนแล้ว','ยกเลิก'].includes(r.status);
     if(isActive && !isSales){
       const statusOpts = ['จอง','กำลังเช่า','เกินกำหนด','ยืมด่วน','คืนแล้ว','ยกเลิก'];
-      rowHtml+=`<td class="text-center"><select onchange="onChangeRentalStatus('${r.id}',this.value)" style="padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-weight:600">`;
+      rowHtml+=`<td class="text-center"><select class="table-select" onchange="onChangeRentalStatus('${r.id}',this.value)">`;
       statusOpts.forEach(st=>{rowHtml+=`<option value="${st}" ${r.status===st?'selected':''}>${st}</option>`;});
       rowHtml+=`</select></td>`;
     } else {
       rowHtml+=`<td class="text-center"><span class="badge ${badgeClass(r.status)}">${r.status}</span></td>`;
     }
     rowHtml+=`<td style="font-size:11px;color:var(--muted);white-space:nowrap">${r.lastEditedDate||'—'}</td>`;
-    rowHtml+=`<td class="text-center" style="white-space:nowrap">`;
 
-    // ปุ่มแก้ไข — active + คืนแล้ว (ยกเลิกไม่ให้แก้)
+    // ปุ่มจัดการ — ข้อความ+ไอคอนชัดเจน, ปุ่มสำคัญ (ยืนยันส่ง/รับคืน) ขึ้นก่อนเสมอ
+    const acts=[];
     if(isActive || r.status==='คืนแล้ว'){
-      rowHtml+=`<button class="btn btn-sm btn-outline" onclick="openEditRentalModal('${r.id}')" style="font-size:11px;margin:1px" title="แก้ไข">✏️</button>`;
+      acts.push({label:'แก้ไข',icon:'✏️',fn:`openEditRentalModal('${r.id}')`,cls:'btn-outline'});
     }
-    // ปุ่มใบยืนยัน
-    if(r.status==='จอง'||r.status==='กำลังเช่า'||r.status==='ยืมด่วน'){
-      rowHtml+=`<button class="btn btn-sm btn-outline" onclick="showReceipt('${r.id}')" style="font-size:11px;margin:1px" title="ใบจอง">📄</button>`;
+    if(['จอง','กำลังเช่า','ยืมด่วน','คืนแล้ว'].includes(r.status)){
+      acts.push({label:'ใบจอง',icon:'📄',fn:`showReceipt('${r.id}')`,cls:'btn-outline'});
     }
-    // ปุ่มใบคืน (สถานะคืนแล้ว)
     if(r.status==='คืนแล้ว'){
-      rowHtml+=`<button class="btn btn-sm btn-outline" onclick="showReturnReceipt('${r.id}')" style="font-size:11px;margin:1px" title="ใบคืน">📋</button>`;
-      rowHtml+=`<button class="btn btn-sm btn-outline" onclick="showReceipt('${r.id}')" style="font-size:11px;margin:1px" title="ใบจอง">📄</button>`;
+      acts.push({label:'ใบคืน',icon:'📋',fn:`showReturnReceipt('${r.id}')`,cls:'btn-outline'});
     }
-    // ปุ่มใบรับเงินค่าประกัน (เมื่อมีมัดจำ)
     if(r.deposit>0){
-      rowHtml+=`<button class="btn btn-sm btn-outline" onclick="showGuaranteeReceipt('${r.id}')" style="font-size:11px;margin:1px;background:#fffbeb;color:#92400e" title="ใบประกัน">🧾</button>`;
+      acts.push({label:'ใบประกัน',icon:'🧾',fn:`showGuaranteeReceipt('${r.id}')`,cls:'btn-amber-soft'});
     }
-
-    if(isSales){
-      if(r.status==='จอง') rowHtml+=`<button class="btn btn-sm" onclick="cancelBooking('${r.id}')" style="font-size:11px;margin:1px;background:#fee2e2;color:#991b1b">ยกเลิก</button>`;
-    } else {
-      if(r.status==='จอง') rowHtml+=`<button class="btn btn-sm btn-primary" onclick="openConfirmBookingModal('${r.id}')" style="font-size:11px;margin:1px">ยืนยัน</button><button class="btn btn-sm" onclick="cancelBooking('${r.id}')" style="font-size:11px;margin:1px;background:#fee2e2;color:#991b1b">ยกเลิก</button>`;
-      if(r.status==='กำลังเช่า'||r.status==='เกินกำหนด'||r.status==='ยืมด่วน') rowHtml+=`<button class="btn btn-sm" onclick="openExtendModal('${r.id}')" style="font-size:11px;margin:1px;background:#e0f2fe;color:#0369a1" title="ต่ออายุ">🔄</button><button class="btn btn-sm btn-success" onclick="openReturnModal('${r.id}')">คืน</button>`;
+    if(r.status==='จอง'){
+      acts.push({label:'ยกเลิกจอง',icon:'✖',fn:`cancelBooking('${r.id}')`,cls:'btn-danger-soft'});
     }
-    rowHtml+=`</td></tr>`;
+    if(!isSales && (r.status==='กำลังเช่า'||r.status==='เกินกำหนด'||r.status==='ยืมด่วน')){
+      acts.push({label:'ต่ออายุ',icon:'🔄',fn:`openExtendModal('${r.id}')`,cls:'btn-blue-soft'});
+      acts.unshift({label:'รับคืน',icon:'↩️',fn:`openReturnModal('${r.id}')`,cls:'btn-success',primary:true});
+    }
+    if(!isSales && r.status==='จอง'){
+      acts.unshift({label:'ยืนยันส่ง',icon:'✅',fn:`openConfirmBookingModal('${r.id}')`,cls:'btn-primary',primary:true});
+    }
+    rowHtml+=`<td class="text-center row-actions">${renderRowActions(r.id,acts)}</td>`;
+    rowHtml+=`</tr>`;
     return rowHtml;
   }).join('');
   renderPagination('rent-pagination',pages,rentPage,p=>{rentPage=p;renderRentals();});
+  renderRentalCards(slice);
+}
+
+function renderRentalCards(slice){
+  const isOps=currentRole==='ops';
+  document.getElementById('rent-cards').innerHTML=slice.map(r=>{
+    const vipTag=r.isVIP?'<span class="vip-tag">⚡VIP</span> ':'';
+    const acts=rowActionCache[r.id]||[];
+    const primary=acts.find(a=>a.primary);
+    const rest=acts.filter(a=>a!==primary);
+    const prodText = r.status==='จอง'?(()=>{
+      const ids=r.productIds||[];
+      const catCount={};
+      ids.forEach(pid=>{const p=products.find(x=>x.id===pid);if(p){catCount[p.cat]=(catCount[p.cat]||0)+1;}});
+      return Object.entries(catCount).map(([c,n])=>`${c} × ${n}`).join(', ')||'—';
+    })():(Array.isArray(r.productNames)?r.productNames.join(', '):r.productName||'');
+    const isActive=['จอง','กำลังเช่า','เกินกำหนด','ยืมด่วน'].includes(r.status);
+    const statusHtml=(isActive && currentRole!=='sales')
+      ? `<select class="table-select" onchange="onChangeRentalStatus('${r.id}',this.value)">${['จอง','กำลังเช่า','เกินกำหนด','ยืมด่วน','คืนแล้ว','ยกเลิก'].map(st=>`<option value="${st}" ${r.status===st?'selected':''}>${st}</option>`).join('')}</select>`
+      : `<span class="badge ${badgeClass(r.status)}">${r.status}</span>`;
+    return `<div class="rec-card">
+      <div class="rec-card-head"><span>${vipTag}${r.id}</span>${statusHtml}</div>
+      <div class="rec-row"><span>ผู้เช่า</span><span>${r.customer}</span></div>
+      <div class="rec-row"><span>สินค้า</span><span>${prodText}</span></div>
+      <div class="rec-row"><span>วันเช่า → คืน</span><span>${fmtDate(r.start)} → ${r.noDueDate?'ไม่กำหนด':fmtDate(r.due)}</span></div>
+      <div class="rec-row"><span>วันส่งของ</span><span>${fmtDate(r.deliverDate)}</span></div>
+      ${!isOps?`<div class="rec-row"><span>รวม</span><span class="price">฿${fmt(r.total)}</span></div>`:''}
+      <div class="rec-row"><span>มัดจำ</span><span>${r.deposit?'฿'+fmt(r.deposit):'—'}</span></div>
+      <div class="rec-row"><span>เซลล์</span><span>${r.sales||'—'}</span></div>
+      <div class="rec-actions">
+        ${primary?`<button class="btn ${primary.cls}" onclick="${primary.fn}">${primary.icon?primary.icon+' ':''}${primary.label}</button>`:''}
+        ${rest.length?`<button class="btn btn-outline" onclick="openRowActions('${r.id}')">เพิ่มเติม ▾</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ========== CUSTOMERS ==========
@@ -2207,6 +2511,10 @@ function renderCustomers(){
     const salesName=c.sales||(latestRental?latestRental.sales:'')||'—';
     const addr=c.address||'';
     const shortAddr=addr.length>30?addr.substring(0,30)+'...':addr;
+    const acts=[
+      {label:'แก้ไข',icon:'✏️',fn:`event.stopPropagation();openEditCustomerModal('${c.id}')`,cls:'btn-outline'},
+      {label:'ดูประวัติ',icon:'📜',fn:`event.stopPropagation();openCustomerDetail('${c.id}')`,cls:'btn-outline'}
+    ];
     return `<tr style="cursor:pointer" onclick="openCustomerDetail('${c.id}')">
       <td style="font-weight:600">${c.id}</td>
       <td>${c.name} ${activeCount?'<span class="badge badge-blue" style="font-size:10px">'+activeCount+' active</span>':''}</td>
@@ -2216,11 +2524,29 @@ function renderCustomers(){
       <td>${salesName}</td>
       <td class="text-center">${custRentals.length}</td>
       <td class="text-right price">${isOps?'—':'฿'+fmt(c.total)}</td>
-      <td class="text-center">
-        <button class="btn btn-sm btn-outline" onclick="event.stopPropagation();openEditCustomerModal('${c.id}')" style="font-size:11px;margin:1px" title="แก้ไข">✏️</button>
-        <button class="btn btn-sm btn-outline" onclick="event.stopPropagation();openCustomerDetail('${c.id}')" style="font-size:11px;margin:1px">ดูประวัติ</button>
-      </td>
+      <td class="text-center row-actions">${renderRowActions(c.id,acts)}</td>
     </tr>`;
+  }).join('');
+  renderCustomerCards(filtered);
+}
+
+function renderCustomerCards(filtered){
+  const isOps=currentRole==='ops';
+  document.getElementById('cust-cards').innerHTML=filtered.map(c=>{
+    const custRentals=rentals.filter(r=>r.customer===c.name);
+    const activeCount=custRentals.filter(r=>['จอง','กำลังเช่า','เกินกำหนด','ยืมด่วน'].includes(r.status)).length;
+    const latestRental=custRentals.length?custRentals.sort((a,b)=>(b.start||0)-(a.start||0))[0]:null;
+    const salesName=c.sales||(latestRental?latestRental.sales:'')||'—';
+    const acts=rowActionCache[c.id]||[];
+    return `<div class="rec-card">
+      <div class="rec-card-head"><span>${c.name}</span>${activeCount?'<span class="badge badge-blue">'+activeCount+' active</span>':''}</div>
+      <div class="rec-row"><span>โทร</span><span>${c.phone?'<a href="tel:'+c.phone+'">'+c.phone+'</a>':'—'}</span></div>
+      <div class="rec-row"><span>จังหวัด</span><span>${c.province||'—'}${c.province?' ('+getBufferDays(c.province)+' วัน)':''}</span></div>
+      <div class="rec-row"><span>เซลล์</span><span>${salesName}</span></div>
+      <div class="rec-row"><span>จำนวนเช่า</span><span>${custRentals.length} ครั้ง</span></div>
+      ${!isOps?`<div class="rec-row"><span>ยอดรวม</span><span class="price">฿${fmt(c.total)}</span></div>`:''}
+      <div class="rec-actions">${acts.map(a=>`<button class="btn ${a.cls||'btn-outline'}" onclick="${a.fn}">${a.icon?a.icon+' ':''}${a.label}</button>`).join('')}</div>
+    </div>`;
   }).join('');
 }
 
@@ -2289,14 +2615,14 @@ function openCustomerDetail(custId){
 }
 
 // ========== ALERTS ==========
-function renderAlerts(){
-  checkOverdue();
+// จองใหม่ รอ Ops ยืนยันส่ง — ใช้ร่วมกันทั้งหน้าแจ้งเตือน (เต็ม) และการ์ดบน Dashboard (limit)
+function renderPendingBookingList(containerId,limit){
   const today=new Date();today.setHours(0,0,0,0);
-  const in3Days=new Date(today);in3Days.setDate(in3Days.getDate()+3);
-
-  // จองใหม่ รอ Ops ยืนยันส่ง
-  const pendingBookings=rentals.filter(r=>r.status==='จอง').sort((a,b)=>(a.deliverDate||a.start)-(b.deliverDate||b.start));
-  document.getElementById('newbooking-alerts').innerHTML=pendingBookings.length?pendingBookings.map(r=>{
+  let pendingBookings=rentals.filter(r=>r.status==='จอง').sort((a,b)=>(a.deliverDate||a.start)-(b.deliverDate||b.start));
+  if(limit) pendingBookings=pendingBookings.slice(0,limit);
+  const el=document.getElementById(containerId);
+  if(!el)return;
+  el.innerHTML=pendingBookings.length?pendingBookings.map(r=>{
     const deliverD=r.deliverDate?new Date(r.deliverDate):null;
     let urgencyColor='#9a3412',urgencyText='';
     if(deliverD){
@@ -2316,11 +2642,18 @@ function renderAlerts(){
         ${r.note?'<div style="font-size:14px;color:#991b1b;margin-top:6px;font-weight:700;padding:4px 8px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;display:inline-block">⚠ '+r.note+'</div>':''}
       </div>
       <div style="display:flex;flex-direction:column;gap:4px">
-        <button class="btn btn-sm btn-primary" onclick="openConfirmBookingModal('${r.id}')">ยืนยัน</button>
+        <button class="btn btn-sm btn-primary" onclick="openConfirmBookingModal('${r.id}')">✅ ยืนยันส่ง</button>
         <button class="btn btn-sm btn-outline" onclick="showReceipt('${r.id}')">ใบจอง</button>
       </div>
     </div>`;
   }).join(''):'<div class="empty-state"><p>ไม่มีรายการจองใหม่</p></div>';
+}
+function renderAlerts(){
+  checkOverdue();
+  const today=new Date();today.setHours(0,0,0,0);
+  const in3Days=new Date(today);in3Days.setDate(in3Days.getDate()+3);
+
+  renderPendingBookingList('newbooking-alerts');
   newBookingIds.clear();
 
   // ใกล้ถึงกำหนดคืน (ภายใน 3 วัน)
@@ -2398,6 +2731,11 @@ function updateAlertBadge(){
   if(badge){
     if(totalAlerts>0){badge.textContent=totalAlerts;badge.style.display='inline';}
     else{badge.style.display='none';}
+  }
+  const bottomBadge=document.getElementById('bottom-nav-alert-badge');
+  if(bottomBadge){
+    if(totalAlerts>0){bottomBadge.textContent=totalAlerts;bottomBadge.style.display='inline-flex';}
+    else{bottomBadge.style.display='none';}
   }
 }
 
@@ -3460,12 +3798,12 @@ function renderStudents(){
       <td>${b.sales||'—'}</td>
       <td><span class="badge ${stCls}">${b.status}</span></td>
       <td style="font-size:11px;color:var(--muted);white-space:nowrap">${b.lastEditedDate||'—'}</td>
-      <td style="white-space:nowrap">
-        <button class="btn btn-sm btn-outline" onclick="editStudentBooking('${b.id}')" style="font-size:11px;margin:1px" title="แก้ไข">✏️</button>
-        ${b.status==='จอง'?`<button class="btn btn-sm btn-outline" onclick="changeStudentStatus('${b.id}','เรียนแล้ว')" style="font-size:11px;margin:1px" title="เรียนแล้ว">✅</button>`:''}
-        ${b.status==='จอง'?`<button class="btn btn-sm btn-outline" onclick="changeStudentStatus('${b.id}','ยกเลิก')" style="font-size:11px;margin:1px;color:var(--danger)" title="ยกเลิก">✕</button>`:''}
-        <button class="btn btn-sm btn-outline" onclick="showStudentReceipt('${b.id}')" style="font-size:11px;margin:1px" title="ใบจอง">📄</button>
-      </td></tr>`;
+      <td class="row-actions">${renderRowActions(b.id,[
+        {label:'แก้ไข',icon:'✏️',fn:`editStudentBooking('${b.id}')`,cls:'btn-outline'},
+        ...(b.status==='จอง'?[{label:'เรียนแล้ว',icon:'✅',fn:`changeStudentStatus('${b.id}','เรียนแล้ว')`,cls:'btn-outline'}]:[]),
+        ...(b.status==='จอง'?[{label:'ยกเลิก',icon:'✕',fn:`changeStudentStatus('${b.id}','ยกเลิก')`,cls:'btn-danger-soft'}]:[]),
+        {label:'ใบจอง',icon:'📄',fn:`showStudentReceipt('${b.id}')`,cls:'btn-outline'}
+      ])}</td></tr>`;
   });
   document.getElementById('stu-tbody').innerHTML=html||'<tr><td colspan="13" style="text-align:center;padding:40px;color:var(--muted)">ยังไม่มีรายการจองผู้เรียน</td></tr>';
 }
@@ -3869,10 +4207,16 @@ function previewBeforeSave(){
   const end=document.getElementById('rm-end').value;
   const mode=currentRentalMode;
   const cfg=RENTAL_MODES[mode];
-  // Validate
-  if(!custId){showToast('กรุณาเลือกลูกค้า','error');return;}
-  if(!selectedProductIds.length){showToast('กรุณาเลือกสินค้า','error');return;}
-  if(!start||!end){showToast('กรุณาเลือกวันเช่าและกำหนดคืน','error');return;}
+  // Validate — เก็บ error ทุกช่องพร้อมกัน แสดงกรอบแดง+ข้อความใต้ช่อง แล้วเลื่อนไปช่องแรก
+  const rentalModal=document.getElementById('rental-modal');
+  clearFieldErrors(rentalModal);
+  let hasError=false;
+  if(!custId){markFieldError(document.getElementById('rm-customer'),'กรุณาเลือกลูกค้า');hasError=true;}
+  if(!selectedProductIds.length){markFieldError(document.getElementById('rm-tabs'),'กรุณาเลือกสินค้าอย่างน้อย 1 รายการ');hasError=true;}
+  if(!start){markFieldError(document.getElementById('rm-start'),'กรุณาเลือกวันเช่า');hasError=true;}
+  if(!end){markFieldError(document.getElementById('rm-end'),'กรุณาเลือกวันกำหนดคืน');hasError=true;}
+  if(mode!=='daily'&&!(parseFloat(document.getElementById('rm-unit-price').value)>0)){markFieldError(document.getElementById('rm-unit-price'),'กรุณากรอกค่าเช่า');hasError=true;}
+  if(hasError){focusFirstError(rentalModal);showToast('กรุณากรอกข้อมูลให้ครบ','error');return;}
   const cust=customers.find(c=>c.id===custId);
   // สรุป category
   const catMap={};
@@ -3924,7 +4268,8 @@ function previewBeforeSave(){
   document.getElementById('booking-preview-modal').classList.add('show');
 }
 
-function saveRental(){
+async function saveRental(){
+  if(savingRental)return;
   const custId=document.getElementById('rm-customer').value;
   const sales=document.getElementById('rm-sales').value;
   const start=document.getElementById('rm-start').value;
@@ -3980,14 +4325,25 @@ function saveRental(){
     isVIP:false,vipReason:'',
     rentalMode:mode,installments,monthlyAmount:monthlyAmt
   };
+  savingRental=true;
+  closeModal('booking-preview-modal');
+  closeModal('rental-modal');
+  showLoading('กำลังบันทึก…');
   rentals.push(newRental);
   // ไม่ล็อคสินค้าเป็น "จอง" — ให้ล็อคตอนยืนยันส่งจริงเท่านั้น
   cust.rentCount++;cust.total+=total;
-  closeModal('rental-modal');
-  showToast(`บันทึกจอง ${cfg.label} ${selProds.length} รายการ สำเร็จ!`);
-  gsSaveRental(newRental).then(res=>{if(res&&!res.error)gsNotifyLine('newBooking',newRental);});
-  showReceipt(newRental.id);
-  renderRentals();
+  try{
+    const res=await gsSaveRental(newRental); // gsSaveRental() เองแจ้ง toast แดงให้แล้วถ้าล้มเหลว
+    if(res&&!res.error){
+      gsNotifyLine('newBooking',newRental);
+      showToast(`บันทึกจอง ${cfg.label} ${selProds.length} รายการ สำเร็จ!`);
+      showReceipt(newRental.id);
+    }
+  } finally {
+    hideLoading();
+    savingRental=false;
+    renderRentals();
+  }
 }
 
 // ========== FEATURE 1: EDIT RENTAL ==========
@@ -4769,6 +5125,7 @@ function doConfirmBooking(){
 
 function cancelBooking(id){
   const r=rentals.find(x=>x.id===id);if(!r||r.status!=='จอง')return;
+  if(!confirm(`ยกเลิกการจอง ${r.id} ของ ${r.customer||'ลูกค้า'}?`))return;
   const ids=r.productIds||[r.productId];
   ids.forEach(pid=>{const prod=products.find(p=>p.id===pid);if(prod)prod.status='ว่าง';});
   r.status='ยกเลิก';
@@ -5595,6 +5952,18 @@ async function init(){
   }
   if (!salesNames.length) salesNames = ['พี่มิ้ง','พี่ป่าน','พี่แก้มใส','พี่แนน'];
   if (!opsNames.length) opsNames = ['ป่าน','เจ๋ง','ตี๋','ปั้น','หมวย'];
+  // จำสถานะล็อกอินไว้ในเครื่อง — refresh หน้าแล้วไม่ต้องเลือกบทบาท/ชื่อใหม่
+  try{
+    const savedRole=localStorage.getItem('jia_role');
+    const savedUser=localStorage.getItem('jia_user');
+    const savedNames=savedRole==='sales'?salesNames:savedRole==='ops'?opsNames:[];
+    if(savedRole && savedUser && savedNames.includes(savedUser)){
+      selectRole(savedRole);
+      document.getElementById('role-name-select').value=savedUser;
+      checkRoleReady();
+      enterSystem();
+    }
+  }catch(e){}
 }
 init();
 
