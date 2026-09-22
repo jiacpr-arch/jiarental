@@ -127,20 +127,19 @@ body{padding:10px}
     </div>
     <div class="contact">
       <a href="tel:0909791212" id="contact-phone">📞 โทร 090-979-1212</a>
-      <a href="https://line.me/R/ti/p/@yourlineoa" id="contact-line" target="_blank">💬 แชท LINE OA</a>
+      <a href="https://line.me/R/ti/p/@jiacpr" id="contact-line" target="_blank">💬 แชท LINE OA</a>
     </div>
   </div>
 </div>
 
 <script>
-// ⚠️ ผู้ดูแลระบบ: แก้ 3 ค่านี้ก่อนเผยแพร่หน้านี้จริง
-// 1) GAS_URL ต้องเป็น URL เดียวกับใน index.html (ต้อง deploy apps_script_additions.js ก่อน — ดูคำแนะนำในไฟล์นั้น)
-// 2) เบอร์โทรติดต่อ
-// 3) ลิงก์ LINE OA ของบริษัท
+// ⚠️ ผู้ดูแลระบบ: ตรวจ GAS_URL ให้เป็น URL เดียวกับใน index.html ก่อนเผยแพร่หน้านี้จริง
+// (ต้อง deploy apps_script_additions.js ก่อน — ดูคำแนะนำในไฟล์นั้น)
+// เบอร์โทรและลิงก์ LINE OA ใส่ค่าจริงแล้ว
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbz-BdCSLYps-EY9cmrY2eBN6xZlTdEBDqeZSMZXKGbarfRhyNQUyeact_IOeqktJL2qTw/exec';
 document.getElementById('contact-phone').href = 'tel:0909791212';
 document.getElementById('contact-phone').textContent = '📞 โทร 090-979-1212';
-document.getElementById('contact-line').href = 'https://line.me/R/ti/p/@yourlineoa';
+document.getElementById('contact-line').href = 'https://line.me/R/ti/p/@jiacpr';
 
 const UNAVAILABLE_STATUSES = ['ซ่อม','ไม่พร้อมใช้งาน','ออกสอน','ออกบูธ','ทดแทน'];
 
