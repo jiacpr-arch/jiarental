@@ -690,10 +690,12 @@ QR Code สินค้า
 <div class="form-group"><label>เวลาที่ปิด</label>
 <label style="display:flex;align-items:center;gap:8px;font-weight:600;margin:4px 0"><input type="checkbox" id="cd-whole" checked onchange="toggleClosedSlots()" style="width:18px;height:18px"> ปิดทั้งวัน</label>
 <div id="cd-slots" style="display:none;padding:8px 12px;background:#fef2f2;border:1px solid #fca5a5;border-radius:8px">
-<div style="font-size:12px;color:var(--muted);margin-bottom:6px">เลือกรอบที่จะปิด — รอบอื่นของวันนั้นยังจองได้</div>
-<label style="display:flex;align-items:center;gap:8px;margin:4px 0"><input type="checkbox" class="cd-slot" value="11.00-13.00 น." style="width:18px;height:18px"> 11.00-13.00 น.</label>
-<label style="display:flex;align-items:center;gap:8px;margin:4px 0"><input type="checkbox" class="cd-slot" value="14.00-16.00 น." style="width:18px;height:18px"> 14.00-16.00 น.</label>
-<label style="display:flex;align-items:center;gap:8px;margin:4px 0"><input type="checkbox" class="cd-slot" value="17.00-19.00 น." style="width:18px;height:18px"> 17.00-19.00 น.</label>
+<div style="font-size:12px;color:var(--muted);margin-bottom:6px">เลือกช่วงเวลาที่จะปิด — เวลาอื่นของวันนั้นยังจองได้</div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+<label style="display:flex;align-items:center;gap:6px;margin:0">ตั้งแต่ <select id="cd-from" onchange="onClosedFromChange()" style="width:auto"></select></label>
+<label style="display:flex;align-items:center;gap:6px;margin:0">ถึง <select id="cd-to" style="width:auto"></select></label>
+</div>
+<div id="cd-quick" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"></div>
 </div>
 </div>
 <button class="btn btn-primary" onclick="addClosedDate()" style="width:100%;background:#dc2626;margin-bottom:16px">+ เพิ่มวันปิด</button>
@@ -3401,17 +3403,36 @@ function confirmBatchStatus(){
 
 // ========== CLOSED DATES + DATE VALIDATION ==========
 const CLOSE_SLOTS=['11.00-13.00 น.','14.00-16.00 น.','17.00-19.00 น.'];
+// ตัวเลือกเวลาปิด ทุก 30 นาที 07.00-22.00
+const CLOSE_TIMES=Array.from({length:31},(_,i)=>`${String(7+Math.floor(i/2)).padStart(2,'0')}.${i%2?'30':'00'}`);
+// อ่านช่วงเวลาแบบยืดหยุ่น ("11.00-13.00 น.", "11-13", "14-16น", "11:00 AM – 1:00 PM") เป็นนาทีนับจากเที่ยงคืน
+// กติกาเดียวกับระบบใหม่ (lib/office-data.mjs parseTimeRange) — อ่านไม่ได้ได้ null
+function parseTimeRange(text){
+  const m=/(\d{1,2})(?:[.:](\d{2}))?\s*([ap]m)?\s*[-–—]\s*(\d{1,2})(?:[.:](\d{2}))?\s*([ap]m)?/i.exec(String(text==null?'':text));
+  if(!m||Number(m[2]||0)>59||Number(m[5]||0)>59)return null;
+  const at=(h,mm,ap)=>(ap?Number(h)%12+(/pm/i.test(ap)?12:0):Number(h))*60+Number(mm||0);
+  const start=at(m[1],m[2],m[3]),end=at(m[4],m[5],m[6]);
+  return start<end&&end<=1440?{start,end}:null;
+}
+function timeRangeText(r){const c=n=>`${String(Math.floor(n/60)).padStart(2,'0')}.${String(n%60).padStart(2,'0')}`;return r?`${c(r.start)}-${c(r.end)} น.`:'';}
+function closedRanges(list){return [...new Set((list||[]).map(x=>timeRangeText(parseTimeRange(x))).filter(Boolean))].sort();}
+// วันปิดเก็บช่วงเวลาไว้หน้าเหตุผลในชีต: "[13.00-19.00 น.] เหตุผล" (ระบบใหม่อ่านรูปแบบเดียวกัน)
 function parseClosureReason(text){
   const raw=String(text==null?'':text).trim();const m=/^\[([^\]]*)\]\s*([\s\S]*)$/.exec(raw);
   if(!m)return {slots:[],reason:raw};
-  const named=m[1].split(',').map(x=>x.trim());
-  return {slots:CLOSE_SLOTS.filter(sl=>named.includes(sl)),reason:m[2].trim()};
+  return {slots:closedRanges(m[1].split(',')),reason:m[2].trim()};
 }
-function closureReasonText(slots,reason){const sl=CLOSE_SLOTS.filter(x=>(slots||[]).includes(x));return sl.length?`[${sl.join(', ')}] ${reason}`:reason;}
+function closureReasonText(slots,reason){const sl=closedRanges(slots);return sl.length?`[${sl.join(', ')}] ${reason}`:reason;}
 function closureSlotsLabel(slots){return slots&&slots.length?slots.join(', '):'ทั้งวัน';}
-// วัน/รอบนี้ปิดรับจองไหม: ปิดทั้งวัน หรือรอบตรงกับที่ปิด
+// เวลาจองนี้ชนช่วงที่ปิดไหม — เวลาที่อ่านไม่ได้ถือว่าชน
+function rangeHitsClosure(slots,timeslot){
+  if(!(slots||[]).length)return true;
+  const r=parseTimeRange(timeslot);
+  return !r||slots.some(x=>{const c=parseTimeRange(x);return !!c&&c.start<r.end&&r.start<c.end;});
+}
+// วัน/เวลานี้ปิดรับจองไหม: ปิดทั้งวัน หรือเวลาคาบเกี่ยวช่วงที่ปิด
 function findClosure(date){return closedDates.find(d=>normDate(d.date)===normDate(date));}
-function isSlotClosed(date,slot){const c=findClosure(date);return !!c&&!!(c.slots||[]).length&&c.slots.includes(slot);}
+function isSlotClosed(date,slot){const c=findClosure(date);return !!c&&!!(c.slots||[]).length&&rangeHitsClosure(c.slots,slot);}
 // Private Course ใช้รอบนั้นทั้งรอบ: รอบที่มี Private แล้วคนอื่นจองไม่ได้ และ Private เลือกได้เฉพาะรอบที่ยังไม่มีผู้จอง
 const SEAT_COURSES=['Mini Course','Join Course','Private Course'];
 function slotTakers(date,slot){return studentBookings.filter(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.timeslot===slot&&b.id!==editingStudentId&&SEAT_COURSES.includes(b.course));}
@@ -3422,11 +3443,21 @@ function privateSlotConflict(date,slot,course){
   if(course==='Private Course'&&t.length)return 'Private Course ต้องใช้รอบที่ยังไม่มีผู้จอง รอบนี้มีผู้จองแล้ว';
   return '';
 }
-function closureBlocks(date,slot){const c=findClosure(date);if(!c)return null;if(!(c.slots||[]).length)return c;return c.slots.includes(slot)?c:null;}
+function closureBlocks(date,slot){const c=findClosure(date);if(!c)return null;return rangeHitsClosure(c.slots,slot)?c:null;}
 function toggleClosedSlots(){
   const whole=document.getElementById('cd-whole').checked;
   document.getElementById('cd-slots').style.display=whole?'none':'';
 }
+function setClosedRange(from,to){
+  const f=document.getElementById('cd-from'),t=document.getElementById('cd-to');
+  if(!f.options.length)f.innerHTML=CLOSE_TIMES.slice(0,-1).map(x=>`<option>${x}</option>`).join('');
+  f.value=from;
+  t.innerHTML=CLOSE_TIMES.filter(x=>x>from).map(x=>`<option>${x}</option>`).join('');
+  t.value=to>from&&CLOSE_TIMES.includes(to)?to:t.options[0].value;
+  document.getElementById('cd-quick').innerHTML=CLOSE_SLOTS.map(sl=>{const [a,b]=sl.replace(' น.','').split('-');const on=f.value===a&&t.value===b;
+    return `<button type="button" class="btn btn-sm btn-outline" onclick="setClosedRange('${a}','${b}')" style="font-size:12px;${on?'background:#fee2e2;border-color:#dc2626;color:#b91c1c;font-weight:700':''}">${sl}</button>`;}).join('');
+}
+function onClosedFromChange(){setClosedRange(document.getElementById('cd-from').value,document.getElementById('cd-to').value);}
 let closedDates=JSON.parse(localStorage.getItem('jia_closed_dates')||'[]').map(d=>d&&d.slots?d:{...d,...parseClosureReason(d&&d.reason)});
 
 function normDate(d){
@@ -3439,7 +3470,7 @@ function openClosedDatesModal(){
   document.getElementById('cd-date').value='';
   document.getElementById('cd-reason').value='';
   document.getElementById('cd-whole').checked=true;
-  document.querySelectorAll('.cd-slot').forEach(x=>x.checked=false);
+  setClosedRange('11.00','13.00');
   toggleClosedSlots();
   renderClosedDates();
   document.getElementById('closed-dates-modal').classList.add('show');
@@ -3451,11 +3482,12 @@ function addClosedDate(){
   if(!date){showToast('กรุณาเลือกวันที่','error');return;}
   if(closedDates.find(d=>normDate(d.date)===normDate(date))){showToast('วันนี้ตั้งปิดไว้แล้ว — ลบรายการเดิมก่อนแล้วตั้งใหม่','error');return;}
   const whole=document.getElementById('cd-whole').checked;
-  const slots=whole?[]:Array.from(document.querySelectorAll('.cd-slot:checked')).map(x=>x.value);
-  if(!whole&&!slots.length){showToast('เลือกรอบที่จะปิดอย่างน้อย 1 รอบ หรือติ๊ก "ปิดทั้งวัน"','error');return;}
-  // กันปิดรอบที่มีคนจองอยู่แล้ว
-  const busy=studentBookings.filter(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&(whole||slots.includes(b.timeslot)));
-  if(busy.length){showToast(`มีรายการจองอยู่ ${busy.length} รายการ${whole?'ในวันนี้':'ในรอบที่เลือก'} — จัดการรายการนั้นก่อน`,'error');return;}
+  const from=document.getElementById('cd-from').value,to=document.getElementById('cd-to').value;
+  if(!whole&&!(from<to)){showToast('เวลาสิ้นสุดต้องหลังเวลาเริ่ม','error');return;}
+  const slots=whole?[]:[`${from}-${to} น.`];
+  // กันปิดช่วงที่มีคนจองอยู่แล้ว
+  const busy=studentBookings.filter(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&rangeHitsClosure(slots,b.timeslot));
+  if(busy.length){showToast(`มีรายการจองอยู่ ${busy.length} รายการ${whole?'ในวันนี้':'ในช่วงเวลาที่เลือก'} — จัดการรายการนั้นก่อน`,'error');return;}
   const plain=reason||'ปิดรับจอง';
   closedDates.push({date,reason:plain,slots});
   closedDates.sort((a,b)=>a.date.localeCompare(b.date));
@@ -3464,10 +3496,9 @@ function addClosedDate(){
   document.getElementById('cd-date').value='';
   document.getElementById('cd-reason').value='';
   document.getElementById('cd-whole').checked=true;
-  document.querySelectorAll('.cd-slot').forEach(x=>x.checked=false);
   toggleClosedSlots();
   renderClosedDates();
-  showToast(slots.length?`ปิดรับจองวันที่ ${fmtDate(new Date(date))} รอบ ${slots.join(', ')} แล้ว`:`ปิดวันที่ ${fmtDate(new Date(date))} แล้ว`);
+  showToast(slots.length?`ปิดรับจองวันที่ ${fmtDate(new Date(date))} เวลา ${slots.join(', ')} แล้ว`:`ปิดวันที่ ${fmtDate(new Date(date))} แล้ว`);
 }
 
 function removeClosedDate(date){
@@ -3501,7 +3532,7 @@ function checkDateAvailability(){
   if(partly){
     statusEl.style.display='';
     statusEl.style.background='#fff7ed';statusEl.style.border='1px solid #fdba74';statusEl.style.color='#9a3412';
-    statusEl.innerHTML=`🕐 <b>วันนี้ปิดรับจองบางรอบ:</b> ${closureSlotsLabel(partly.slots)} — ${partly.reason}`;
+    statusEl.innerHTML=`🕐 <b>วันนี้ปิดรับจองบางช่วงเวลา:</b> ${closureSlotsLabel(partly.slots)} — ${partly.reason}`;
   }
   if(closed){
     statusEl.style.display='';
@@ -3806,7 +3837,7 @@ function saveStudentBooking(){
   if(!date){showToast('กรุณาเลือกวันที่เรียน','error');return;}
   // เช็ควันปิด + ALS ล็อค
   const closedCheck=closureBlocks(date,timeslot);
-  if(closedCheck){showToast((closedCheck.slots||[]).length?`รอบ ${timeslot} ปิดรับจอง: ${closedCheck.reason}`:`วันนี้ปิดรับจอง: ${closedCheck.reason}`,'error');return;}
+  if(closedCheck){showToast((closedCheck.slots||[]).length?`${timeslot?`เวลา ${timeslot} ชน`:'ยังไม่ได้ระบุเวลา — วันนี้มี'}ช่วงปิดรับจอง ${closureSlotsLabel(closedCheck.slots)}: ${closedCheck.reason}`:`วันนี้ปิดรับจอง: ${closedCheck.reason}`,'error');return;}
   const privateCheck=privateSlotConflict(date,timeslot,course);
   if(privateCheck){showToast(privateCheck,'error');return;}
   const alsCheck=studentBookings.find(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.course==='ALS Blue Code'&&b.id!==editingStudentId);
@@ -3947,7 +3978,7 @@ function saveEditStudent(){
   if(!date){showToast('กรุณาเลือกวันที่เรียน','error');return;}
   const editSlot=document.getElementById('sm-timeslot').value||document.getElementById('sm-custom-time').value;
   const closedCheck2=closureBlocks(date,editSlot);
-  if(closedCheck2){showToast((closedCheck2.slots||[]).length?`รอบ ${editSlot} ปิดรับจอง: ${closedCheck2.reason}`:`วันนี้ปิดรับจอง: ${closedCheck2.reason}`,'error');return;}
+  if(closedCheck2){showToast((closedCheck2.slots||[]).length?`${editSlot?`เวลา ${editSlot} ชน`:'ยังไม่ได้ระบุเวลา — วันนี้มี'}ช่วงปิดรับจอง ${closureSlotsLabel(closedCheck2.slots)}: ${closedCheck2.reason}`:`วันนี้ปิดรับจอง: ${closedCheck2.reason}`,'error');return;}
   const privateCheck2=privateSlotConflict(date,editSlot,course);
   if(privateCheck2){showToast(privateCheck2,'error');return;}
   const alsCheck2=studentBookings.find(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.course==='ALS Blue Code'&&b.id!==editingStudentId);
