@@ -718,7 +718,7 @@ QR Code สินค้า
 <div class="form-group"><label>ผู้สอน</label><select id="sm-instructor"><option value="">-- เลือก --</option><option>ครูเจ๋ง</option><option>ครูป่าน</option><option>ครูโบว์</option><option>ครูพลอย</option><option>ครูจิ๋ว</option><option>หมอปุ้ย</option><option>ครูภูมิ</option></select></div>
 </div>
 <div id="sm-date-status" style="display:none;margin-bottom:10px;padding:8px 12px;border-radius:8px;font-size:12px"></div>
-<div class="form-group" id="sm-timeslot-area" style="display:none"><label>รอบเวลาเรียน</label><select id="sm-timeslot"><option value="">-- เลือก --</option><option>11.00-13.00 น.</option><option>14.00-16.00 น.</option><option>17.00-19.00 น.</option></select></div>
+<div class="form-group" id="sm-timeslot-area" style="display:none"><label>รอบเวลาเรียน</label><div id="sm-private-hint" style="display:none;font-size:12px;color:#7c3aed;margin-bottom:4px">🔒 Private Course ใช้รอบนั้นทั้งรอบ — คนอื่นจองรอบเดียวกันไม่ได้ และเลือกได้เฉพาะรอบที่ยังไม่มีผู้จอง</div><select id="sm-timeslot"><option value="">-- เลือก --</option><option>11.00-13.00 น.</option><option>14.00-16.00 น.</option><option>17.00-19.00 น.</option></select></div>
 <div class="form-group" id="sm-custom-time-area" style="display:none"><label>กำหนดเวลาเรียนเอง</label><input type="text" id="sm-custom-time" placeholder="เช่น 09.00-12.00 น."></div>
 <div id="sm-price-area" style="display:none">
 <div class="form-row">
@@ -3412,6 +3412,16 @@ function closureSlotsLabel(slots){return slots&&slots.length?slots.join(', '):'�
 // วัน/รอบนี้ปิดรับจองไหม: ปิดทั้งวัน หรือรอบตรงกับที่ปิด
 function findClosure(date){return closedDates.find(d=>normDate(d.date)===normDate(date));}
 function isSlotClosed(date,slot){const c=findClosure(date);return !!c&&!!(c.slots||[]).length&&c.slots.includes(slot);}
+// Private Course ใช้รอบนั้นทั้งรอบ: รอบที่มี Private แล้วคนอื่นจองไม่ได้ และ Private เลือกได้เฉพาะรอบที่ยังไม่มีผู้จอง
+const SEAT_COURSES=['Mini Course','Join Course','Private Course'];
+function slotTakers(date,slot){return studentBookings.filter(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.timeslot===slot&&b.id!==editingStudentId&&SEAT_COURSES.includes(b.course));}
+function privateSlotConflict(date,slot,course){
+  if(!date||!slot||!SEAT_COURSES.includes(course))return '';
+  const t=slotTakers(date,slot);
+  if(t.some(b=>b.course==='Private Course'))return 'รอบนี้มี Private Course จองไว้แล้ว กรุณาเลือกรอบอื่น';
+  if(course==='Private Course'&&t.length)return 'Private Course ต้องใช้รอบที่ยังไม่มีผู้จอง รอบนี้มีผู้จองแล้ว';
+  return '';
+}
 function closureBlocks(date,slot){const c=findClosure(date);if(!c)return null;if(!(c.slots||[]).length)return c;return c.slots.includes(slot)?c:null;}
 function toggleClosedSlots(){
   const whole=document.getElementById('cd-whole').checked;
@@ -3594,6 +3604,7 @@ function addStudentRow(){
     let booked=0;
     if(date&&slot){
       booked=studentBookings.filter(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.timeslot===slot&&b.id!==editingStudentId&&['Mini Course','Join Course','Private Course'].includes(b.course)).reduce((s,b)=>s+(b.qty||1),0);
+      if(slotTakers(date,slot).some(b=>b.course==='Private Course'))booked=7;
     }
     if(currentCount+booked>=7){
       showToast(`รอบนี้เต็มแล้ว! (${booked} คนจองแล้ว + ${currentCount} คนในฟอร์ม = ${booked+currentCount}/7)`,'error');
@@ -3649,6 +3660,7 @@ function updateStudentCount(){
     let booked=0;
     if(date&&slot){
       booked=studentBookings.filter(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.timeslot===slot&&b.id!==editingStudentId&&['Mini Course','Join Course','Private Course'].includes(b.course)).reduce((s,b)=>s+(b.qty||1),0);
+      if(slotTakers(date,slot).some(b=>b.course==='Private Course'))booked=7;
     }
     const remain=7-booked-count;
     if(remain<=0){
@@ -3732,6 +3744,7 @@ function updateSmTimeSlot(){
     priceArea.style.display='';
     priceInput.placeholder='ราคา/คน';
   }
+  document.getElementById('sm-private-hint').style.display=course==='Private Course'?'':'none';
   // สร้าง dropdown รอบเวลา (Join/อื่นๆ)
   if(slotArea.style.display!=='none'){
     const date=document.getElementById('sm-date').value;
@@ -3743,7 +3756,9 @@ function updateSmTimeSlot(){
       let booked=0;
       if(hasLimit&&date){booked=studentBookings.filter(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.timeslot===slot&&b.id!==editingStudentId&&['Mini Course','Join Course','Private Course'].includes(b.course)).reduce((s,b)=>s+(b.qty||1),0);}
       const remain=7-booked;const full=hasLimit&&date&&remain<=0;const notEnough=hasLimit&&date&&adding>remain&&remain>0;
+      const pc=date?privateSlotConflict(date,slot,course):'';
       if(date&&isSlotClosed(date,slot)){opts+=`<option value="${slot}" disabled style="color:#999">🔒 ${slot} (ปิดรับจองรอบนี้)</option>`;}
+      else if(pc){opts+=`<option value="${slot}" disabled style="color:#999">🔒 ${slot} (${course==='Private Course'&&!slotTakers(date,slot).some(b=>b.course==='Private Course')?'มีผู้จองแล้ว — Private ต้องใช้รอบว่าง':'Private Course จองรอบนี้แล้ว'})</option>`;}
       else if(full){opts+=`<option value="${slot}" disabled style="color:#999">🔴 ${slot} (เต็ม ${booked}/7)</option>`;}
       else if(notEnough){opts+=`<option value="${slot}" style="color:#dc2626">⚠️ ${slot} (เหลือ ${remain} — ไม่พอ)</option>`;}
       else if(hasLimit&&date){opts+=`<option value="${slot}">✅ ${slot} (เหลือ ${remain} คน)</option>`;}
@@ -3792,6 +3807,8 @@ function saveStudentBooking(){
   // เช็ควันปิด + ALS ล็อค
   const closedCheck=closureBlocks(date,timeslot);
   if(closedCheck){showToast((closedCheck.slots||[]).length?`รอบ ${timeslot} ปิดรับจอง: ${closedCheck.reason}`:`วันนี้ปิดรับจอง: ${closedCheck.reason}`,'error');return;}
+  const privateCheck=privateSlotConflict(date,timeslot,course);
+  if(privateCheck){showToast(privateCheck,'error');return;}
   const alsCheck=studentBookings.find(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.course==='ALS Blue Code'&&b.id!==editingStudentId);
   const otherCheck=studentBookings.find(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.course!=='ALS Blue Code'&&b.id!==editingStudentId);
   if(course==='ALS Blue Code'&&otherCheck){showToast('วันนี้มีคอร์สอื่นจองอยู่ ไม่สามารถจอง ALS Blue Code ได้','error');return;}
@@ -3931,6 +3948,8 @@ function saveEditStudent(){
   const editSlot=document.getElementById('sm-timeslot').value||document.getElementById('sm-custom-time').value;
   const closedCheck2=closureBlocks(date,editSlot);
   if(closedCheck2){showToast((closedCheck2.slots||[]).length?`รอบ ${editSlot} ปิดรับจอง: ${closedCheck2.reason}`:`วันนี้ปิดรับจอง: ${closedCheck2.reason}`,'error');return;}
+  const privateCheck2=privateSlotConflict(date,editSlot,course);
+  if(privateCheck2){showToast(privateCheck2,'error');return;}
   const alsCheck2=studentBookings.find(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.course==='ALS Blue Code'&&b.id!==editingStudentId);
   const otherCheck2=studentBookings.find(b=>b.status==='จอง'&&normDate(b.date)===normDate(date)&&b.course!=='ALS Blue Code'&&b.id!==editingStudentId);
   if(course==='ALS Blue Code'&&otherCheck2){showToast('วันนี้มีคอร์สอื่นจองอยู่','error');return;}
