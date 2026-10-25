@@ -2132,8 +2132,8 @@ function renderDashboard(){
   `;
 
   // === รอบเรียนวันนี้/พรุ่งนี้ ===
-  const today2=now.toISOString().split('T')[0];
-  const tmr=new Date(now);tmr.setDate(tmr.getDate()+1);const tmr2=tmr.toISOString().split('T')[0];
+  const today2=normDate(now);
+  const tmr=new Date(now);tmr.setDate(tmr.getDate()+1);const tmr2=normDate(tmr);
   const slots=['11.00-13.00 น.','14.00-16.00 น.','17.00-19.00 น.'];
   const days2=[{label:'วันนี้ ('+fmtDate(now)+')',date:today2},{label:'พรุ่งนี้ ('+fmtDate(tmr)+')',date:tmr2}];
   let slotHtml='';
@@ -2275,7 +2275,7 @@ function onChangeProductStatus(id, status, selectEl){
     const showDates=status==='ออกสอน'||status==='ออกบูธ';
     document.getElementById('unavail-dates').style.display=showDates?'':'none';
     if(showDates){
-      const today=new Date().toISOString().split('T')[0];
+      const today=normDate(new Date());
       document.getElementById('unavail-date-start').value=today;
       document.getElementById('unavail-date-end').value='';
     }
@@ -3116,7 +3116,7 @@ function openRentalModal(){
   if(currentRole==='ops'){salesSel.disabled=false;}
   document.getElementById('rm-product-search').value='';
   renderProductCheckboxes();renderSelectedProducts();
-  document.getElementById('rm-start').value=new Date().toISOString().split('T')[0];
+  document.getElementById('rm-start').value=normDate(new Date());
   document.getElementById('rm-end').value='';
   document.getElementById('rm-deliver').value='';
   document.getElementById('rm-days').value='';
@@ -3960,7 +3960,7 @@ function editStudentBooking(id){
   const b=studentBookings.find(x=>x.id===id);if(!b)return;
   editingStudentId=id;
   document.getElementById('sm-course').value=b.course||'';
-  document.getElementById('sm-date').value=b.date||'';
+  document.getElementById('sm-date').value=normDate(b.date);
   document.getElementById('sm-instructor').value=b.instructor||'';
   document.getElementById('sm-payment').value=b.payment||'';
   document.getElementById('sm-note').value=b.note||'';
@@ -4280,7 +4280,7 @@ function calcRental(){
     const startDate=new Date(s);
     const dueDate=new Date(startDate);
     dueDate.setDate(dueDate.getDate()+totalDays);
-    document.getElementById('rm-end').value=dueDate.toISOString().split('T')[0];
+    document.getElementById('rm-end').value=normDate(dueDate);
     document.getElementById('rm-days-qty').value=totalDays;
     calcUnitTotal();
   }
@@ -4335,7 +4335,7 @@ function autoCalcDeliverDate(){
     const startDate=new Date(startVal);
     const deliverDate=new Date(startDate);
     deliverDate.setDate(deliverDate.getDate()-buffer-1);
-    document.getElementById('rm-deliver').value=deliverDate.toISOString().split('T')[0];
+    document.getElementById('rm-deliver').value=normDate(deliverDate);
   }
 }
 
@@ -4512,10 +4512,10 @@ function openEditRentalModal(id){
   custSel.innerHTML=customers.map(c=>`<option value="${c.id}" ${c.name===r.customer?'selected':''}>${c.name}</option>`).join('');
   const salesSel=document.getElementById('er-sales');
   salesSel.innerHTML='<option value="">—</option>'+salesNames.map(n=>`<option value="${n}" ${n===r.sales?'selected':''}>${n}</option>`).join('');
-  document.getElementById('er-start').value=r.start?r.start.toISOString().split('T')[0]:'';
-  document.getElementById('er-end').value=r.due?r.due.toISOString().split('T')[0]:'';
-  document.getElementById('er-deliver').value=r.deliverDate?r.deliverDate.toISOString().split('T')[0]:'';
-  document.getElementById('er-return-date').value=r.returnDate?r.returnDate.toISOString().split('T')[0]:'';
+  document.getElementById('er-start').value=r.start?normDate(r.start):'';
+  document.getElementById('er-end').value=r.due?normDate(r.due):'';
+  document.getElementById('er-deliver').value=r.deliverDate?normDate(r.deliverDate):'';
+  document.getElementById('er-return-date').value=r.returnDate?normDate(r.returnDate):'';
   document.getElementById('er-deposit').value=r.deposit||'';
   document.getElementById('er-ship-send').value=r.deliveryShippingCost||'';
   document.getElementById('er-ship-return').value=r.shippingCost||'';
@@ -5289,7 +5289,7 @@ function openReturnModal(id){
     <div class="stat-row"><div class="stat-label">กำหนดคืน</div><div class="stat-value">${fmtDate(r.due)}</div></div>`;
   if(currentRole!=='ops') infoHtml+=`<div class="stat-row"><div class="stat-label">ค่าเช่ารวม</div><div class="stat-value price">฿${fmt(r.total)}</div></div>`;
   document.getElementById('return-info').innerHTML=infoHtml;
-  document.getElementById('ret-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('ret-date').value=normDate(new Date());
   document.getElementById('ret-receiver').innerHTML='<option value="">-- เลือกผู้รับสินค้า --</option>'+opsNames.map(n=>`<option value="${n}">${n}</option>`).join('');
   document.getElementById('ret-receiver').value='';
   document.getElementById('ret-shipping').value='';
@@ -5614,7 +5614,7 @@ function openExtendModal(id){
   document.getElementById('ext-old-due').value=fmtDate(r.due);
   // ตั้ง min ของวันใหม่เป็นวันกำหนดคืนเดิม+1
   const minDate=new Date(r.due);minDate.setDate(minDate.getDate()+1);
-  document.getElementById('ext-new-due').min=minDate.toISOString().split('T')[0];
+  document.getElementById('ext-new-due').min=normDate(minDate);
   document.getElementById('ext-new-due').value='';
   document.getElementById('ext-calc').innerHTML='';
   document.getElementById('ext-note').value='';
