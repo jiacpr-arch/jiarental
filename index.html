@@ -2165,7 +2165,7 @@ function renderDashboard(){
   document.getElementById('slot-status').innerHTML=slotHtml||'<div style="text-align:center;padding:20px;color:var(--muted)">ไม่มีรอบเรียนวันนี้/พรุ่งนี้</div>';
 }
 
-// สถานะการจองของฉัน (เซลล์) — รอ Ops ยืนยันส่ง + ที่เพิ่งยืนยันส่งแล้ว
+// สถานะการจองของฉัน (เซลล์) — ค้างคืน/ของถึงออฟฟิศ + รอ Ops ยืนยันส่ง + ที่เพิ่งยืนยันส่งแล้ว
 function renderMyBookingsCard(){
   const card=document.getElementById('dash-mybookings');
   const list=document.getElementById('mybookings-list');
@@ -2173,9 +2173,27 @@ function renderMyBookingsCard(){
   const waiting=myRentals.filter(r=>r.status==='จอง').sort((a,b)=>(a.deliverDate||a.start)-(b.deliverDate||b.start));
   const weekAgo=new Date();weekAgo.setDate(weekAgo.getDate()-7);
   const justConfirmed=myRentals.filter(r=>r.status==='กำลังเช่า'&&r.confirmedDate&&new Date(r.confirmedDate)>=weekAgo).sort((a,b)=>new Date(b.confirmedDate)-new Date(a.confirmedDate));
-  if(!waiting.length&&!justConfirmed.length){card.style.display='none';return;}
+  // ของลูกค้าตัวเองที่เกินกำหนดคืน / ของถึงออฟฟิศเลยวันหรือภายใน 3 วัน (เห็นเฉพาะงานของตัวเอง)
+  const today=new Date();today.setHours(0,0,0,0);
+  const in3=new Date(today);in3.setDate(in3.getDate()+3);
+  const dayDiff=d=>{const x=new Date(d);x.setHours(0,0,0,0);return Math.round((x-today)/86400000);};
+  const attention=myRentals.filter(r=>['กำลังเช่า','ยืมด่วน','เกินกำหนด'].includes(r.status)&&!r.returnDate&&(r.status==='เกินกำหนด'||(officeArrival(r)&&officeArrival(r)<=in3)))
+    .map(r=>({r,arr:officeArrival(r),dueDiff:r.due?dayDiff(r.due):0})).sort((a,b)=>a.dueDiff-b.dueDiff);
+  if(!waiting.length&&!justConfirmed.length&&!attention.length){card.style.display='none';return;}
   card.style.display='';
   let html='';
+  attention.forEach(({r,arr,dueDiff})=>{
+    const prodNames=Array.isArray(r.productNames)?r.productNames.join(', '):'';
+    const arrDiff=arr?dayDiff(arr):null,late=r.status==='เกินกำหนด'||arrDiff!=null&&arrDiff<0;
+    const parts=[];
+    if(r.status==='เกินกำหนด')parts.push(`<span style="color:var(--danger);font-weight:700">เกินกำหนดคืน ${-dueDiff} วัน</span> (กำหนดคืน ${fmtDate(r.due)})`);
+    if(arr)parts.push(arrDiff<0?`<span style="color:var(--danger);font-weight:700">ยังไม่ถึงออฟฟิศ ${-arrDiff} วัน</span> (คาดการณ์ ${fmtDate(arr)})`:`📦 ของถึงออฟฟิศ ${arrDiff===0?'วันนี้':arrDiff===1?'พรุ่งนี้':'อีก '+arrDiff+' วัน'} (${fmtDate(arr)})`);
+    html+=`<div class="alert-item" style="background:${late?'#fef2f2':'#ecfeff'};border-left-color:${late?'var(--danger)':'#0891b2'}">
+      <div class="alert-icon" style="font-size:20px;color:${late?'var(--danger)':'#0891b2'}">${late?'&#9888;':'&#128230;'}</div>
+      <div class="alert-text"><strong>${r.id} — ${prodNames}</strong>ผู้เช่า: ${r.customer} | ${parts.join(' | ')}</div>
+      <button class="btn btn-sm btn-outline" onclick="showReceipt('${r.id}')">ใบจอง</button>
+    </div>`;
+  });
   waiting.forEach(r=>{
     const prodNames=Array.isArray(r.productNames)?r.productNames.join(', '):'';
     html+=`<div class="alert-item" style="background:#fff7ed;border-left-color:#9a3412">
