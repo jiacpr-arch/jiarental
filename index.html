@@ -220,6 +220,7 @@ tr:hover{background:#f8fafc}
 .cal-event.st-student{background:#ec4899}
 .cal-event.st-student-done{background:#22c55e}
 .cal-event.st-deliver{background:#f97316}
+.cal-event.st-office{background:#0891b2}
 .view-toggle.active{background:var(--primary)!important;color:#fff!important;border-color:var(--primary)!important}
 .gantt-table{border-collapse:collapse;font-size:12px;width:max-content;min-width:100%}
 .gantt-table th,.gantt-table td{border:1px solid #e2e8f0;text-align:center;padding:0}
@@ -818,6 +819,10 @@ QR Code สินค้า
 <div class="card-body alert-list" id="upcoming-alerts"></div>
 </div>
 <div class="card">
+<div class="card-header" style="background:linear-gradient(135deg,#cffafe,#ecfeff)"><h3 style="color:#155e75">📦 ของถึงออฟฟิศ (เลยวันคาดการณ์ / ภายใน 3 วัน)</h3></div>
+<div class="card-body alert-list" id="office-alerts"></div>
+</div>
+<div class="card">
 <div class="card-header"><h3>รายการเกินกำหนดคืน</h3></div>
 <div class="card-body alert-list" id="overdue-alerts"></div>
 </div>
@@ -849,6 +854,7 @@ QR Code สินค้า
 <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" class="cal-filter" value="rent" checked onchange="renderCalendar()" style="accent-color:#3b82f6"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#3b82f6"></span>กำลังเช่า</label>
 <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" class="cal-filter" value="deliver" checked onchange="renderCalendar()" style="accent-color:#f97316"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#f97316"></span>ส่งสินค้า</label>
 <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" class="cal-filter" value="book" checked onchange="renderCalendar()" style="accent-color:#f59e0b"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#f59e0b"></span>จอง</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" class="cal-filter" value="office" checked onchange="renderCalendar()" style="accent-color:#0891b2"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#0891b2"></span>ของถึงออฟฟิศ</label>
 <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" class="cal-filter" value="return" onchange="renderCalendar()" style="accent-color:#10b981"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#10b981"></span>คืนแล้ว</label>
 <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" class="cal-filter" value="overdue" checked onchange="renderCalendar()" style="accent-color:#ef4444"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#ef4444"></span>เกินกำหนด</label>
 <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" class="cal-filter" value="vip" checked onchange="renderCalendar()" style="accent-color:#7c3aed"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#7c3aed"></span>ยืมด่วน/VIP</label>
@@ -2665,6 +2671,17 @@ function renderPendingBookingList(containerId,limit){
     </div>`;
   }).join(''):'<div class="empty-state"><p>ไม่มีรายการจองใหม่</p></div>';
 }
+// วันที่ของถึงออฟฟิศ (คาดการณ์) = กำหนดคืน + เผื่อวันขนส่ง (returnBy ในชีต) — null ถ้าไม่มี หรือเป็นวันเดียวกับกำหนดคืน
+function officeArrival(r){
+  if(!r||!r.due||r.noDueDate)return null;
+  const due=new Date(r.due);due.setHours(0,0,0,0);
+  let d=r.returnBy?new Date(r.returnBy):null;
+  if(!d||isNaN(d)){const buf=parseInt(r.bufferDays)||0;if(!buf)return null;d=new Date(due);d.setDate(d.getDate()+buf);}
+  d.setHours(0,0,0,0);
+  return d>due?d:null;
+}
+// รายการที่ยังไม่รับคืนและมีวันของถึงออฟฟิศ
+const AWAIT_OFFICE_STATUSES=['จอง','กำลังเช่า','ยืมด่วน','เกินกำหนด'];
 function renderAlerts(){
   checkOverdue();
   const today=new Date();today.setHours(0,0,0,0);
@@ -2696,6 +2713,25 @@ function renderAlerts(){
       <button class="btn btn-sm btn-success" onclick="openReturnModal('${r.id}')">คืน</button>
     </div>`;
   }).join(''):'<div class="empty-state"><p>ไม่มีรายการใกล้ถึงกำหนดคืน</p></div>';
+
+  // ของถึงออฟฟิศ: เลยวันคาดการณ์แล้วยังไม่รับคืน หรือจะถึงภายใน 3 วัน
+  const arriving=rentals.filter(r=>['กำลังเช่า','ยืมด่วน','เกินกำหนด'].includes(r.status)&&!r.returnDate&&officeArrival(r)&&officeArrival(r)<=in3Days)
+    .sort((a,b)=>officeArrival(a)-officeArrival(b));
+  document.getElementById('office-alerts').innerHTML=arriving.length?arriving.map(r=>{
+    const arr=officeArrival(r),diff=Math.round((arr-today)/86400000);
+    const prodNames=Array.isArray(r.productNames)?r.productNames.join(', '):'';
+    const color=diff<0?'var(--danger)':diff===0?'#0e7490':'#0891b2';
+    const text=diff<0?`เลยมาแล้ว ${-diff} วัน — ยังไม่ถึงออฟฟิศ`:diff===0?'ถึงวันนี้':diff===1?'ถึงพรุ่งนี้':`อีก ${diff} วัน`;
+    return `<div class="alert-item" style="background:${diff<0?'#fef2f2':'#ecfeff'};border-left-color:${color}">
+      <div class="alert-icon" style="font-size:22px;color:${color}">${diff<0?'&#9888;':'&#128230;'}</div>
+      <div class="alert-text">
+        <strong>${r.id} — ${prodNames}</strong>
+        ผู้เช่า: ${r.customer} | เซลล์: ${r.sales||'—'} | กำหนดคืน: ${fmtDate(r.due)} | ของถึงออฟฟิศ: ${fmtDate(arr)}
+        <span style="color:${color};font-weight:700;margin-left:6px">${text}</span>
+      </div>
+      <button class="btn btn-sm btn-success" onclick="openReturnModal('${r.id}')">รับคืน</button>
+    </div>`;
+  }).join(''):'<div class="empty-state"><p>ไม่มีของที่ต้องถึงออฟฟิศภายใน 3 วัน</p></div>';
 
   const overdue=rentals.filter(r=>r.status==='เกินกำหนด');
   const isOps=currentRole==='ops';
@@ -2822,6 +2858,12 @@ function renderCalendar(){
       addEv(calToday,`⚠ ค้างคืน ${r.customer} (${late} วัน)`,'st-overdue',r.id);
     }
     else addEv(r.due,`◀ คืน ${r.customer}`,'st-due',r.id);
+    // ของถึงออฟฟิศ (คาดการณ์) — เลยวันแล้วยังไม่รับคืนเป็นสีแดง
+    const arr=!r.returnDate&&AWAIT_OFFICE_STATUSES.includes(r.status)?officeArrival(r):null;
+    if(arr){
+      if(arr<calToday)addEv(arr,`⚠ ยังไม่ถึงออฟฟิศ ${overdueDays(arr)} วัน · ${r.customer}`,'st-overdue',r.id);
+      else addEv(arr,`📦 ถึงออฟฟิศ ${r.customer}`,'st-office',r.id);
+    }
   });
   // สินค้าออกสอน/ออกบูธ — รวมกลุ่มแสดงในปฏิทิน
   const statusGroups={};
@@ -2876,7 +2918,7 @@ function renderCalendar(){
   // === ฟิลเตอร์ตาม checkbox ===
   const calFilters=new Set();
   document.querySelectorAll('.cal-filter:checked').forEach(cb=>calFilters.add(cb.value));
-  const clsMap={'st-rent':'rent','st-book':'book','st-return':'return','st-overdue':'overdue','st-vip':'vip','st-due':'rent','st-cancel':'return','st-product-status':'status','st-student':'student','st-student-done':'student','st-deliver':'deliver'};
+  const clsMap={'st-rent':'rent','st-book':'book','st-return':'return','st-overdue':'overdue','st-vip':'vip','st-due':'rent','st-cancel':'return','st-product-status':'status','st-student':'student','st-student-done':'student','st-deliver':'deliver','st-office':'office'};
   for(const key in evMap){
     evMap[key]=evMap[key].filter(e=>{const group=clsMap[e.cls]||'rent';return calFilters.has(group);});
     if(!evMap[key].length)delete evMap[key];
