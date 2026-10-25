@@ -3631,7 +3631,7 @@ function openStudentModal(){
   document.getElementById('sm-price-area').style.display='none';
   document.getElementById('sm-travel-area').style.display='none';
   document.getElementById('sm-custom-time').value='';
-  document.getElementById('sm-price').value='';
+  document.getElementById('sm-price').value='';delete document.getElementById('sm-price').dataset.auto;
   document.getElementById('sm-travel').value='0';
   document.getElementById('sm-code').value='0';
   document.getElementById('sm-location').value='';
@@ -3746,6 +3746,8 @@ function updateSmTimeSlot(){
   const sel=document.getElementById('sm-timeslot');
   const currentVal=sel.value;
   const priceInput=document.getElementById('sm-price');
+  // ราคาเริ่มต้นตามคอร์ส: เปลี่ยนคอร์สแล้วราคาเปลี่ยนตาม ถ้ายังเป็นค่าที่ระบบเติมให้ (ไม่ทับราคาที่พิมพ์เอง)
+  const autoPrice=v=>{if(!priceInput.value||priceInput.value===priceInput.dataset.auto)priceInput.value=v;priceInput.dataset.auto=v;};
   // ซ่อนทั้งหมดก่อน
   slotArea.style.display='none';
   customTimeArea.style.display='none';
@@ -3767,25 +3769,25 @@ function updateSmTimeSlot(){
     customTimeArea.style.display='';
     priceArea.style.display='';
     travelArea.style.display='';
-    if(!priceInput.value)priceInput.value='';
+    autoPrice('');
     priceInput.placeholder='กำหนดราคา/คน';
   } else if(course==='Mini Course'){
     customTimeArea.style.display='';
     priceArea.style.display='';
     travelArea.style.display='';
-    if(!priceInput.value)priceInput.value='0';
+    autoPrice('0');
     priceInput.placeholder='ราคา/คน (default 0)';
   } else if(course==='Join Course'){
     slotArea.style.display='';
     priceArea.style.display='';
     codeArea.style.display='';
-    if(!priceInput.value)priceInput.value='1000';
-    priceInput.placeholder='ราคา/คน (default 1,000)';
+    autoPrice('500');
+    priceInput.placeholder='ราคา/คน (default 500)';
   } else if(course==='Private Course'){
     // รอบเวลาเหมือน Join Course (3 รอบ นับที่ว่างร่วม 7 คน/รอบ)
     slotArea.style.display='';
     priceArea.style.display='';
-    if(!priceInput.value)priceInput.value='1000';
+    autoPrice('1000');
     priceInput.placeholder='ราคา/คน (default 1,000)';
   } else if(course==='ALS Blue Code'||course==='BLS Healthcare'){
     customTimeArea.style.display='';
@@ -3973,7 +3975,7 @@ function editStudentBooking(id){
     document.getElementById('sm-timeslot').appendChild(keep);document.getElementById('sm-timeslot').value=b.timeslot;
   }
   document.getElementById('sm-custom-time').value=(b.course==='Full Course'||b.course==='Mini Course'||b.course==='Private Course'||b.course==='ALS Blue Code'||b.course==='BLS Healthcare')?(b.timeslot||''):'';
-  document.getElementById('sm-price').value=b.customPrice||'';
+  document.getElementById('sm-price').value=b.customPrice||'';delete document.getElementById('sm-price').dataset.auto;
   document.getElementById('sm-travel').value=b.travelCost||'0';
   document.getElementById('sm-code').value=b.priceCode||'';
   document.getElementById('sm-location').value=b.location||'';
