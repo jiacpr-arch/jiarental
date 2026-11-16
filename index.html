@@ -273,6 +273,11 @@ tr:hover{background:#f8fafc}
 .receipt-note{font-size:16px;font-weight:700;color:#dc2626;text-align:center;margin-top:12px;padding:14px;background:linear-gradient(135deg,#fef2f2,#fee2e2);border-radius:10px;border:2px solid #fca5a5}
 
 /* ===== FEATURE 5: VIP Badge ===== */
+.web-tag{display:inline-flex;align-items:center;background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;white-space:nowrap}
+.pay-row{padding:10px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;background:#f8fafc}
+.pay-note{padding:10px 12px;border-radius:8px;background:#eff6ff;color:#1e40af;font-size:13px;margin-top:8px;border:1px solid #bfdbfe}
+.pay-note.warn{background:#fffbeb;color:#92400e;border-color:#fde68a}
+.pay-note.danger{background:#fef2f2;color:#991b1b;border-color:#fecaca}
 .vip-tag{display:inline-flex;align-items:center;gap:3px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;letter-spacing:.5px}
 .badge-vip{background:#ede9fe;color:#5b21b6}
 
@@ -629,7 +634,8 @@ QR Code สินค้า
 <div class="card-body">
 <div class="search-bar">
 <input class="search-input" id="rent-search" placeholder="ค้นหา... (เลขที่เช่า, ชื่อลูกค้า, สินค้า)" oninput="renderRentals()">
-<select class="filter-select" id="rent-status-filter" onchange="renderRentals()"><option value="">ทุกสถานะ</option><option value="กำลังเช่า">กำลังเช่า</option><option value="จอง">จอง</option><option value="คืนแล้ว">คืนแล้ว</option><option value="เกินกำหนด">เกินกำหนด</option><option value="ยืมด่วน">ยืมด่วน</option><option value="ยกเลิก">ยกเลิก</option></select>
+<select class="filter-select" id="rent-status-filter" onchange="renderRentals()"><option value="">ทุกสถานะ</option><option value="กำลังเช่า">กำลังเช่า</option><option value="จอง">จอง</option><option value="คืนแล้ว">คืนแล้ว</option><option value="เกินกำหนด">เกินกำหนด</option><option value="ยืมด่วน">ยืมด่วน</option><option value="รอชำระ">รอชำระ (ออนไลน์)</option><option value="ยกเลิก">ยกเลิก</option></select>
+<select class="filter-select" id="rent-entity-filter" onchange="renderRentals()"><option value="">ทุกบริษัท</option><option value="rojrung">โรจน์รุ่ง (เซลล์)</option><option value="jia">JIA ออนไลน์</option></select>
 <select class="filter-select mobile-only-sort" id="rent-sort-mobile" onchange="sortRentals(this.value)">
 <option value="deliverDate">เรียงตาม: วันส่งของ</option>
 <option value="id">เลขที่เช่า</option>
@@ -810,6 +816,10 @@ QR Code สินค้า
 <div class="page-header">
 <div><h2>แจ้งเตือน</h2><div class="subtitle">รายการที่ต้องดำเนินการ</div></div>
 </div>
+<div class="card" id="hold-alerts-card" style="display:none">
+<div class="card-header" style="background:linear-gradient(135deg,#ede9fe,#f5f3ff)"><h3 style="color:#5b21b6">💳 วงเงินมัดจำที่กันอยู่ (บัตร — หมดอายุ ~7 วัน)</h3></div>
+<div class="card-body alert-list" id="hold-alerts"></div>
+</div>
 <div class="card">
 <div class="card-header" style="background:linear-gradient(135deg,#ffedd5,#fff7ed)"><h3 style="color:#9a3412">🆕 จองใหม่ รอยืนยันส่ง</h3></div>
 <div class="card-body alert-list" id="newbooking-alerts"></div>
@@ -964,6 +974,9 @@ QR Code สินค้า
 <div id="comm-filter-area" style="margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
 <select class="filter-select" id="comm-person-filter" onchange="renderCommission()" style="min-width:200px">
 <option value="">ทุกคน</option>
+</select>
+<select class="filter-select" id="comm-entity-filter" onchange="renderCommission()" title="แยกตามนิติบุคคล">
+<option value="">ทุกบริษัท</option><option value="rojrung">โรจน์รุ่ง (เซลล์)</option><option value="jia">JIA ออนไลน์</option>
 </select>
 <div style="display:flex;align-items:center;gap:6px">
 <label style="font-size:13px;font-weight:600;color:var(--muted)">ตั้งแต่</label>
@@ -1524,6 +1537,13 @@ QR Code สินค้า
 </div>
 </div>
 
+<div class="modal-overlay" id="payment-modal">
+<div class="modal" style="max-width:560px">
+<div class="modal-header"><h3 id="pay-title">💳 ชำระเงิน</h3><button class="modal-close" onclick="closeModal('payment-modal')">&times;</button></div>
+<div class="modal-body" id="pay-body"></div>
+</div>
+</div>
+
 <div class="toast-stack" id="toast-stack"></div>
 <div class="loading-overlay" id="loading-overlay"><div class="spinner"></div><div id="loading-text">กำลังโหลดข้อมูล…</div></div>
 
@@ -1820,6 +1840,7 @@ async function refreshFromSheets(){
   const prevStatus={};
   rentals.forEach(r=>{prevStatus[r.id]=r.status;});
   await loadFromSheets(true);
+  loadStripeData().catch(e=>console.error(e));
   checkOverdue();
   let newCount=0;
   rentals.forEach(r=>{
@@ -1935,13 +1956,254 @@ async function gsDeleteClosedDate(date) {
   await gsAPI({action: 'deleteClosedDate', date: date});
 }
 
+// ========== STRIPE: ลิงก์ชำระเงิน / มัดจำ / กันวงเงิน (backend: apps_script_stripe.js) ==========
+// 2 นิติบุคคล: จองโดยเซลล์ = โรจน์รุ่ง (บัญชี Stripe ของโรจน์รุ่ง), จองออนไลน์ (book.html, WEB-...) = JIA (บัญชี Jia1669)
+// ยอดเงินทุกยอดคำนวณฝั่ง Apps Script จากแถวในชีต — หน้านี้ส่งแค่ rentalId / วิธีจ่าย / ยอดหักค่าเสียหาย
+const ROJRUNG_COMPANY='บริษัท โรจน์รุ่ง ธุรกิจ จำกัด';
+let stripeCfg=null;          // จาก action stripeConfig (null = ยังไม่ได้ติดตั้ง apps_script_stripe.js)
+let stripePayments={};       // rentalId -> แถวในชีต 'การชำระเงิน'
+let stripeHolds=[];          // วงเงินที่ยังกันอยู่ (อายุ/วันหมดอายุ)
+let stripeKeyNeeded=false;
+let receiptCompany=ROJRUNG_COMPANY, receiptBrand='JIARAKSA';
+const PAY_KIND_LABEL={rent:'ค่าเช่า',deposit_hold:'กันวงเงินมัดจำ (บัตร)',deposit_charge:'มัดจำ (เก็บจริง)',rent_plus_deposit:'ค่าเช่า + มัดจำ'};
+const PAY_STATUS_LABEL={pending:'รอชำระ',processing:'รอยืนยันยอด',paid:'ชำระแล้ว',hold:'กันวงเงินอยู่',captured:'หักมัดจำแล้ว',released:'ปล่อยวงเงินแล้ว',expired:'ลิงก์หมดอายุ',failed:'ไม่สำเร็จ',canceled:'ยกเลิก'};
+const PAY_STATUS_CLASS={pending:'badge-orange',processing:'badge-orange',paid:'badge-green',hold:'badge-purple',captured:'badge-blue',released:'badge-gray',expired:'badge-gray',failed:'badge-red',canceled:'badge-gray'};
+
+function entityOf(r){return r&&(r.entity==='jia'||(!r.entity&&/^WEB-/.test(r.id||'')))?'jia':'rojrung';}
+function entityLabel(e){return e==='jia'?'JIA ออนไลน์':'โรจน์รุ่ง (เซลล์)';}
+function jiaCompanyName(){return (stripeCfg&&stripeCfg.jiaCompanyName)||'JIA';}
+function setReceiptEntity(r){
+  if(r&&entityOf(r)==='jia'){receiptCompany=jiaCompanyName();receiptBrand='JIA';}
+  else{receiptCompany=ROJRUNG_COMPANY;receiptBrand='JIARAKSA';}
+}
+function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function lsGet(k){try{return localStorage.getItem(k)||'';}catch(e){return '';}}
+function lsSet(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k);}catch(e){}}
+function stripeStaffKey(){return lsGet('jia_stripe_staff_key');}
+function stripeOpsKey(){return lsGet('jia_stripe_ops_key');}
+function paymentBadgeClass(ps){
+  if(ps==='โอน'||/^Stripe: ชำระแล้ว/.test(ps||''))return 'badge-green';
+  if(ps==='จ่ายหน้างาน'||/^Stripe:/.test(ps||''))return 'badge-orange';
+  return 'badge-gray';
+}
+// เรียก Apps Script แบบเงียบ (ไม่ขึ้น toast แดงถ้ายังไม่ได้ติดตั้ง) — คืน null ถ้าเชื่อมต่อไม่ได้
+async function stripeAPI(params){
+  const url=new URL(GAS_URL);
+  Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,typeof v==='object'?JSON.stringify(v):v));
+  try{const res=await fetch(url.toString());return await res.json();}catch(e){console.error('Stripe API error:',e);return null;}
+}
+async function loadStripeData(){
+  const cfg=await stripeAPI({action:'stripeConfig'});
+  stripeCfg=cfg&&cfg.ok?cfg:null;
+  if(!stripeCfg)return;
+  const key=stripeStaffKey();
+  if(!key){stripeKeyNeeded=true;return;}
+  const res=await stripeAPI({action:'stripePayments',key});
+  if(res&&res.ok){applyStripePayments(res);stripeKeyNeeded=false;}
+  else if(res&&res.needKey){stripeKeyNeeded=true;}
+}
+function applyStripePayments(res,onlyRentalId){
+  const mine=x=>!onlyRentalId||x.rentalId===onlyRentalId;
+  if(onlyRentalId){stripePayments[onlyRentalId]=[];stripeHolds=stripeHolds.filter(h=>h.rentalId!==onlyRentalId);}
+  else{stripePayments={};stripeHolds=[];}
+  (res.payments||[]).filter(mine).forEach(p=>{(stripePayments[p.rentalId]=stripePayments[p.rentalId]||[]).push(p);});
+  const seenHold=new Set(stripeHolds.map(h=>h.sessionId));
+  (res.holds||[]).filter(mine).forEach(h=>{if(!seenHold.has(h.sessionId)){seenHold.add(h.sessionId);stripeHolds.push(h);}});
+  if(res.config)stripeCfg=res.config;
+}
+function fmtDateTime(iso){if(!iso)return '—';const d=new Date(iso);if(isNaN(d))return '—';return fmtDate(d)+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+
+let payModalRentalId=null, payPlanCache=null;
+function openPaymentModal(id){
+  payModalRentalId=id;payPlanCache=null;
+  renderPaymentModal();
+  document.getElementById('payment-modal').classList.add('show');
+  // ดึงสถานะล่าสุดจาก Stripe ทุกครั้งที่เปิด (ถ้ามีรหัสพนักงาน)
+  if(stripeCfg&&stripeStaffKey()&&(stripePayments[id]||[]).length) syncPayments(true);
+}
+function renderPaymentModal(){
+  const r=rentals.find(x=>x.id===payModalRentalId);if(!r)return;
+  const ent=entityOf(r);
+  const isOps=currentRole==='ops';
+  const ready=stripeCfg&&(ent==='jia'?stripeCfg.jiaReady:stripeCfg.rojrungReady);
+  document.getElementById('pay-title').textContent='💳 ชำระเงิน — '+r.id;
+  let h=`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+    <span class="badge ${ent==='jia'?'badge-blue':'badge-gray'}">${entityLabel(ent)}</span>
+    <span style="font-size:13px;color:var(--muted)">ผู้รับเงิน: <b style="color:var(--text)">${escHtml(ent==='jia'?jiaCompanyName():ROJRUNG_COMPANY)}</b></span></div>
+    <div class="receipt-row"><div class="label">ผู้เช่า</div><div class="value">${escHtml(r.customer)}</div></div>
+    ${!isOps?`<div class="receipt-row"><div class="label">ค่าเช่า</div><div class="value">฿${fmt(r.total)}</div></div>`:''}
+    <div class="receipt-row"><div class="label">มัดจำ</div><div class="value">${r.deposit?'฿'+fmt(r.deposit):'—'}</div></div>
+    <div class="receipt-row"><div class="label">สถานะการชำระ</div><div class="value"><span class="badge ${paymentBadgeClass(r.paymentStatus)}">${escHtml(r.paymentStatus||'—')}</span></div></div>`;
+  if(!stripeCfg){
+    h+=`<div class="pay-note warn">ยังไม่ได้ติดตั้งระบบ Stripe ฝั่ง Apps Script (apps_script_stripe.js) — ใช้การรับเงินแบบเดิมได้ตามปกติ</div>`;
+    document.getElementById('pay-body').innerHTML=h;return;
+  }
+  if(!ready){
+    h+=`<div class="pay-note warn">${ent==='jia'?'ยังไม่ได้ตั้งค่าบัญชี Stripe ของ JIA':'ยังไม่ได้ตั้งค่าบัญชี Stripe ของโรจน์รุ่ง'} — ปุ่มสร้างลิงก์ปิดไว้ ใช้การรับเงินแบบเดิม (โอน/จ่ายหน้างาน) ได้ตามปกติ</div>`;
+  }
+  if(!stripeStaffKey()||stripeKeyNeeded){
+    h+=`<div class="pay-note">กรอก <b>รหัสพนักงาน (ชำระเงิน)</b> ครั้งแรกในเครื่องนี้ — ขอจากเจ้าของระบบ
+      <div style="display:flex;gap:8px;margin-top:8px"><input type="password" id="pay-staff-key" placeholder="รหัสพนักงาน" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:16px">
+      <button class="btn btn-primary" onclick="saveStaffKey()">บันทึก</button></div></div>`;
+  }
+  // รายการชำระเงินที่มีอยู่
+  const rows=(stripePayments[r.id]||[]).slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  h+=`<div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 6px"><b>รายการชำระผ่าน Stripe</b>
+    ${stripeStaffKey()?`<button class="btn btn-sm btn-outline" onclick="syncPayments()">🔄 ตรวจสถานะล่าสุด</button>`:''}</div>`;
+  h+=rows.length?rows.map(p=>paymentRowHtml(p,r,isOps)).join(''):`<div style="font-size:13px;color:var(--muted);padding:8px 0">ยังไม่มีลิงก์ชำระเงิน</div>`;
+  // สร้างลิงก์ใหม่
+  if(r.status!=='ยกเลิก'){
+    const dis=!ready||!stripeStaffKey()?'disabled':'';
+    h+=`<div style="margin-top:14px;padding:12px;border:1.5px dashed var(--border);border-radius:10px">
+      <b>สร้างลิงก์ชำระเงิน</b>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+        <div class="form-group" style="margin:0"><label>ลูกค้าจ่ายด้วย</label><select id="pay-method" onchange="payPlanCache=null;renderPayPlan()" ${dis}><option value="card">บัตรเครดิต/เดบิต</option><option value="promptpay">พร้อมเพย์</option></select></div>
+        <div class="form-group" style="margin:0"><label>เก็บอะไร</label><select id="pay-purpose" onchange="payPlanCache=null;renderPayPlan()" ${dis}><option value="all">ค่าเช่า + มัดจำ</option><option value="rent">ค่าเช่า (+ค่าส่ง) อย่างเดียว</option><option value="deposit">มัดจำอย่างเดียว</option></select></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px">เช่า ≤ ${stripeCfg.maxHoldDays} วัน + บัตร → มัดจำเป็นการกันวงเงิน (แยกลิงก์) · นานกว่า/พร้อมเพย์ → เก็บมัดจำจริงแยกบรรทัด แล้วคืนด้วย Stripe</div>
+      <div id="pay-plan"></div>
+      <button class="btn btn-outline" style="width:100%;margin-top:8px" onclick="previewPayPlan()" ${dis}>คำนวณยอด (จากชีต)</button>
+    </div>`;
+  }
+  document.getElementById('pay-body').innerHTML=h;
+  renderPayPlan();
+}
+function paymentRowHtml(p,r,isOps){
+  const hold=stripeHolds.find(x=>x.sessionId===p.sessionId);
+  let h=`<div class="pay-row"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+    <div><b>${PAY_KIND_LABEL[p.kind]||p.kind}</b> ฿${fmt(p.amount)}${p.depositAmount&&p.kind==='rent_plus_deposit'?` <span style="font-size:12px;color:var(--muted)">(มัดจำ ฿${fmt(p.depositAmount)})</span>`:''}</div>
+    <span class="badge ${PAY_STATUS_CLASS[p.status]||'badge-gray'}">${PAY_STATUS_LABEL[p.status]||p.status}</span></div>
+    <div style="font-size:12px;color:var(--muted)">สร้าง ${fmtDateTime(p.createdAt)}${p.createdBy?' โดย '+escHtml(p.createdBy):''}${p.paidAt?' · จ่าย '+fmtDateTime(p.paidAt):''}${p.method?' · '+escHtml(p.method.replace('card','บัตร').replace('promptpay','พร้อมเพย์')):''}</div>`;
+  if(p.refundedAmount) h+=`<div style="font-size:12px;color:var(--success)">คืนเงินแล้ว ฿${fmt(p.refundedAmount)}</div>`;
+  if(p.note) h+=`<div style="font-size:12px;color:var(--muted)">${escHtml(p.note)}</div>`;
+  if(p.status==='pending'&&p.url){
+    h+=`<div style="font-size:12px;color:var(--muted)">ลิงก์หมดอายุ ${fmtDateTime(p.expiresAt)}</div>
+      <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap"><button class="btn btn-sm btn-outline" onclick="copyPayLink('${p.sessionId}')">📋 คัดลอกลิงก์</button><button class="btn btn-sm btn-success" onclick="sharePayLinkLine('${p.sessionId}')">💬 ส่งทาง LINE</button></div>`;
+  }
+  if(hold){
+    h+=`<div class="pay-note ${hold.warn?'danger':''}" style="margin-top:6px">กันวงเงินมาแล้ว <b>${hold.ageDays} วัน</b> · หมดอายุประมาณ <b>${fmtDateTime(hold.expiresAt)}</b>${hold.warn?' — ใกล้หมดอายุ! ปล่อยหรือหักก่อนหมดอายุ':''}</div>`;
+  }
+  if(isOps&&p.kind==='deposit_hold'&&p.status==='hold'){
+    h+=`<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-sm btn-success" onclick="depositAction('${p.sessionId}','release')">🔓 ปล่อยวงเงิน (สภาพดี)</button>
+      <input type="number" min="0" id="dmg-${p.sessionId}" placeholder="ค่าเสียหาย ฿" style="width:130px;padding:8px;border:1.5px solid var(--border);border-radius:8px">
+      <button class="btn btn-sm btn-danger-soft" onclick="depositAction('${p.sessionId}','capture')">หักค่าเสียหาย</button></div>`;
+  }
+  if(isOps&&(p.kind==='deposit_charge'||p.kind==='rent_plus_deposit')&&p.status==='paid'&&p.depositAmount>0&&!p.releasedAt){
+    const pp=/promptpay/.test(p.method||'');
+    h+=`<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center">
+      <input type="number" min="0" id="dmg-${p.sessionId}" placeholder="หักค่าเสียหาย ฿ (0 = คืนเต็ม)" style="width:200px;padding:8px;border:1.5px solid var(--border);border-radius:8px">
+      <button class="btn btn-sm btn-success" onclick="depositAction('${p.sessionId}','refund')">↩️ คืนมัดจำ</button></div>
+      ${pp?`<div style="font-size:12px;color:#92400e;margin-top:4px">จ่ายด้วยพร้อมเพย์: Stripe จะส่งอีเมลให้ลูกค้ากรอกบัญชีรับเงินคืน (ต้องเป็นบัญชีเดียวกับที่โอน, รหัสธนาคาร 3 หลัก เช่น ttb = 011) ใช้เวลา ~3–5 วันทำการ · อีเมลแสดงชื่อ "Jia1669"</div>`:''}`;
+  }
+  return h+'</div>';
+}
+function saveStaffKey(){
+  const v=(document.getElementById('pay-staff-key').value||'').trim();
+  if(!v){showToast('กรุณากรอกรหัสพนักงาน','error');return;}
+  lsSet('jia_stripe_staff_key',v);stripeKeyNeeded=false;
+  syncPayments();
+}
+async function syncPayments(silent){
+  const id=payModalRentalId;if(!id)return;
+  const res=await stripeAPI({action:'stripeSync',key:stripeStaffKey(),rentalId:id});
+  if(!res){if(!silent)showToast('เชื่อมต่อไม่ได้ — ลองใหม่','error');return;}
+  if(res.needKey){lsSet('jia_stripe_staff_key','');stripeKeyNeeded=true;if(!silent)showToast(res.error||'รหัสพนักงานไม่ถูกต้อง','error');renderPaymentModal();return;}
+  if(res.error){if(!silent)showToast(res.error,'error');return;}
+  applyStripePayments(res,id);
+  updatePaymentStatusFromLedger(id);
+  if(!silent)showToast('อัปเดตสถานะแล้ว');
+  if(document.getElementById('payment-modal').classList.contains('show'))renderPaymentModal();
+}
+// อัปเดต paymentStatus ในหน้าจอให้ตรงกับที่ Apps Script เขียนลงชีต (ชีตคือของจริง — โหลดใหม่รอบหน้าก็ได้ค่าเดียวกัน)
+function updatePaymentStatusFromLedger(id){
+  const r=rentals.find(x=>x.id===id);if(!r)return;
+  const rows=stripePayments[id]||[];
+  const rentPaid=rows.some(p=>(p.kind==='rent'||p.kind==='rent_plus_deposit')&&p.status==='paid');
+  if(r.status==='รอชำระ'&&rentPaid)r.status='จอง';
+  if(currentPage==='rentals')renderRentals();
+}
+function renderPayPlan(){
+  const box=document.getElementById('pay-plan');if(!box)return;
+  const plan=payPlanCache;
+  if(!plan){box.innerHTML='';return;}
+  if(plan.error&&!plan.sessions){box.innerHTML=`<div class="pay-note danger">${escHtml(plan.error)}</div>`;return;}
+  let h=`<div class="pay-note" style="margin-top:8px">`;
+  h+=`<div>ค่าเช่า+ค่าส่งที่ลูกค้าออก: ฿${fmt(plan.rentGross)} · จ่ายแล้ว ฿${fmt(plan.rentPaid)} · <b>ค้าง ฿${fmt(plan.rentDue)}</b></div>`;
+  h+=`<div>มัดจำค้าง: <b>฿${fmt(plan.depositDue)}</b>${plan.depositMode!=='none'?' — '+escHtml(plan.depositReason):''}</div>`;
+  (plan.sessions||[]).forEach(s=>{h+=`<div style="margin-top:6px">🔗 <b>${PAY_KIND_LABEL[s.kind]}</b> ฿${fmt(s.amount)} <span style="font-size:12px;color:var(--muted)">(${s.lines.map(l=>escHtml(l.name.replace(' '+payModalRentalId,''))+' ฿'+fmt(l.amount)).join(', ')})</span></div>`;});
+  (plan.errors||[]).forEach(e=>{h+=`<div style="color:var(--danger);margin-top:4px">${escHtml(e)}</div>`;});
+  h+=`</div>`;
+  if(plan.sessions&&plan.sessions.length&&!(plan.errors||[]).length) h+=`<button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="createPayLinks()">สร้างลิงก์ ${plan.sessions.length>1?plan.sessions.length+' ลิงก์':''}</button>`;
+  box.innerHTML=h;
+}
+async function previewPayPlan(){
+  const res=await stripeAPI({action:'stripeCreateLink',key:stripeStaffKey(),rentalId:payModalRentalId,purpose:document.getElementById('pay-purpose').value,method:document.getElementById('pay-method').value,dryRun:'1'});
+  if(!res){showToast('เชื่อมต่อไม่ได้ — ลองใหม่','error');return;}
+  if(res.needKey){lsSet('jia_stripe_staff_key','');stripeKeyNeeded=true;showToast(res.error,'error');renderPaymentModal();return;}
+  payPlanCache=res.plan||{error:res.error||'คำนวณไม่สำเร็จ'};
+  renderPayPlan();
+}
+let creatingLinks=false;
+async function createPayLinks(){
+  if(creatingLinks)return;creatingLinks=true;
+  showLoading('กำลังสร้างลิงก์ชำระเงิน…');
+  try{
+    const res=await stripeAPI({action:'stripeCreateLink',key:stripeStaffKey(),rentalId:payModalRentalId,purpose:document.getElementById('pay-purpose').value,method:document.getElementById('pay-method').value,by:currentUser});
+    if(!res||!res.ok){showToast((res&&res.error)||'สร้างลิงก์ไม่สำเร็จ','error');return;}
+    payPlanCache=null;
+    showToast(`สร้างลิงก์แล้ว ${res.links.length} ลิงก์`+(res.links.some(l=>l.reused)?' (ใช้ลิงก์เดิมที่ยังไม่หมดอายุ)':''));
+    await syncPayments(true);
+    renderPaymentModal();
+  } finally {hideLoading();creatingLinks=false;}
+}
+function payLinkText(sid){
+  const p=(stripePayments[payModalRentalId]||[]).find(x=>x.sessionId===sid);if(!p)return '';
+  const r=rentals.find(x=>x.id===p.rentalId);
+  const extra=p.kind==='deposit_hold'?'\n(กันวงเงินบนบัตร ยังไม่ตัดเงิน — ปล่อยวงเงินเมื่อคืนของสภาพดี)':p.depositAmount?`\n(มีมัดจำ ฿${fmt(p.depositAmount)} คืนหลังรับของคืน)`:'';
+  return `ลิงก์ชำระ${PAY_KIND_LABEL[p.kind]} ${p.rentalId}${r?' — '+r.customer:''}\nยอด ฿${fmt(p.amount)}${extra}\n${p.url}\nลิงก์ใช้ได้ถึง ${fmtDateTime(p.expiresAt)}`;
+}
+function copyPayLink(sid){
+  const text=payLinkText(sid);
+  navigator.clipboard.writeText(text).then(()=>showToast('คัดลอกลิงก์แล้ว')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('คัดลอกลิงก์แล้ว');
+  });
+}
+function sharePayLinkLine(sid){window.open('https://line.me/R/msg/text/?'+encodeURIComponent(payLinkText(sid)),'_blank');}
+let depositBusy=false;
+async function depositAction(sid,op){
+  if(currentRole!=='ops'){showToast('เฉพาะ Ops','error');return;}
+  if(depositBusy)return;
+  const p=(stripePayments[payModalRentalId]||[]).find(x=>x.sessionId===sid);if(!p)return;
+  const dmgEl=document.getElementById('dmg-'+sid);
+  const damage=op==='release'?0:Math.max(0,parseFloat(dmgEl&&dmgEl.value)||0);
+  let q;
+  if(op==='release') q=`ปล่อยวงเงินมัดจำ ฿${fmt(p.amount)} ของ ${p.rentalId}?\n(ลูกค้าจะไม่ถูกตัดเงิน — ย้อนกลับไม่ได้)`;
+  else if(op==='capture') q=damage>0?`หักค่าเสียหาย ฿${fmt(damage)} จากวงเงิน ฿${fmt(p.amount)} ของ ${p.rentalId}?\n(ตัดเงินจริง ฿${fmt(damage)} ส่วนที่เหลือปล่อยคืนบัตร — ย้อนกลับไม่ได้)`:`ไม่ได้ใส่ค่าเสียหาย = ปล่อยวงเงินทั้งหมด ฿${fmt(p.amount)} ใช่ไหม?`;
+  else q=`คืนมัดจำ ฿${fmt(Math.max(0,p.depositAmount-damage))}${damage?` (หักค่าเสียหาย ฿${fmt(damage)})`:' เต็มจำนวน'} ของ ${p.rentalId}?\n(คืนเงินผ่าน Stripe — ย้อนกลับไม่ได้)`;
+  if(!confirm(q))return;
+  let key=stripeOpsKey();
+  if(!key){key=(prompt('กรอกรหัส Ops (ชำระเงิน) — ขอจากเจ้าของระบบ')||'').trim();if(!key)return;lsSet('jia_stripe_ops_key',key);}
+  depositBusy=true;showLoading('กำลังทำรายการกับ Stripe…');
+  try{
+    const res=await stripeAPI({action:'stripeDepositAction',opsKey:key,sessionId:sid,op,damage,by:currentUser});
+    if(!res){showToast('เชื่อมต่อไม่ได้ — ตรวจสถานะล่าสุดก่อนลองใหม่','error');return;}
+    if(res.needOpsKey){lsSet('jia_stripe_ops_key','');showToast(res.error,'error');return;}
+    if(res.error){showToast(res.error,'error');return;}
+    showToast('ทำรายการสำเร็จ');
+  } finally {
+    hideLoading();depositBusy=false;
+    await syncPayments(true);renderPaymentModal();
+  }
+}
+
 // ========== UTILITY ==========
 const fmt = n => (parseFloat(n)||0).toLocaleString('th-TH');
 const fmtDate = d => {
   if (!d || !(d instanceof Date) || isNaN(d)) return '—';
   return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
 };
-const badgeClass = s => s==='ว่าง'||s==='คืนแล้ว'?'badge-green':s==='ถูกเช่า'||s==='กำลังเช่า'?'badge-blue':s==='เกินกำหนด'?'badge-red':s==='จอง'?'badge-orange':s==='ยกเลิก'?'badge-gray':s==='ยืมด่วน'?'badge-purple':s==='ไม่พร้อมใช้งาน'||s==='ออกสอน'||s==='ออกบูธ'?'badge-slate':s==='ทดแทน'?'badge-purple':s==='ใช้งานได้'?'badge-orange':'badge-gray';
+const badgeClass = s => s==='รอชำระ'?'badge-orange':s==='ว่าง'||s==='คืนแล้ว'?'badge-green':s==='ถูกเช่า'||s==='กำลังเช่า'?'badge-blue':s==='เกินกำหนด'?'badge-red':s==='จอง'?'badge-orange':s==='ยกเลิก'?'badge-gray':s==='ยืมด่วน'?'badge-purple':s==='ไม่พร้อมใช้งาน'||s==='ออกสอน'||s==='ออกบูธ'?'badge-slate':s==='ทดแทน'?'badge-purple':s==='ใช้งานได้'?'badge-orange':'badge-gray';
 
 function showToast(msg,type='success'){
   const stack=document.getElementById('toast-stack');
@@ -2097,13 +2359,20 @@ function renderDashboard(){
   const active2=rentals.filter(r=>r.status==='กำลังเช่า').length;
   const bookedRentals=rentals.filter(r=>r.status==='จอง').length;
   const totalRev2=rentals.reduce((s,r)=>s+r.total,0);
+  // แยกยอด 2 นิติบุคคล: โรจน์รุ่ง (เซลล์) / JIA (จองออนไลน์) — ไม่นับที่ยกเลิก/ยังไม่ชำระ
+  const entRows=e=>rentals.filter(r=>entityOf(r)===e&&r.status!=='ยกเลิก'&&r.status!=='รอชำระ');
+  const rojRows=entRows('rojrung'), jiaRows=entRows('jia');
+  const jiaPending=rentals.filter(r=>entityOf(r)==='jia'&&r.status==='รอชำระ').length;
+  const entityStats=`
+      <div class="stat-row"><div class="stat-label">จองโดยเซลล์ (โรจน์รุ่ง)</div><div class="stat-value">${rojRows.length}${currentRole!=='ops'?' · ฿'+fmt(rojRows.reduce((s,r)=>s+r.total,0)):''}</div></div>
+      <div class="stat-row"><div class="stat-label">🌐 จองออนไลน์ (JIA)</div><div class="stat-value" style="color:#1e40af">${jiaRows.length}${currentRole!=='ops'?' · ฿'+fmt(jiaRows.reduce((s,r)=>s+r.total,0)):''}${jiaPending?` <span style="font-size:12px;color:#d97706">(รอชำระ ${jiaPending})</span>`:''}</div></div>`;
   if(currentRole==='ops'){
     document.getElementById('rent-stats').innerHTML=`
       <div class="stat-row"><div class="stat-label">รายการทั้งหมด</div><div class="stat-value">${rentals.length}</div></div>
       <div class="stat-row"><div class="stat-label">คืนแล้ว</div><div class="stat-value" style="color:var(--success)">${returned}</div></div>
       <div class="stat-row"><div class="stat-label">กำลังเช่า</div><div class="stat-value" style="color:var(--primary)">${active2}</div></div>
       <div class="stat-row"><div class="stat-label">รอจัดส่ง (จอง)</div><div class="stat-value" style="color:#f59e0b">${bookedRentals}</div></div>
-      <div class="stat-row"><div class="stat-label">เกินกำหนด</div><div class="stat-value" style="color:var(--danger)">${overdue}</div></div>
+      <div class="stat-row"><div class="stat-label">เกินกำหนด</div><div class="stat-value" style="color:var(--danger)">${overdue}</div></div>${entityStats}
       <div class="stat-row"><div class="stat-label">ซ่อมบำรุง</div><div class="stat-value" style="color:var(--muted)">${repair} ชิ้น</div></div>
       ${unavail?`<div class="stat-row"><div class="stat-label">ไม่พร้อมใช้งาน</div><div class="stat-value" style="color:#334155">${unavail} ชิ้น</div></div>`:''}
     `;
@@ -2114,7 +2383,7 @@ function renderDashboard(){
       <div class="stat-row"><div class="stat-label">กำลังเช่า</div><div class="stat-value" style="color:var(--primary)">${active2}</div></div>
       <div class="stat-row"><div class="stat-label">จอง</div><div class="stat-value" style="color:#f59e0b">${bookedRentals}</div></div>
       <div class="stat-row"><div class="stat-label">เกินกำหนด</div><div class="stat-value" style="color:var(--danger)">${overdue}</div></div>
-      <div class="stat-row"><div class="stat-label">ค่าเฉลี่ย/รายการ</div><div class="stat-value price">฿${fmt(Math.round(totalRev2/Math.max(rentals.length,1)))}</div></div>
+      <div class="stat-row"><div class="stat-label">ค่าเฉลี่ย/รายการ</div><div class="stat-value price">฿${fmt(Math.round(totalRev2/Math.max(rentals.length,1)))}</div></div>${entityStats}
       <div class="stat-row"><div class="stat-label">ซ่อมบำรุง</div><div class="stat-value" style="color:var(--muted)">${repair} ชิ้น</div></div>
       ${unavail?`<div class="stat-row"><div class="stat-label">ไม่พร้อมใช้งาน</div><div class="stat-value" style="color:#334155">${unavail} ชิ้น</div></div>`:''}
     `;
@@ -2382,6 +2651,8 @@ function renderRentals(){
     const prodText=Array.isArray(r.productNames)?r.productNames.join(' '):r.productName||'';
     if(q&&!r.id.toLowerCase().includes(q)&&!r.customer.toLowerCase().includes(q)&&!prodText.toLowerCase().includes(q))return false;
     if(st&&r.status!==st)return false;
+    const entF=(document.getElementById('rent-entity-filter')||{}).value;
+    if(entF&&entityOf(r)!==entF)return false;
     return true;
   });
   if(currentRole==='sales') filtered=filtered.filter(r=>r.sales===currentUser);
@@ -2430,7 +2701,7 @@ function renderRentals(){
   }
 
   document.getElementById('rent-table').innerHTML=slice.map(r=>{
-    const vipTag=r.isVIP?'<span class="vip-tag">⚡VIP</span> ':'';
+    const vipTag=(r.isVIP?'<span class="vip-tag">⚡VIP</span> ':'')+(entityOf(r)==='jia'?'<span class="web-tag">🌐 JIA ออนไลน์</span> ':'');
     let rowHtml=`<tr>
       <td style="font-weight:600;font-size:12px">${vipTag}${r.id}</td>
       <td>${fmtDate(r.start)}</td>
@@ -2450,7 +2721,7 @@ function renderRentals(){
       <td class="text-right price">฿${fmt(r.total)}</td>`;
     rowHtml+=`<td class="text-right">${r.deposit?'฿'+fmt(r.deposit):'—'}</td>`;
     if(!isOps) rowHtml+=`
-      <td style="font-size:12px"><span class="badge ${r.paymentStatus==='โอน'?'badge-green':r.paymentStatus==='จ่ายหน้างาน'?'badge-orange':'badge-gray'}">${r.paymentStatus||'—'}</span></td>`;
+      <td style="font-size:12px"><span class="badge ${paymentBadgeClass(r.paymentStatus)}">${r.paymentStatus||'—'}</span></td>`;
     rowHtml+=`
       <td style="font-size:12px">${r.customer}</td>
       <td style="font-size:12px">${r.sales||'—'}</td>`;
@@ -2481,6 +2752,9 @@ function renderRentals(){
     if(r.deposit>0){
       acts.push({label:'ใบประกัน',icon:'🧾',fn:`showGuaranteeReceipt('${r.id}')`,cls:'btn-amber-soft'});
     }
+    if(r.status!=='ยกเลิก'){
+      acts.push({label:'ชำระเงิน',icon:'💳',fn:`openPaymentModal('${r.id}')`,cls:'btn-outline'});
+    }
     if(r.status==='จอง'){
       acts.push({label:'ยกเลิกจอง',icon:'✖',fn:`cancelBooking('${r.id}')`,cls:'btn-danger-soft'});
     }
@@ -2502,7 +2776,7 @@ function renderRentals(){
 function renderRentalCards(slice){
   const isOps=currentRole==='ops';
   document.getElementById('rent-cards').innerHTML=slice.map(r=>{
-    const vipTag=r.isVIP?'<span class="vip-tag">⚡VIP</span> ':'';
+    const vipTag=(r.isVIP?'<span class="vip-tag">⚡VIP</span> ':'')+(entityOf(r)==='jia'?'<span class="web-tag">🌐 JIA ออนไลน์</span> ':'');
     const acts=rowActionCache[r.id]||[];
     const primary=acts.find(a=>a.primary);
     const rest=acts.filter(a=>a!==primary);
@@ -2707,6 +2981,7 @@ function renderAlerts(){
 
   renderPendingBookingList('newbooking-alerts');
   newBookingIds.clear();
+  renderHoldAlerts();
 
   // ใกล้ถึงกำหนดคืน (ภายใน 3 วัน)
   const upcoming=rentals.filter(r=>{
@@ -2787,6 +3062,20 @@ function renderAlerts(){
 }
 
 // อัปเดต badge แจ้งเตือนที่ sidebar โดยไม่ต้อง render DOM ทั้งหน้าแจ้งเตือน (ใช้กับ auto-refresh)
+function renderHoldAlerts(){
+  const card=document.getElementById('hold-alerts-card');if(!card)return;
+  const holds=stripeHolds.slice().sort((a,b)=>b.ageDays-a.ageDays);
+  card.style.display=holds.length?'':'none';
+  document.getElementById('hold-alerts').innerHTML=holds.map(h=>{
+    const r=rentals.find(x=>x.id===h.rentalId);
+    const color=h.warn?'var(--danger)':'#7c3aed';
+    return `<div class="alert-item" style="background:${h.warn?'#fef2f2':'#f5f3ff'};border-left-color:${color};cursor:pointer" onclick="openPaymentModal('${h.rentalId}')">
+      <div class="alert-icon" style="font-size:22px;color:${color}">💳</div>
+      <div class="alert-text"><strong>${h.rentalId} — กันวงเงิน ฿${fmt(h.amount)}</strong>
+      ผู้เช่า: ${r?escHtml(r.customer):'—'} | กันมาแล้ว ${h.ageDays} วัน | หมดอายุประมาณ ${fmtDateTime(h.expiresAt)}
+      ${h.warn?'<span style="color:var(--danger);font-weight:700;margin-left:6px">ใกล้หมดอายุ! ปล่อย/หักก่อนหมดอายุ</span>':''}</div></div>`;
+  }).join('');
+}
 function updateAlertBadge(){
   const today=new Date();today.setHours(0,0,0,0);
   const in3Days=new Date(today);in3Days.setDate(in3Days.getDate()+3);
@@ -2797,7 +3086,8 @@ function updateAlertBadge(){
   }).length;
   const overdueCount=rentals.filter(r=>r.status==='เกินกำหนด').length;
   const pendingCount=currentRole==='ops'?rentals.filter(r=>r.status==='จอง').length:0;
-  const totalAlerts=upcomingCount+overdueCount+pendingCount;
+  const holdWarnCount=currentRole==='ops'?stripeHolds.filter(h=>h.warn).length:0;
+  const totalAlerts=upcomingCount+overdueCount+pendingCount+holdWarnCount;
   const badge=document.getElementById('alert-badge');
   if(badge){
     if(totalAlerts>0){badge.textContent=totalAlerts;badge.style.display='inline';}
@@ -4168,6 +4458,7 @@ function showStudentReceipt(id){
     ${b.lastEditedDate?`<div class="receipt-row"><div class="label">แก้ไขล่าสุด</div><div class="value" style="font-size:12px;color:var(--muted)">✏️ ${b.lastEditedDate}</div></div>`:''}
     ${(()=>{try{const log=b.editLog||[];if(!log.length)return '';let h='<div style="font-weight:700;font-size:13px;margin:12px 0 6px">📋 ประวัติการแก้ไข</div><div style="max-height:150px;overflow-y:auto">';log.slice().reverse().forEach((e,i)=>{h+=`<div style="padding:6px 10px;margin-bottom:4px;background:${i===0?'#fef3c7':'#f8fafc'};border:1px solid ${i===0?'#fbbf24':'var(--border)'};border-radius:6px;font-size:11px"><div style="font-weight:600;color:var(--muted)">${e.time}</div>${e.changes.map(c=>'<div>• '+c+'</div>').join('')}</div>`;});h+='</div>';return h;}catch(e){return '';}})()}`;
   document.getElementById('receipt-body').innerHTML=html;
+  setReceiptEntity(null);
   document.getElementById('receipt-card').querySelector('.receipt-header h2').textContent='JIARAKSA';
   document.getElementById('receipt-card').querySelector('.receipt-header p').textContent='ใบยืนยันจองผู้เรียน — บริษัท โรจน์รุ่ง ธุรกิจ จำกัด';
   document.getElementById('receipt-overlay').classList.add('show');
@@ -4532,7 +4823,8 @@ async function saveRental(){
     status:'จอง',
     note:(modeNote+' '+note+(bufferDays?' [เผื่อขนส่ง '+bufferDays+' วัน]':'')).trim(),
     isVIP:false,vipReason:'',
-    rentalMode:mode,installments,monthlyAmount:monthlyAmt
+    rentalMode:mode,installments,monthlyAmount:monthlyAmt,
+    entity:'rojrung',channel:'sales'
   };
   savingRental=true;
   closeModal('booking-preview-modal');
@@ -4938,8 +5230,9 @@ function showReceipt(id){
   const isOps=currentRole==='ops';
   const cust=customers.find(c=>c.name===r.customer);
   // Reset header กลับเป็นใบจอง
-  document.getElementById('receipt-card').querySelector('.receipt-header h2').textContent='JIARAKSA';
-  document.getElementById('receipt-card').querySelector('.receipt-header p').textContent='ใบยืนยันการจอง — บริษัท โรจน์รุ่ง ธุรกิจ จำกัด';
+  setReceiptEntity(r);
+  document.getElementById('receipt-card').querySelector('.receipt-header h2').textContent=receiptBrand;
+  document.getElementById('receipt-card').querySelector('.receipt-header p').textContent='ใบยืนยันการจอง — '+receiptCompany;
 
   let html=`
     <div class="receipt-row"><div class="label">เลขที่</div><div class="value" style="font-size:16px;font-weight:800">${r.id}</div></div>
@@ -4974,7 +5267,7 @@ function showReceipt(id){
   if(r.sender) html+=`<div class="receipt-row"><div class="label">ผู้ส่งสินค้า</div><div class="value">${r.sender}</div></div>`;
   if(r.deliveryBy) html+=`<div class="receipt-row"><div class="label">จัดส่งโดย</div><div class="value">${r.deliveryBy}</div></div>`;
   if(r.note)html+=`<div class="receipt-note">📝 ${r.note}</div>`;
-  html+=`<div style="text-align:center;margin-top:16px;font-size:11px;color:var(--muted)">JIARAKSA — บริษัท โรจน์รุ่ง ธุรกิจ จำกัด | ระบบเช่า-ยืมอุปกรณ์ฝึกสอน CPR/AED</div>`;
+  html+=`<div style="text-align:center;margin-top:16px;font-size:11px;color:var(--muted)">${receiptBrand} — ${receiptCompany} | ระบบเช่า-ยืมอุปกรณ์ฝึกสอน CPR/AED</div>`;
   document.getElementById('receipt-body').innerHTML=html;
   document.getElementById('receipt-overlay').classList.add('show');
 }
@@ -4996,7 +5289,7 @@ function printReceipt(){
   .vip-tag{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700}
   .price{color:#2563eb;font-weight:700}
   </style></head><body>`);
-  w.document.write(`<div class="receipt-header"><h2>JIARAKSA</h2><p>ใบยืนยันการจอง — บริษัท โรจน์รุ่ง ธุรกิจ จำกัด</p></div>`);
+  w.document.write(`<div class="receipt-header"><h2>${document.getElementById('receipt-card').querySelector('.receipt-header h2').textContent}</h2><p>${document.getElementById('receipt-card').querySelector('.receipt-header p').textContent}</p></div>`);
   w.document.write(document.getElementById('receipt-body').innerHTML);
   w.document.write(`<script>setTimeout(()=>window.print(),500)<\/script></body></html>`);
   w.document.close();
@@ -5017,7 +5310,7 @@ function shareReceipt(){
   if(stuRows.length){text+='\nรายชื่อผู้เรียน:\n';stuRows.forEach(s=>{text+='  '+s.textContent.trim()+'\n';});}
   const total=body.querySelector('.receipt-total .amount');
   if(total)text+='\n💰 รวมทั้งหมด: '+total.textContent+'\n';
-  text+='\n— JIARAKSA | บริษัท โรจน์รุ่ง ธุรกิจ จำกัด —';
+  text+=`\n— ${receiptBrand} | ${receiptCompany} —`;
   navigator.clipboard.writeText(text).then(()=>{showToast('คัดลอกใบยืนยันแล้ว! วางส่งให้ลูกค้าได้เลย');}).catch(()=>{
     const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
     showToast('คัดลอกใบยืนยันแล้ว!');
@@ -5095,7 +5388,8 @@ function saveVIP(){
     sender:currentUser||'\u2014',
     status:'ยืมด่วน',note:`[${reason}]${noDue?' [ไม่กำหนดวันคืน]':''} ${note}`.trim(),
     isVIP:true,vipReason:reason,noDueDate:noDue,
-    senderCommission:0,receiverCommission:0
+    senderCommission:0,receiverCommission:0,
+    entity:'rojrung',channel:'sales'
   };
   rentals.push(newRental);
   selProds.forEach(p=>{p.status='ถูกเช่า';gsUpdateProductStatus(p.id,'ถูกเช่า');});
@@ -5527,8 +5821,9 @@ function showReturnReceipt(id){
   const cust=customers.find(c=>c.name===r.customer);
 
   // เปลี่ยน header เป็นใบคืน
-  document.getElementById('receipt-card').querySelector('.receipt-header h2').textContent='JIARAKSA';
-  document.getElementById('receipt-card').querySelector('.receipt-header p').textContent='ใบยืนยันการคืนสินค้า — บริษัท โรจน์รุ่ง ธุรกิจ จำกัด';
+  setReceiptEntity(r);
+  document.getElementById('receipt-card').querySelector('.receipt-header h2').textContent=receiptBrand;
+  document.getElementById('receipt-card').querySelector('.receipt-header p').textContent='ใบยืนยันการคืนสินค้า — '+receiptCompany;
 
   let html=`
     <div class="receipt-row"><div class="label">เลขที่</div><div class="value" style="font-size:16px;font-weight:800">${r.id} ${r.isVIP?'<span class="vip-tag">VIP</span>':''}</div></div>
@@ -5583,7 +5878,7 @@ function showReturnReceipt(id){
 
   if(r.returnNote) html+=`<div class="receipt-note">📝 ${r.returnNote}</div>`;
   if(r.note) html+=`<div style="font-size:11px;color:var(--muted);margin-top:6px;padding:6px 8px;background:#f8fafc;border-radius:4px">หมายเหตุจอง: ${r.note}</div>`;
-  html+=`<div style="text-align:center;margin-top:16px;font-size:11px;color:var(--muted)">JIARAKSA — บริษัท โรจน์รุ่ง ธุรกิจ จำกัด | ใบยืนยันการคืนสินค้า</div>`;
+  html+=`<div style="text-align:center;margin-top:16px;font-size:11px;color:var(--muted)">${receiptBrand} — ${receiptCompany} | ใบยืนยันการคืนสินค้า</div>`;
 
   document.getElementById('receipt-body').innerHTML=html;
   document.getElementById('receipt-overlay').classList.add('show');
@@ -5597,8 +5892,9 @@ function showGuaranteeReceipt(id){
   const today=new Date();
   const docNo=r.id.replace('RN-','GR-');
 
-  document.getElementById('receipt-card').querySelector('.receipt-header h2').textContent='JIARAKSA';
-  document.getElementById('receipt-card').querySelector('.receipt-header p').textContent='ใบรับเงินค่าประกันสินค้า — บริษัท โรจน์รุ่ง ธุรกิจ จำกัด';
+  setReceiptEntity(r);
+  document.getElementById('receipt-card').querySelector('.receipt-header h2').textContent=receiptBrand;
+  document.getElementById('receipt-card').querySelector('.receipt-header p').textContent='ใบรับเงินค่าประกันสินค้า — '+receiptCompany;
 
   let html=`
     <div style="display:flex;justify-content:space-between;margin-bottom:12px">
@@ -5660,7 +5956,7 @@ function showGuaranteeReceipt(id){
       <div style="text-align:center;width:45%"><div style="border-bottom:1px solid #333;margin-bottom:4px;height:30px"></div><div style="font-size:11px;color:var(--muted)">ผู้จ่ายเงิน</div></div>
     </div>
 
-    <div style="text-align:center;margin-top:16px;font-size:11px;color:var(--muted)">JIARAKSA — บริษัท โรจน์รุ่ง ธุรกิจ จำกัด | ใบรับเงินค่าประกันสินค้า</div>
+    <div style="text-align:center;margin-top:16px;font-size:11px;color:var(--muted)">${receiptBrand} — ${receiptCompany} | ใบรับเงินค่าประกันสินค้า</div>
   `;
 
   document.getElementById('receipt-body').innerHTML=html;
@@ -5994,9 +6290,11 @@ function renderCommission(){
   const filterPerson=pSel.value;
   function inRange(d){if(!d)return false;if(useRange){if(rangeFrom&&d<rangeFrom)return false;if(rangeTo&&d>rangeTo)return false;return true;}return d.getFullYear()===commYear&&d.getMonth()===commMonth;}
   const records=[];
+  const filterEntity=(document.getElementById('comm-entity-filter')||{}).value||'';
   rentals.forEach(r=>{
-    if(r.sender&&r.confirmedDate){const cd=r.confirmedDate;if(inRange(cd)){const comm=Math.round((r.totalPricePerDay||0)*0.05);if(!filterPerson||r.sender===filterPerson){records.push({id:r.id,date:cd,type:'ส่งสินค้า',prods:Array.isArray(r.productNames)?r.productNames.join(', '):'',customer:r.customer,person:r.sender,rental:r.totalPricePerDay||0,commission:comm});}}}
-    if(r.receiver&&r.returnDate){const rd=r.returnDate;if(inRange(rd)){const comm=Math.round((r.totalPricePerDay||0)*0.05);if(!filterPerson||r.receiver===filterPerson){records.push({id:r.id,date:rd,type:'รับคืน',prods:Array.isArray(r.productNames)?r.productNames.join(', '):'',customer:r.customer,person:r.receiver,rental:r.totalPricePerDay||0,commission:comm});}}}
+    if(filterEntity&&entityOf(r)!==filterEntity)return;
+    if(r.sender&&r.confirmedDate){const cd=r.confirmedDate;if(inRange(cd)){const comm=Math.round((r.totalPricePerDay||0)*0.05);if(!filterPerson||r.sender===filterPerson){records.push({id:r.id,entity:entityOf(r),date:cd,type:'ส่งสินค้า',prods:Array.isArray(r.productNames)?r.productNames.join(', '):'',customer:r.customer,person:r.sender,rental:r.totalPricePerDay||0,commission:comm});}}}
+    if(r.receiver&&r.returnDate){const rd=r.returnDate;if(inRange(rd)){const comm=Math.round((r.totalPricePerDay||0)*0.05);if(!filterPerson||r.receiver===filterPerson){records.push({id:r.id,entity:entityOf(r),date:rd,type:'รับคืน',prods:Array.isArray(r.productNames)?r.productNames.join(', '):'',customer:r.customer,person:r.receiver,rental:r.totalPricePerDay||0,commission:comm});}}}
   });
   records.sort((a,b)=>a.date-b.date);
   const totalComm=records.reduce((s,r)=>s+r.commission,0);
@@ -6009,7 +6307,7 @@ function renderCommission(){
   `;
   const isOps=currentRole==='ops';
   document.getElementById('comm-thead').innerHTML=isOps?'<tr><th>เลขที่</th><th>วันที่</th><th>ประเภท</th><th>สินค้า</th><th>ผู้เช่า</th><th>ผู้ดำเนินการ</th><th class="text-right">คอมฯ 5%</th></tr>':'<tr><th>เลขที่</th><th>วันที่</th><th>ประเภท</th><th>สินค้า</th><th>ผู้เช่า</th><th>ผู้ดำเนินการ</th><th class="text-right">ค่าเช่า/วัน</th><th class="text-right">คอมฯ 5%</th></tr>';
-  document.getElementById('comm-table').innerHTML=records.length?records.map(r=>{let row=`<tr><td style="font-weight:600;font-size:12px">${r.id}</td><td>${fmtDate(r.date)}</td><td><span class="badge ${r.type==='ส่งสินค้า'?'badge-blue':'badge-green'}">${r.type}</span></td><td style="font-size:12px">${r.prods}</td><td style="font-size:12px">${r.customer}</td><td style="font-weight:600">${r.person}</td>`;if(!isOps)row+=`<td class="text-right">฿${fmt(r.rental)}</td>`;row+=`<td class="text-right price" style="font-weight:700">฿${fmt(r.commission)}</td></tr>`;return row;}).join(''):`<tr><td colspan="${isOps?7:8}" class="text-center" style="padding:30px;color:var(--muted)">ไม่มีข้อมูลคอมมิชชั่นในเดือนนี้</td></tr>`;
+  document.getElementById('comm-table').innerHTML=records.length?records.map(r=>{let row=`<tr><td style="font-weight:600;font-size:12px">${r.entity==='jia'?'<span class="web-tag">🌐 JIA</span> ':''}${r.id}</td><td>${fmtDate(r.date)}</td><td><span class="badge ${r.type==='ส่งสินค้า'?'badge-blue':'badge-green'}">${r.type}</span></td><td style="font-size:12px">${r.prods}</td><td style="font-size:12px">${r.customer}</td><td style="font-weight:600">${r.person}</td>`;if(!isOps)row+=`<td class="text-right">฿${fmt(r.rental)}</td>`;row+=`<td class="text-right price" style="font-weight:700">฿${fmt(r.commission)}</td></tr>`;return row;}).join(''):`<tr><td colspan="${isOps?7:8}" class="text-center" style="padding:30px;color:var(--muted)">ไม่มีข้อมูลคอมมิชชั่นในเดือนนี้</td></tr>`;
   const byPerson={};records.forEach(r=>{if(!byPerson[r.person])byPerson[r.person]={send:0,recv:0,sendComm:0,recvComm:0,total:0};if(r.type==='ส่งสินค้า'){byPerson[r.person].send++;byPerson[r.person].sendComm+=r.commission;}else{byPerson[r.person].recv++;byPerson[r.person].recvComm+=r.commission;}byPerson[r.person].total+=r.commission;});
   const entries=Object.entries(byPerson).sort((a,b)=>b[1].total-a[1].total);
   document.getElementById('comm-summary').innerHTML=entries.length?entries.map(([name,d])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)"><div><span style="font-weight:700;font-size:15px">${name}</span><div style="font-size:12px;color:var(--muted)">ส่ง ${d.send} เที่ยว (฿${fmt(d.sendComm)}) | รับ ${d.recv} เที่ยว (฿${fmt(d.recvComm)})</div></div><div style="font-size:20px;font-weight:800;color:var(--primary)">฿${fmt(d.total)}</div></div>`).join(''):'<div class="empty-state"><p>ไม่มีข้อมูล</p></div>';
@@ -6027,9 +6325,11 @@ function exportCommissionPDF(){
   const filterPerson=pSel.value;
   function inRange(d){if(!d)return false;if(useRange){if(rangeFrom&&d<rangeFrom)return false;if(rangeTo&&d>rangeTo)return false;return true;}return d.getFullYear()===commYear&&d.getMonth()===commMonth;}
   const records=[];
+  const filterEntity=(document.getElementById('comm-entity-filter')||{}).value||'';
   rentals.forEach(r=>{
-    if(r.sender&&r.confirmedDate){const cd=r.confirmedDate;if(inRange(cd)){const comm=Math.round((r.totalPricePerDay||0)*0.05);if(!filterPerson||r.sender===filterPerson){records.push({id:r.id,date:cd,type:'ส่งสินค้า',prods:Array.isArray(r.productNames)?r.productNames.join(', '):'',customer:r.customer,person:r.sender,rental:r.totalPricePerDay||0,commission:comm});}}}
-    if(r.receiver&&r.returnDate){const rd=r.returnDate;if(inRange(rd)){const comm=Math.round((r.totalPricePerDay||0)*0.05);if(!filterPerson||r.receiver===filterPerson){records.push({id:r.id,date:rd,type:'รับคืน',prods:Array.isArray(r.productNames)?r.productNames.join(', '):'',customer:r.customer,person:r.receiver,rental:r.totalPricePerDay||0,commission:comm});}}}
+    if(filterEntity&&entityOf(r)!==filterEntity)return;
+    if(r.sender&&r.confirmedDate){const cd=r.confirmedDate;if(inRange(cd)){const comm=Math.round((r.totalPricePerDay||0)*0.05);if(!filterPerson||r.sender===filterPerson){records.push({id:r.id,entity:entityOf(r),date:cd,type:'ส่งสินค้า',prods:Array.isArray(r.productNames)?r.productNames.join(', '):'',customer:r.customer,person:r.sender,rental:r.totalPricePerDay||0,commission:comm});}}}
+    if(r.receiver&&r.returnDate){const rd=r.returnDate;if(inRange(rd)){const comm=Math.round((r.totalPricePerDay||0)*0.05);if(!filterPerson||r.receiver===filterPerson){records.push({id:r.id,entity:entityOf(r),date:rd,type:'รับคืน',prods:Array.isArray(r.productNames)?r.productNames.join(', '):'',customer:r.customer,person:r.receiver,rental:r.totalPricePerDay||0,commission:comm});}}}
   });
   records.sort((a,b)=>a.date-b.date);
   
@@ -6072,7 +6372,7 @@ function exportCommissionPDF(){
     @media print{button{display:none}}
   </style></head><body>
   <h1>สรุปคอมมิชชั่นรายเดือน</h1>
-  <div class="subtitle">บริษัท โรจน์รุ่ง ธุรกิจ จำกัด — ${monthLabel}${filterPerson?' | '+filterPerson:''}</div>
+  <div class="subtitle">${filterEntity==='jia'?jiaCompanyName()+' (จองออนไลน์)':filterEntity==='rojrung'?ROJRUNG_COMPANY:ROJRUNG_COMPANY+' + JIA ออนไลน์'} — ${monthLabel}${filterPerson?' | '+filterPerson:''}</div>
   
   <div class="kpi-grid">
     <div class="kpi"><div class="kpi-label">คอมมิชชั่นรวม</div><div class="kpi-value">฿${fmt(totalComm)}</div><div class="kpi-sub">${records.length} รายการ</div></div>
@@ -6181,6 +6481,8 @@ init();
 
 async function loadDataAndRender(){
   await loadFromSheets();
+  // สถานะ Stripe โหลดแยก ไม่บล็อกหน้าหลัก (ถ้ายังไม่ได้ติดตั้ง apps_script_stripe.js ก็ข้ามเงียบ ๆ)
+  loadStripeData().then(()=>{if(currentRole)renderCurrentPage();}).catch(e=>console.error(e));
   // ตรวจสอบรายการเกินกำหนดคืนอัตโนมัติ
   checkOverdue();
   const cats=[...new Set(products.map(p=>p.cat))].sort();
