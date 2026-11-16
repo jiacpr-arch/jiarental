@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>จองอุปกรณ์ออนไลน์ | JIA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#2563eb;--primary-dark:#1d4ed8;--success:#059669;--warning:#d97706;--danger:#dc2626;--bg:#f0f4f8;--card:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--radius:12px;--shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06)}
+body{font-family:'Sarabun','Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;padding:16px;font-size:16px}
+.wrap{max-width:760px;margin:0 auto}
+.header{background:linear-gradient(135deg,#1e3a5f,#0f2744);color:#fff;border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.header h1{font-size:20px;font-weight:700}
+.header p{font-size:14px;opacity:.85;margin-top:4px}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
+.card h2{font-size:16px;margin-bottom:12px}
+.form-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
+.form-group{flex:1;min-width:140px}
+.form-group label{display:block;font-size:14px;color:var(--muted);margin-bottom:4px;font-weight:600}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:16px;font-family:inherit;min-height:44px}
+.form-group textarea{min-height:72px;resize:vertical}
+.btn{padding:10px 20px;border:none;border-radius:8px;background:var(--primary);color:#fff;font-size:16px;font-weight:700;cursor:pointer;width:100%;min-height:48px;font-family:inherit}
+.btn:hover{background:var(--primary-dark)}
+.btn:disabled{background:#94a3b8;cursor:not-allowed}
+.btn-outline{background:#fff;color:var(--primary);border:1.5px solid var(--primary)}
+.btn-outline:hover{background:#eff6ff}
+.btn-sm{width:auto;min-height:40px;padding:6px 14px;font-size:14px}
+.item-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;padding:10px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;background:#f8fafc}
+.item-row .form-group{margin:0}
+.item-row .qty{max-width:110px;min-width:90px}
+.item-row .rm{background:#fff;border:1px solid #fecaca;color:var(--danger);border-radius:8px;min-height:44px;min-width:44px;cursor:pointer;font-size:18px}
+.item-row .meta{width:100%;font-size:13px;color:var(--muted)}
+.item-row .meta label{display:inline-flex;align-items:center;gap:6px;color:var(--text);font-weight:600}
+.pay-opts{display:flex;gap:10px;flex-wrap:wrap}
+.pay-opt{flex:1;min-width:200px;border:2px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;display:flex;gap:10px;align-items:flex-start}
+.pay-opt input{margin-top:5px;width:18px;height:18px}
+.pay-opt.sel{border-color:var(--primary);background:#eff6ff}
+.pay-opt small{display:block;color:var(--muted);font-size:13px}
+.summary-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:15px;gap:10px}
+.summary-row .l{color:var(--muted)}
+.summary-row .v{font-weight:700;text-align:right}
+.total-box{background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:10px;padding:14px;text-align:center;margin:12px 0}
+.total-box .amt{font-size:30px;font-weight:800;color:var(--primary)}
+.total-box .desc{font-size:13px;color:var(--muted)}
+.msg{padding:12px;border-radius:8px;font-size:14px;margin-bottom:12px}
+.msg.err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+.msg.info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+.msg.warn{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+.note{font-size:13px;color:var(--muted);line-height:1.7}
+.consent{display:flex;gap:8px;align-items:flex-start;font-size:14px;margin:10px 0}
+.consent input{width:18px;height:18px;margin-top:3px}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.contact{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.contact a{flex:1;min-width:140px;text-align:center;padding:10px;border-radius:8px;background:#eff6ff;color:var(--primary);text-decoration:none;font-weight:700;min-height:48px;display:flex;align-items:center;justify-content:center}
+.hidden{display:none}
+@media(max-width:480px){body{padding:10px}.card{padding:12px}.form-group{min-width:100%}.item-row .qty{max-width:none}.header h1{font-size:18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>จองอุปกรณ์ฝึกสอน CPR/AED ออนไลน์</h1>
+    <p id="company-line">JIA · จองและชำระเงินได้ทันที ไม่ต้องสมัครสมาชิก</p>
+  </div>
+
+  <div id="top-msg"></div>
+
+  <div id="booking-area">
+  <div class="card">
+    <h2>1) เลือกอุปกรณ์และวันที่</h2>
+    <div id="items"></div>
+    <button class="btn btn-outline btn-sm" id="add-item-btn" onclick="addItem()">+ เพิ่มชนิดอุปกรณ์</button>
+    <div class="form-row" style="margin-top:12px">
+      <div class="form-group"><label for="bk-start">วันเช่า (วันใช้งานวันแรก)</label><input type="date" id="bk-start" onchange="invalidateQuote()"></div>
+      <div class="form-group"><label for="bk-end">กำหนดคืน</label><input type="date" id="bk-end" onchange="invalidateQuote()"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label for="bk-province">จังหวัดที่จัดส่ง</label><select id="bk-province" onchange="invalidateQuote()"><option value="">-- เลือกจังหวัด --</option></select></div>
+    </div>
+    <div class="note" id="limits-note"></div>
+  </div>
+
+  <div class="card">
+    <h2>2) ข้อมูลผู้เช่าและที่อยู่จัดส่ง</h2>
+    <div class="form-row">
+      <div class="form-group"><label for="bk-name">ชื่อผู้เช่า / หน่วยงาน</label><input id="bk-name" maxlength="100" autocomplete="name"></div>
+      <div class="form-group"><label for="bk-phone">เบอร์โทร</label><input id="bk-phone" inputmode="tel" maxlength="15" autocomplete="tel" placeholder="0812345678"></div>
+    </div>
+    <div class="form-row"><div class="form-group"><label for="bk-address">ที่อยู่จัดส่ง (เลขที่ ถนน แขวง/ตำบล เขต/อำเภอ รหัสไปรษณีย์)</label><textarea id="bk-address" maxlength="500" autocomplete="street-address"></textarea></div></div>
+    <div class="form-row"><div class="form-group"><label for="bk-taxname">ออกใบเสร็จในนาม (ถ้ามี)</label><input id="bk-taxname" maxlength="200" placeholder="ชื่อบริษัท/หน่วยงาน + เลขผู้เสียภาษี"></div></div>
+    <div class="form-row"><div class="form-group"><label for="bk-note">หมายเหตุถึงเจ้าหน้าที่ (ถ้ามี)</label><input id="bk-note" maxlength="300"></div></div>
+    <div class="hp" aria-hidden="true"><label>เว็บไซต์<input id="bk-website" tabindex="-1" autocomplete="off"></label></div>
+  </div>
+
+  <div class="card">
+    <h2>3) วิธีชำระเงิน</h2>
+    <div class="pay-opts">
+      <label class="pay-opt sel" id="opt-card"><input type="radio" name="method" value="card" checked onchange="onMethod()"><div><strong>บัตรเครดิต/เดบิต</strong><small>เช่าไม่เกิน <span class="max-hold">6</span> วัน: มัดจำเป็นการ "กันวงเงิน" บนบัตร ไม่ตัดเงินจริง</small></div></label>
+      <label class="pay-opt" id="opt-pp"><input type="radio" name="method" value="promptpay" onchange="onMethod()"><div><strong>พร้อมเพย์ (PromptPay)</strong><small>มัดจำเก็บจริงพร้อมค่าเช่า แล้วคืนหลังรับของคืน — ต้องกรอกบัญชีรับเงินคืนจากอีเมลของ Stripe</small></div></label>
+    </div>
+    <button class="btn btn-outline" style="margin-top:12px" id="quote-btn" onclick="getQuote()">ดูราคา</button>
+  </div>
+
+  <div class="card hidden" id="quote-card">
+    <h2>4) สรุปยอด</h2>
+    <div id="quote-body"></div>
+    <label class="consent"><input type="checkbox" id="bk-consent"> <span>ยินยอมให้เก็บชื่อ เบอร์โทร และที่อยู่ เพื่อจัดส่ง/รับคืนอุปกรณ์และติดต่อเรื่องการเช่าเท่านั้น และยอมรับว่ามัดจำจะคืนเมื่อรับอุปกรณ์คืนในสภาพดี (หักค่าเสียหายได้ถ้ามี)</span></label>
+    <button class="btn" id="pay-btn" onclick="payNow()" disabled>ไปหน้าชำระเงิน</button>
+    <div class="note" style="margin-top:8px">ชำระผ่าน Stripe อย่างปลอดภัย · ระบบจะยืนยันการจองเมื่อชำระเงินสำเร็จ (ลิงก์ชำระเงินมีอายุ 60 นาที) · หน้าชำระเงิน/อีเมลคืนเงินอาจแสดงชื่อบัญชี "Jia1669"</div>
+  </div>
+  </div>
+
+  <div class="card">
+    <div class="note">ต้องการเช่านานกว่า 30 วัน, เช่ารายเดือน/รายปี, หรือรับของเอง? ติดต่อเจ้าหน้าที่ได้เลย · <a href="availability.html">ดูปฏิทินวันว่าง</a></div>
+    <div class="contact">
+      <a href="tel:0909791212">📞 โทร 090-979-1212</a>
+      <a href="https://line.me/R/ti/p/@jiacpr" target="_blank" rel="noopener">💬 แชท LINE OA</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ⚠️ ต้องเป็น URL เดียวกับใน index.html / availability.html (ต้อง deploy apps_script_stripe.js ก่อน)
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbz-BdCSLYps-EY9cmrY2eBN6xZlTdEBDqeZSMZXKGbarfRhyNQUyeact_IOeqktJL2qTw/exec';
+const ATTR_KEYS=['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid','gclid','gbraid','wbraid','ttclid'];
+let catalog=null, avail=null, lastQuote=null, quoting=false, paying=false;
+
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>(Number(n)||0).toLocaleString('th-TH');
+const isoToTh=iso=>{if(!iso)return '—';const p=iso.split('-');return `${p[2]}/${p[1]}/${+p[0]+543}`;};
+
+// ===== ที่มาของผู้ซื้อ (last touch ~90 วัน, payments-playbook ข้อ 2) =====
+function captureAttribution(){
+  try{
+    const q=new URLSearchParams(location.search);
+    const got={};ATTR_KEYS.forEach(k=>{const v=q.get(k);if(v)got[k]=v;});
+    if(Object.keys(got).length) localStorage.setItem('jr_attr',JSON.stringify({ts:Date.now(),data:got}));
+  }catch(e){}
+}
+function readAttribution(){
+  let data={};
+  try{const s=JSON.parse(localStorage.getItem('jr_attr')||'null');if(s&&Date.now()-s.ts<90*86400000)data={...s.data};}catch(e){}
+  const m=document.cookie.match(/(?:^|;\s*)_fbc=([^;]+)/); // fbc จากคุกกี้ _fbc เท่านั้น
+  if(m) data.fbc=decodeURIComponent(m[1]);
+  return data;
+}
+
+async function api(action,params){
+  const url=new URL(GAS_URL);url.searchParams.set('action',action);
+  Object.entries(params||{}).forEach(([k,v])=>url.searchParams.set(k,typeof v==='object'?JSON.stringify(v):v));
+  const res=await fetch(url.toString());return res.json();
+}
+
+function msg(html,type){document.getElementById('top-msg').innerHTML=html?`<div class="msg ${type||'info'}">${html}</div>`:'';}
+
+function catOptions(selected){
+  return '<option value="">-- เลือกชนิด --</option>'+(catalog?catalog.categories:[]).map(c=>{
+    const price=c.minPrice===c.maxPrice?`฿${fmt(c.minPrice)}`:`฿${fmt(c.minPrice)}–${fmt(c.maxPrice)}`;
+    return `<option value="${esc(c.cat)}"${c.cat===selected?' selected':''}>${esc(c.cat)} (${price}/วัน)</option>`;
+  }).join('');
+}
+function addItem(cat){
+  const box=document.getElementById('items');
+  if(box.children.length>=10)return;
+  const row=document.createElement('div');row.className='item-row';
+  row.innerHTML=`<div class="form-group"><label>ชนิดอุปกรณ์</label><select class="it-cat" onchange="onItemChange(this)">${catOptions(cat)}</select></div>
+    <div class="form-group qty"><label>จำนวน</label><input type="number" class="it-qty" min="1" max="10" value="1" oninput="invalidateQuote()"></div>
+    <button type="button" class="rm" title="ลบ" onclick="this.parentElement.remove();invalidateQuote()">✕</button>
+    <div class="meta"></div>`;
+  box.appendChild(row);onItemChange(row.querySelector('.it-cat'));
+}
+function onItemChange(sel){
+  const row=sel.closest('.item-row');const meta=row.querySelector('.meta');
+  const c=(catalog?catalog.categories:[]).find(x=>x.cat===sel.value);
+  if(c&&c.plus){
+    meta.innerHTML=`<label><input type="checkbox" class="it-monitor" checked onchange="invalidateQuote()"> รวมมอนิเตอร์ (ไม่รวม ฿${fmt(catalog.plusNoMonitorPrice)}/วัน)</label>`;
+  } else meta.innerHTML='';
+  meta.innerHTML+=availHint(sel.value);
+  invalidateQuote();
+}
+// จำนวนว่างคร่าว ๆ จากปฏิทินสาธารณะ (ยืนยันจริงตอน "ดูราคา" ฝั่ง server)
+function availHint(cat){
+  if(!cat||!avail)return '';
+  const s=document.getElementById('bk-start').value,e=document.getElementById('bk-end').value;
+  if(!s||!e)return '';
+  const bad=['ซ่อม','ไม่พร้อมใช้งาน','ออกสอน','ออกบูธ','ทดแทน'];
+  const prods=avail.products.filter(p=>p.cat===cat&&bad.indexOf(p.status)===-1);
+  const free=prods.filter(p=>!avail.busy.some(b=>b.productIds.indexOf(p.id)!==-1&&s<=(b.to||'9999-12-31')&&e>=b.from)).length;
+  return ` <span style="margin-left:8px">ว่างประมาณ ${free}/${prods.length} ชิ้น</span>`;
+}
+function onMethod(){
+  const m=document.querySelector('input[name=method]:checked').value;
+  document.getElementById('opt-card').classList.toggle('sel',m==='card');
+  document.getElementById('opt-pp').classList.toggle('sel',m==='promptpay');
+  invalidateQuote();
+}
+function invalidateQuote(){
+  lastQuote=null;
+  document.getElementById('quote-card').classList.add('hidden');
+  document.getElementById('pay-btn').disabled=true;
+  document.querySelectorAll('.item-row').forEach(r=>{const m=r.querySelector('.meta');const sp=m.querySelector('span');if(sp)sp.remove();m.insertAdjacentHTML('beforeend',availHint(r.querySelector('.it-cat').value));});
+}
+
+function collect(){
+  const items=[...document.querySelectorAll('.item-row')].map(r=>({cat:r.querySelector('.it-cat').value,qty:parseInt(r.querySelector('.it-qty').value)||0,monitor:r.querySelector('.it-monitor')?r.querySelector('.it-monitor').checked:undefined})).filter(i=>i.cat&&i.qty>0);
+  return {
+    items,start:document.getElementById('bk-start').value,end:document.getElementById('bk-end').value,
+    province:document.getElementById('bk-province').value,method:document.querySelector('input[name=method]:checked').value,
+    name:document.getElementById('bk-name').value.trim(),phone:document.getElementById('bk-phone').value.trim(),
+    address:document.getElementById('bk-address').value.trim(),taxName:document.getElementById('bk-taxname').value.trim(),
+    note:document.getElementById('bk-note').value.trim(),website:document.getElementById('bk-website').value
+  };
+}
+
+async function getQuote(){
+  if(quoting)return;
+  const d=collect();
+  if(!d.items.length){msg('กรุณาเลือกอุปกรณ์อย่างน้อย 1 รายการ','err');return;}
+  if(!d.start||!d.end||!d.province){msg('กรุณาเลือกวันเช่า กำหนดคืน และจังหวัด','err');return;}
+  quoting=true;const btn=document.getElementById('quote-btn');btn.disabled=true;btn.textContent='กำลังคำนวณ…';
+  try{
+    const q=await api('publicBookingQuote',{data:{items:d.items,start:d.start,end:d.end,province:d.province,method:d.method}});
+    if(!q||!q.ok){msg((q&&q.errors||[q&&q.error||'คำนวณราคาไม่สำเร็จ']).map(esc).join('<br>'),'err');return;}
+    msg('');lastQuote=q;renderQuote(q);
+  }catch(e){console.error(e);msg('เชื่อมต่อระบบไม่ได้ กรุณาลองใหม่','err');}
+  finally{quoting=false;btn.disabled=false;btn.textContent='ดูราคา';}
+}
+function renderQuote(q){
+  let h=q.summary.map(s=>`<div class="summary-row"><span class="l">${esc(s.label)} ×${s.qty}</span><span class="v">฿${fmt(s.pricePerDay)}/วัน</span></div>`).join('');
+  h+=`<div class="summary-row"><span class="l">ช่วงเช่า</span><span class="v">${isoToTh(q.start)} → ${isoToTh(q.end)} (${q.days} วัน)</span></div>`;
+  h+=`<div class="summary-row"><span class="l">วันส่งของ (คาดการณ์)</span><span class="v">${isoToTh(q.deliverIso)}</span></div>`;
+  if(q.returnByIso)h+=`<div class="summary-row"><span class="l">ของต้องถึงเราภายใน</span><span class="v">${isoToTh(q.returnByIso)}</span></div>`;
+  h+=`<div class="summary-row"><span class="l">ค่าเช่า</span><span class="v">฿${fmt(q.rent)}</span></div>`;
+  if(q.deposit>0){
+    h+=`<div class="summary-row"><span class="l">มัดจำ (คืนเมื่อรับคืนสภาพดี)</span><span class="v">฿${fmt(q.deposit)}</span></div>`;
+    h+=q.depositMode==='hold'
+      ?`<div class="msg info" style="margin-top:10px">มัดจำ ฿${fmt(q.deposit)} ยังไม่เก็บตอนนี้ — เจ้าหน้าที่จะส่งลิงก์ "กันวงเงิน" บนบัตรให้ใกล้วันส่งของ (ไม่ตัดเงินจริง ปล่อยวงเงินเมื่อรับของคืนสภาพดี)</div>`
+      :`<div class="msg warn" style="margin-top:10px">มัดจำ ฿${fmt(q.deposit)} เก็บรวมในยอดนี้ (แยกบรรทัด) และคืนผ่าน Stripe หลังรับของคืน${document.querySelector('input[name=method]:checked').value==='promptpay'?' — จ่ายด้วยพร้อมเพย์: Stripe จะส่งอีเมลให้กรอกบัญชีรับเงินคืน (ต้องเป็นบัญชีเดียวกับที่จ่าย)':''}</div>`;
+  }
+  h+=`<div class="total-box"><div class="desc">ยอดชำระตอนนี้</div><div class="amt">฿${fmt(q.chargeNow)}</div><div class="desc">ยังไม่รวมค่าขนส่ง — เจ้าหน้าที่แจ้งแยกถ้ามี</div></div>`;
+  document.getElementById('quote-body').innerHTML=h;
+  document.getElementById('quote-card').classList.remove('hidden');
+  document.getElementById('pay-btn').disabled=false;
+  document.getElementById('quote-card').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+async function payNow(){
+  if(paying||!lastQuote)return;
+  if(!document.getElementById('bk-consent').checked){msg('กรุณาติ๊กยินยอมก่อนชำระเงิน','err');return;}
+  const d=collect();
+  if(!d.name||!d.phone||d.address.length<10){msg('กรุณากรอกชื่อ เบอร์โทร และที่อยู่จัดส่งให้ครบ','err');document.getElementById('bk-name').scrollIntoView({behavior:'smooth'});return;}
+  paying=true;const btn=document.getElementById('pay-btn');btn.disabled=true;btn.textContent='กำลังสร้างหน้าชำระเงิน…';
+  try{
+    const url=new URL(GAS_URL);url.searchParams.set('action','publicCreateBooking');
+    // ไม่ตั้ง Content-Type → text/plain (simple request ไม่มี CORS preflight ที่ Apps Script ไม่รองรับ)
+    const res=await fetch(url.toString(),{method:'POST',body:JSON.stringify({...d,expectedTotal:lastQuote.chargeNow,attribution:readAttribution()})});
+    const r=await res.json();
+    if(r&&r.ok&&r.url){location.href=r.url;return;}
+    if(r&&r.priceChanged&&r.quote){lastQuote=null;msg('ราคา/ของว่างเปลี่ยนแปลง กรุณากด "ดูราคา" อีกครั้ง','warn');invalidateQuote();return;}
+    msg((r&&r.errors||[r&&r.error||'สร้างการจองไม่สำเร็จ']).map(esc).join('<br>'),'err');
+  }catch(e){console.error(e);msg('เชื่อมต่อระบบไม่ได้ กรุณาลองใหม่ หรือติดต่อเจ้าหน้าที่','err');}
+  finally{paying=false;btn.disabled=!lastQuote;btn.textContent='ไปหน้าชำระเงิน';}
+}
+
+async function init(){
+  captureAttribution();
+  const q=new URLSearchParams(location.search);
+  if(q.get('cancelled'))msg('ยกเลิกการชำระเงินแล้ว — ยังไม่ได้จอง สามารถตรวจข้อมูลแล้วชำระใหม่ได้','warn');
+  try{
+    const [cat,av]=await Promise.all([api('publicBookingCatalog'),api('getPublicAvailability').catch(()=>null)]);
+    if(!cat||!cat.ok)throw new Error(cat&&cat.error||'catalog');
+    catalog=cat;avail=av&&av.products?av:null;
+    document.getElementById('company-line').textContent=`${cat.companyName} · จองและชำระเงินได้ทันที ไม่ต้องสมัครสมาชิก`;
+    document.querySelectorAll('.max-hold').forEach(e=>e.textContent=cat.maxHoldDays);
+    document.getElementById('bk-province').innerHTML='<option value="">-- เลือกจังหวัด --</option>'+cat.provinces.map(p=>`<option>${esc(p)}</option>`).join('');
+    document.getElementById('limits-note').textContent=`จองออนไลน์ได้ไม่เกิน ${cat.limits.maxItems} ชิ้น / ${cat.limits.maxDays} วันต่อครั้ง · วันส่งของ = วันเช่า − วันเผื่อขนส่งของจังหวัด − 1 วัน`;
+    if(!cat.ready){
+      document.getElementById('booking-area').classList.add('hidden');
+      msg('ระบบจองออนไลน์ยังไม่เปิดใช้งาน กรุณาติดต่อเจ้าหน้าที่ทางโทรศัพท์หรือ LINE','warn');return;
+    }
+    const s=q.get('start'),e=q.get('end');
+    document.getElementById('bk-start').min=cat.today;document.getElementById('bk-end').min=cat.today;
+    if(s)document.getElementById('bk-start').value=s;
+    if(e)document.getElementById('bk-end').value=e;
+    addItem(q.get('cat')||'');
+  }catch(err){
+    console.error(err);
+    document.getElementById('booking-area').classList.add('hidden');
+    msg('โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่ภายหลัง หรือติดต่อเจ้าหน้าที่','err');
+  }
+}
+init();
+</script>
+</body>
+</html>

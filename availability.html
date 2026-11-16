@@ -123,8 +123,9 @@ body{padding:10px}
     <div class="note">
       📌 <strong>ข้อมูลอัปเดตอัตโนมัติทุก ๆ 1 นาที</strong><br>
       ตัวเลขนี้ยังไม่รวมวันเผื่อขนส่งไป-กลับ และยังไม่ใช่การจองจริง<br>
-      กรุณาติดต่อเจ้าหน้าที่เพื่อยืนยันวันที่และทำการจองอย่างเป็นทางการ
+      จองและชำระเงินออนไลน์ได้ทันทีที่ปุ่มด้านล่าง หรือติดต่อเจ้าหน้าที่เพื่อจองโดยตรง
     </div>
+    <a href="book.html" id="book-link" style="display:flex;align-items:center;justify-content:center;margin-top:10px;min-height:48px;border-radius:8px;background:var(--primary);color:#fff;text-decoration:none;font-weight:700;font-size:16px">🛒 จองและชำระเงินออนไลน์</a>
     <div class="contact">
       <a href="tel:0909791212" id="contact-phone">📞 โทร 090-979-1212</a>
       <a href="https://line.me/R/ti/p/@jiacpr" id="contact-line" target="_blank">💬 แชท LINE OA</a>
@@ -207,6 +208,8 @@ function checkAvailability(){
   const box=document.getElementById('av-results');
   if(!start||!end){box.innerHTML='<div class="empty">กรุณาเลือกวันเช่าและกำหนดคืน</div>';return;}
   if(end<start){box.innerHTML='<div class="empty">กำหนดคืนต้องไม่ก่อนวันเช่า</div>';return;}
+  const bl=document.getElementById('book-link');
+  if(bl) bl.href='book.html?'+new URLSearchParams({start,end,...(cat?{cat}:{})}).toString();
   const cats=cat?[cat]:avCategories;
   if(!cats.length){box.innerHTML='<div class="empty">ไม่มีข้อมูลสินค้า</div>';return;}
   box.innerHTML=cats.map(c=>{
