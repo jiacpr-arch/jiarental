@@ -4,11 +4,11 @@
  * ไฟล์ "ส่วนเพิ่ม" แบบเดียวกับ apps_script_additions.js — ไม่ได้แทนที่ apps_script_v4.js
  * ไฟล์นี้ใช้ได้ด้วยตัวเอง (ไม่เรียกฟังก์ชันจากไฟล์อื่น ยกเว้น notifyLine_ ถ้ามี) ชื่อฟังก์ชันขึ้นต้นด้วย stp / stripe
  *
- * ── Stripe ใช้เฉพาะ JIA (เจ้าของสั่ง 16 พ.ย. 2026) ──
- *   • รายการของ JIA (entity "jia" — จองออนไลน์ book.html `WEB-`) → เงินเข้าบัญชี Stripe ของ JIA (Jia1669)
- *   • รายการของ บริษัท โรจน์รุ่ง ธุรกิจ จำกัด (entity "rojrung" — จองโดยเซลล์ `RN-`/`VIP-`) **ไม่ใช้ Stripe**
- *     รับเงินแบบเดิม (โอน/จ่ายหน้างาน) — โค้ดนี้ปฏิเสธการสร้างลิงก์/เรียก Stripe ของรายการโรจน์รุ่งเสมอ
- *     ห้ามเอารายการโรจน์รุ่งไปเก็บเงินผ่านบัญชี Jia1669
+ * ── 2 นิติบุคคล 2 บัญชี Stripe (เจ้าของสั่ง 16 พ.ย. 2026) ──
+ *   • จองออนไลน์ (book.html, ลูกค้าจ่ายเอง)   → entity "jia"     → เงินเข้าบัญชี Stripe ของ JIA (Jia1669)
+ *   • จองโดยเซลล์ใน index.html                → entity "rojrung" → ต้องใช้บัญชี Stripe ของ บริษัท โรจน์รุ่ง ธุรกิจ จำกัด
+ *     ห้ามใช้บัญชี Jia1669 กับรายการของโรจน์รุ่ง — ถ้ายังไม่ตั้ง STRIPE_SECRET_KEY_ROJRUNG ปุ่มสร้างลิงก์จะกดไม่ได้
+ *     และการรับเงินแบบเดิม (โอน/จ่ายหน้างาน) ใช้ได้ตามปกติ
  *
  * ------------------------------------------------------------
  * วิธีติดตั้ง (ทำทีละขั้น)
@@ -29,7 +29,9 @@
  *
  * 4. Project Settings (รูปเฟือง) > Script Properties > Add script property
  *      STRIPE_SECRET_KEY_JIA      = rk_live_... (Restricted key ของบัญชี JIA / Jia1669 — ใช้กับ book.html)
- *      STAFF_PAY_KEY              = รหัสสุ่มยาว ๆ ที่ Ops กรอกครั้งแรกในเครื่อง (ดูสถานะ / สร้างลิงก์ใหม่ของรายการ JIA)
+ *      STRIPE_SECRET_KEY_ROJRUNG  = rk_live_... (Restricted key ของบัญชี Stripe โรจน์รุ่ง — ใช้กับลิงก์ของเซลล์)
+ *                                   ยังไม่มีบัญชี = ไม่ต้องใส่ ระบบเดิมทำงานต่อได้
+ *      STAFF_PAY_KEY              = รหัสสุ่มยาว ๆ ที่เซลล์/Ops กรอกครั้งแรกในเครื่อง (สร้างลิงก์ / ดูสถานะชำระเงิน)
  *      OPS_PAY_KEY                = รหัสสุ่มอีกชุด เฉพาะ Ops (ปล่อยวงเงิน / หักค่าเสียหาย / คืนมัดจำ)
  *      PUBLIC_BASE_URL            = https://rent.jiacpr.com   (ไม่ตั้ง = ค่านี้; ถ้ายังไม่มีโดเมนนี้ใส่
  *                                   https://jiacpr-arch.github.io/jiarental แทน — ไม่มี / ท้าย)
@@ -49,8 +51,9 @@
  *
  * 6. Deploy > Manage deployments > แก้ deployment เดิม > Version: New version > Deploy
  *
- * 7. (ไม่บังคับ แต่ช่วยให้อัปเดตเร็วขึ้น) Stripe Dashboard ของบัญชี JIA > Developers > Webhooks > Add endpoint
- *      <URL web app>?action=stripeWebhook&acct=jia
+ * 7. (ไม่บังคับ แต่ช่วยให้อัปเดตเร็วขึ้น) Stripe Dashboard ของแต่ละบัญชี > Developers > Webhooks > Add endpoint
+ *      บัญชี JIA:      <URL web app>?action=stripeWebhook&acct=jia
+ *      บัญชีโรจน์รุ่ง: <URL web app>?action=stripeWebhook&acct=rojrung
  *    Events: checkout.session.completed, checkout.session.async_payment_succeeded,
  *            checkout.session.async_payment_failed, checkout.session.expired
  *    หมายเหตุ: Apps Script ตอบ webhook ด้วย 302 redirect เสมอ Stripe จึงจะขึ้นว่าส่งไม่สำเร็จ (โค้ดยังทำงาน)
@@ -466,8 +469,7 @@ function stpBuildSessionParams(o) {
 
 function stpProps_() { return PropertiesService.getScriptProperties(); }
 function stpProp_(k, def) { var v = stpProps_().getProperty(k); return (v === null || v === '') ? def : v; }
-// Stripe ใช้เฉพาะ JIA — รายการโรจน์รุ่งไม่มี key เสมอ (ห้ามเพิ่ม key ของโรจน์รุ่ง/ห้าม fallback ไป Jia1669)
-function stpKeyFor_(entity) { return entity === 'jia' ? stpProp_('STRIPE_SECRET_KEY_JIA', '') : ''; }
+function stpKeyFor_(entity) { return stpProp_(entity === 'jia' ? 'STRIPE_SECRET_KEY_JIA' : 'STRIPE_SECRET_KEY_ROJRUNG', ''); }
 function stpBaseUrl_() { return String(stpProp_('PUBLIC_BASE_URL', 'https://rent.jiacpr.com')).replace(/\/+$/, ''); }
 function stpJiaName_() { return stpProp_('JIA_COMPANY_NAME', 'JIA'); }
 function stpCompanyName_(entity) { return entity === 'jia' ? stpJiaName_() : STP_ROJRUNG_NAME; }
@@ -599,7 +601,7 @@ function stpPendingRentalIds_(ledgerRows) {
 // ---------- Stripe ----------
 function stpStripe_(entity, method, path, params, idemKey) {
   var key = stpKeyFor_(entity);
-  if (!key) throw new Error(entity === 'jia' ? 'ยังไม่ได้ตั้งค่าบัญชี Stripe ของ JIA' : 'รายการของโรจน์รุ่งไม่ใช้ Stripe');
+  if (!key) throw new Error(entity === 'jia' ? 'ยังไม่ได้ตั้งค่าบัญชี Stripe ของ JIA' : 'ยังไม่ได้ตั้งค่าบัญชี Stripe ของโรจน์รุ่ง');
   var url = 'https://api.stripe.com/v1' + path;
   var opts = { method: method, headers: { Authorization: 'Bearer ' + key }, muteHttpExceptions: true };
   if (params && method === 'get') url += (url.indexOf('?') === -1 ? '?' : '&') + stpFormEncode(params);
@@ -707,7 +709,7 @@ function stpApplyRental_(rentalId, newlyPaidRow) {
 // =====================================================================
 
 function stpConfig_() {
-  return { ok: true, jiaReady: !!stpKeyFor_('jia'), rojrungReady: false,
+  return { ok: true, jiaReady: !!stpKeyFor_('jia'), rojrungReady: !!stpKeyFor_('rojrung'),
     staffKeySet: !!stpProp_('STAFF_PAY_KEY', ''), opsKeySet: !!stpProp_('OPS_PAY_KEY', ''),
     jiaCompanyName: stpJiaName_(), rojrungCompanyName: STP_ROJRUNG_NAME, maxHoldDays: STP_MAX_HOLD_DAYS,
     holdValidDays: STP_HOLD_VALID_DAYS, holdWarnDays: STP_HOLD_WARN_DAYS };
@@ -737,8 +739,7 @@ function stpCreateLink_(p) {
   if (!r) return { error: 'ไม่พบรายการเช่า ' + p.rentalId };
   if (r.status === 'ยกเลิก') return { error: 'รายการนี้ถูกยกเลิกแล้ว' };
   var entity = stpEntityOf_(r);
-  if (entity !== 'jia') return { error: 'รายการของ ' + STP_ROJRUNG_NAME + ' ไม่ใช้ Stripe — รับเงินแบบเดิม', notStripe: true };
-  if (!stpKeyFor_(entity)) return { error: 'ยังไม่ได้ตั้งค่าบัญชี Stripe ของ JIA', notReady: true };
+  if (!stpKeyFor_(entity)) return { error: entity === 'jia' ? 'ยังไม่ได้ตั้งค่าบัญชี Stripe ของ JIA' : 'ยังไม่ได้ตั้งค่าบัญชี Stripe ของโรจน์รุ่ง', notReady: true };
   var lt = stpLedgerRows_();
   var mine = lt.rows.filter(function (x) { return x.rentalId === r.id; });
   var plan = stpStaffPlan(r, mine, { purpose: p.purpose, method: p.method, todayIso: stpTodayIso_() });
@@ -953,7 +954,7 @@ function stpPublicSessionStatus_(sessionId) {
 }
 
 function stpHandleWebhook_(e) {
-  var acct = e.parameter.acct === 'jia' ? 'jia' : null; // Stripe มีบัญชีเดียว (JIA)
+  var acct = e.parameter.acct === 'jia' ? 'jia' : e.parameter.acct === 'rojrung' ? 'rojrung' : null;
   if (!acct) return { ok: false };
   var id = '';
   try { id = String(JSON.parse(e.postData.contents).id || ''); } catch (err) { return { ok: false }; }

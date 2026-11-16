@@ -38,7 +38,7 @@ test('attribution เขียนทับ metadata หลักไม่ได�
 });
 
 test('session กันวงเงินใช้ capture_method=manual', () => {
-  const p = S.stpBuildSessionParams({ rentalId: 'WEB-1', kind: 'deposit_hold', entity: 'jia', channel: 'online',
+  const p = S.stpBuildSessionParams({ rentalId: 'RN-1', kind: 'deposit_hold', entity: 'rojrung', channel: 'sales',
     lines: [{ name: 'มัดจำ', amount: 2000 }], amount: 2000, depositAmount: 2000, methods: ['card'], captureMethod: 'manual',
     baseUrl: 'https://x', expiresAtSec: 1 });
   assert.equal(p.payment_intent_data.capture_method, 'manual');

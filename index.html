@@ -2025,7 +2025,7 @@ function renderPaymentModal(){
   const r=rentals.find(x=>x.id===payModalRentalId);if(!r)return;
   const ent=entityOf(r);
   const isOps=currentRole==='ops';
-  const ready=stripeCfg&&ent==='jia'&&stripeCfg.jiaReady;
+  const ready=stripeCfg&&(ent==='jia'?stripeCfg.jiaReady:stripeCfg.rojrungReady);
   document.getElementById('pay-title').textContent='💳 ชำระเงิน — '+r.id;
   let h=`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
     <span class="badge ${ent==='jia'?'badge-blue':'badge-gray'}">${entityLabel(ent)}</span>
@@ -2034,16 +2034,12 @@ function renderPaymentModal(){
     ${!isOps?`<div class="receipt-row"><div class="label">ค่าเช่า</div><div class="value">฿${fmt(r.total)}</div></div>`:''}
     <div class="receipt-row"><div class="label">มัดจำ</div><div class="value">${r.deposit?'฿'+fmt(r.deposit):'—'}</div></div>
     <div class="receipt-row"><div class="label">สถานะการชำระ</div><div class="value"><span class="badge ${paymentBadgeClass(r.paymentStatus)}">${escHtml(r.paymentStatus||'—')}</span></div></div>`;
-  if(ent!=='jia'){
-    h+=`<div class="pay-note">รายการของ ${escHtml(ROJRUNG_COMPANY)} ไม่ใช้ Stripe — รับเงินแบบเดิม (โอน/จ่ายหน้างาน)</div>`;
-    document.getElementById('pay-body').innerHTML=h;return;
-  }
   if(!stripeCfg){
     h+=`<div class="pay-note warn">ยังไม่ได้ติดตั้งระบบ Stripe ฝั่ง Apps Script (apps_script_stripe.js) — ใช้การรับเงินแบบเดิมได้ตามปกติ</div>`;
     document.getElementById('pay-body').innerHTML=h;return;
   }
   if(!ready){
-    h+=`<div class="pay-note warn">ยังไม่ได้ตั้งค่าบัญชี Stripe ของ JIA — ปุ่มสร้างลิงก์ปิดไว้ ใช้การรับเงินแบบเดิม (โอน/จ่ายหน้างาน) ได้ตามปกติ</div>`;
+    h+=`<div class="pay-note warn">${ent==='jia'?'ยังไม่ได้ตั้งค่าบัญชี Stripe ของ JIA':'ยังไม่ได้ตั้งค่าบัญชี Stripe ของโรจน์รุ่ง'} — ปุ่มสร้างลิงก์ปิดไว้ ใช้การรับเงินแบบเดิม (โอน/จ่ายหน้างาน) ได้ตามปกติ</div>`;
   }
   if(!stripeStaffKey()||stripeKeyNeeded){
     h+=`<div class="pay-note">กรอก <b>รหัสพนักงาน (ชำระเงิน)</b> ครั้งแรกในเครื่องนี้ — ขอจากเจ้าของระบบ
@@ -2756,8 +2752,7 @@ function renderRentals(){
     if(r.deposit>0){
       acts.push({label:'ใบประกัน',icon:'🧾',fn:`showGuaranteeReceipt('${r.id}')`,cls:'btn-amber-soft'});
     }
-    // Stripe ใช้เฉพาะรายการของ JIA (จองออนไลน์) — โรจน์รุ่งไม่ใช้ Stripe รับเงินแบบเดิม (เจ้าของสั่ง 16 พ.ย. 2026)
-    if(r.status!=='ยกเลิก'&&entityOf(r)==='jia'){
+    if(r.status!=='ยกเลิก'){
       acts.push({label:'ชำระเงิน',icon:'💳',fn:`openPaymentModal('${r.id}')`,cls:'btn-outline'});
     }
     if(r.status==='จอง'){
