@@ -2,7 +2,7 @@
 
 ## ภาพรวม
 ระบบเช่า-ยืมอุปกรณ์ฝึกสอน CPR/AED ของบริษัท **โรจน์รุ่ง ธุรกิจ จำกัด** (เจี๋ยรักษา)
-- **Single HTML file** (`index.html`) ~6,500 บรรทัด
+- **Single HTML file** (`index.html`) ~5,700 บรรทัด
 - **Vanilla JavaScript** ไม่ใช้ framework
 - **CSS มือเขียนล้วน** (ไม่มี Tailwind) + inline styles ในบางจุด + ฟอนต์ Sarabun (Google Fonts)
 - **Google Sheets backend** ผ่าน Google Apps Script
@@ -15,10 +15,6 @@ jiarental/
 ├── availability.html           # ปฏิทินว่างสาธารณะ ไม่ต้อง login ลูกค้าดูวันว่างได้เอง
 ├── apps_script_v4.js           # Apps Script backend หลัก (paste in Google Apps Script)
 ├── apps_script_additions.js    # ส่วนเพิ่ม: แจ้งเตือน LINE + API ปฏิทินสาธารณะ (วางเพิ่มใน Apps Script project เดิม — ดูคำแนะนำในไฟล์)
-├── apps_script_stripe.js       # ส่วนเพิ่ม: Stripe (ลิงก์ชำระเงิน, มัดจำ/กันวงเงิน, จองออนไลน์, webhook, reconcile) — ขั้นตอนติดตั้งอยู่หัวไฟล์
-├── book.html                   # หน้าจองออนไลน์สาธารณะ (ไม่ต้อง login, จ่ายก่อน) — เงินเข้าบัญชี Stripe ของ JIA
-├── paid.html                   # หน้าหลังจ่าย Stripe (แสดงสถานะจาก session id เท่านั้น ไม่มีข้อมูลส่วนตัว)
-├── tests/stripe-logic.test.js  # node --test tests/stripe-logic.test.js (pure logic ของ apps_script_stripe.js, ไม่มี dependency)
 ├── CLAUDE.md                   # ไฟล์นี้
 └── README.md                   # (optional)
 ```
@@ -27,7 +23,6 @@ jiarental/
 - **GitHub Pages**: `jiacpr-arch.github.io/jiarental/`
 - **Repo**: `jiacpr-arch/jiarental`
 - **Deploy**: ลากไฟล์ `index.html` ไป Add file → Upload files (ห้าม edit ใน browser จะตัดโค้ด)
-- หน้าสาธารณะ: `availability.html`, `book.html`, `paid.html` (ทุกหน้าใช้ GAS_URL เดียวกัน) — Stripe success/cancel URL ใช้ Script Property `PUBLIC_BASE_URL` (default `https://rent.jiacpr.com`; repo ยังไม่มีไฟล์ CNAME)
 - **HTTPS จำเป็น** สำหรับกล้องสแกน QR
 
 ## Google Apps Script
@@ -158,40 +153,13 @@ jiarental/
                 isVIP, vipReason, noDueDate, rentalMode,
                 returnBy, bufferDays, returnCondition, returnDamageNote, returnNote, note,
                 installments, monthlyAmount]
-                + ต่อท้าย: entity ('jia'|'rojrung', ว่าง = rojrung), channel ('online'|'sales')
-'การชำระเงิน': [sessionId, rentalId, kind, amount, status, paymentIntentId, captureMethod, createdAt, paidAt,
-                capturedAmount, refundedAmount, releasedAt, note, entity, depositAmount, depositDeducted,
-                method, url, expiresAt, createdBy]   ← สมุดบัญชี Stripe (สร้างอัตโนมัติ) = ข้อมูลจริงของสถานะการชำระ
 'พนักงาน':    [name, role]
 'ตัวนับ':     [key, value]
 ```
 
 ## ชื่อบริษัท
-- ใช้ **"บริษัท โรจน์รุ่ง ธุรกิจ จำกัด"** ทุกจุดของรายการที่เซลล์สร้าง — ยกเว้นจองออนไลน์ (entity `jia`) ใช้ชื่อ JIA (ดูหัวข้อ Stripe)
+- ใช้ **"บริษัท โรจน์รุ่ง ธุรกิจ จำกัด"** ทุกจุด
 - Brand: **JIARAKSA**
-
-## รับเงินผ่าน Stripe (เพิ่ม 16 พ.ย. 2026 — ดู `apps_script_stripe.js` + `jia-ads-hub/docs/payments-playbook.md`)
-
-### 2 นิติบุคคล — Stripe ใช้เฉพาะ JIA (เจ้าของสั่ง 16 พ.ย. 2026)
-| ช่องทาง | entity | ผู้รับเงิน / ชื่อบนเอกสาร | รับเงิน |
-|---|---|---|---|
-| จองโดยเซลล์ใน index.html (`RN-`, `VIP-`) | `rojrung` | บริษัท โรจน์รุ่ง ธุรกิจ จำกัด | **ไม่ใช้ Stripe** — รับเงินแบบเดิม (โอน/จ่ายหน้างาน); ห้ามเก็บผ่าน Jia1669 |
-| จองออนไลน์ `book.html` (`WEB-`) | `jia` | `JIA_COMPANY_NAME` (ไม่ตั้ง = "JIA"; TODO เจ้าของยืนยันชื่อจดทะเบียน) | `STRIPE_SECRET_KEY_JIA` (Jia1669, บัญชีกลางหลายแบรนด์) |
-- `entityOf(r)` ใน index.html / `stpEntityOf_` ใน Apps Script: `entity` ว่าง → `WEB-` = jia, อื่น ๆ = rojrung
-- ปุ่ม "💳 ชำระเงิน" แสดงเฉพาะรายการ JIA; Apps Script ปฏิเสธการสร้างลิงก์/เรียก Stripe ของรายการโรจน์รุ่งเสมอ (`stpKeyFor_` คืนค่าว่างถ้าไม่ใช่ jia) — ห้ามเพิ่ม key โรจน์รุ่งกลับมาโดยไม่ได้รับคำสั่งเจ้าของ
-- ใบจอง/ใบคืน/ใบประกัน: ชื่อบริษัทตาม entity (`setReceiptEntity(r)` → `receiptCompany`/`receiptBrand`)
-- Dashboard แยกจำนวน/ยอด โรจน์รุ่ง vs JIA ออนไลน์; หน้าเช่า-ยืม + สรุปเงินรายเดือนมีตัวกรองบริษัท; จองออนไลน์ `sales` ว่าง = ไม่มีคอมฯ เซลล์ (คอมฯ หน้างาน 5% ส่ง/รับ ยังคิดเหมือนเดิม); ค่าธรรมเนียม Stripe ไม่ใช่ฐานคอมฯ
-
-### Flow
-- **พนักงาน (เฉพาะรายการ JIA):** ปุ่ม "💳 ชำระเงิน" ในแถวรายการเช่า → เลือกวิธีจ่าย/เก็บอะไร → "คำนวณยอด" (Apps Script คิดจากแถวในชีต: `total` + ค่าส่งที่ `ผู้จ่าย = ลูกค้าออกเอง` + `deposit` − ที่จ่ายแล้ว) → สร้างลิงก์ → คัดลอก/ส่ง LINE. ลิงก์อายุ 23 ชม., กดซ้ำได้ลิงก์เดิม, สร้างใหม่ = ปิดลิงก์เก่าที่ยอดทับกันก่อน
-- **มัดจำ:** เช่า ≤ 6 วัน + บัตร → session แยก `capture_method=manual` (กันวงเงิน) → Ops "ปล่อยวงเงิน" (cancel) / "หักค่าเสียหาย" (capture บางส่วน); วงเงินหมดอายุ ~7 วัน → การ์ดในหน้าแจ้งเตือน + LINE เตือนเมื่อ ≥ 5 วัน. ถ้าวงเงินต้องค้างเกิน 6 วัน (นับวันนี้ → ของถึงออฟฟิศ) ระบบเปลี่ยนเป็นเก็บจริงแทน → สร้างลิงก์กันวงเงินใกล้วันส่งของ.
-  เช่านานกว่า / พร้อมเพย์ / ไม่กำหนดคืน → มัดจำเก็บจริง (บรรทัดแยก) → Ops "คืนมัดจำ" = partial refund (หักค่าเสียหายได้); พร้อมเพย์ลูกค้าต้องกรอกบัญชีรับเงินคืนจากอีเมล Stripe
-- capture/release/refund = Ops เท่านั้น + กดยืนยัน + ต้องมีรหัส `OPS_PAY_KEY`; สร้างลิงก์/ดูสถานะต้องมี `STAFF_PAY_KEY` (เก็บใน localStorage `jia_stripe_staff_key` / `jia_stripe_ops_key`) — เพราะ GAS URL เป็นสาธารณะ
-- **จองออนไลน์:** `book.html` → `publicBookingQuote` (server ตรวจของว่าง + คิดราคา) → POST `publicCreateBooking` (rate limit ต่อเบอร์/รวม, ≤ 10 ชิ้น, ≤ 30 วัน) → สร้างลูกค้า (จับคู่ด้วยเบอร์) + แถวเช่าสถานะ **`รอชำระ`** (ไม่ล็อคสินค้า แต่กันคิวระหว่าง session เปิด 60 นาที) → Stripe → `paid.html`. จ่ายแล้ว → สถานะ `จอง` + LINE แจ้ง Ops (ยืนยันส่งตามปกติ); หมดเวลา → `ยกเลิก` อัตโนมัติ
-- **paymentStatus** ในชีตเขียนโดย Apps Script เท่านั้น รูปแบบ `Stripe: ชำระแล้ว · กันวงเงินมัดจำ 2000` (`stpRentalPaymentLabel`) — `stripeReconcile` (trigger 10 นาที) เขียนทับถ้า browser เขียนค่าเก่ากลับ
-- Webhook (`?action=stripeWebhook&acct=jia`) ไม่เชื่อ body: ดึง event + session จาก Stripe ใหม่ และรับเฉพาะ session ที่อยู่ในสมุดบัญชี + `metadata.brand = jiarental`. Apps Script ตอบ 302 → Stripe ขึ้นว่าล้มเหลว — reconcile คือกลไกหลัก
-- metadata ทุก session: `brand=jiarental, rental_id, kind, entity, channel, start, end, product_ids, rent_amount, deposit_amount` (+ `guest=1` และ utm/click id ที่กรองแล้วสำหรับจองออนไลน์)
-- TODO: FlowAccount/เอกสารภาษีไม่อยู่ในขอบเขต; มัดจำเป็นเงินรับฝาก — ยืนยันวิธีลงบัญชีกับนักบัญชีก่อนเปิดจริง
 
 ## สิ่งที่ต้องระวังเวลาแก้ไข
 1. **ไฟล์เดียว** — ทุกอย่างอยู่ใน `index.html`
@@ -222,5 +190,3 @@ jiarental/
 - `refreshFromSheets()` — auto-refresh เงียบทุก 90 วิ + แจ้งเตือนถ้ามีจองใหม่/สถานะเปลี่ยน (`index.html`)
 - `gsNotifyLine(event, r)` — ยิงแจ้งเตือน LINE กลุ่ม Ops แบบ fire-and-forget (`index.html`)
 - `notifyLine_(event, data)` / `getPublicAvailability_()` — ฝั่ง Apps Script (`apps_script_additions.js`)
-- `openPaymentModal(id)` / `loadStripeData()` / `entityOf(r)` / `setReceiptEntity(r)` — Stripe ฝั่ง index.html
-- `stripeHandleGet_(e)` / `stripeHandlePost_(e)` / `stripeReconcile()` / `stripeInstallTrigger()` — `apps_script_stripe.js`
